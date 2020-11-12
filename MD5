@@ -1,0 +1,11 @@
+a916ae04ca075aa6e1e388ae80e5a3bd *DESCRIPTION
+ff3caa757a57928f44f0e1f01a0a8360 *NAMESPACE
+e2ee3bd2e5bb8126e29dc173f5b37207 *R/PSS_Health.R
+297ee70a2c1808fbcf771033ba2596f7 *R/help_buttom.R
+783d3e98d74ad81ae1f9b273a3283772 *inst/PSS.Health/Markdown/Effect_size_d_Cohen.Rmd
+6442063528ad64bd901a5eec08dc91e0 *inst/PSS.Health/Markdown/Effect_size_f.Rmd
+f3312c806e3b17f6604224b53fb1d09d *inst/PSS.Health/global.R
+667f00fa49eb31625e6e5b8ac9a16621 *inst/PSS.Health/server.R
+c1e2c5969aa28543f1f6798c7fef7acb *inst/PSS.Health/ui.R
+32aa6c34fb87f2e96269d13479e8ade5 *man/PSS_Health.Rd
+204aacef009426b4b67cb39b8673849a *man/help_buttom.Rd
