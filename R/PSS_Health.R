@@ -6,6 +6,7 @@
 #' @importFrom EnvStats aovN aovPower ciNormN ciBinomN propTestPower propTestN
 #' @importFrom ICC.Sample.Size calculateIccSampleSize
 #' @importFrom kappaSize PowerBinary Power3Cats Power4Cats Power5Cats
+#' @importFrom longpower power.mmrm
 #' @importFrom MESS power_t_test
 #' @import plotly
 #' @importFrom powerMediation ssLongFull ss.SLR ss.SLR.rho SSizeLogisticCon SSizeLogisticBin

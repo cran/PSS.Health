@@ -1,11 +1,8 @@
 
 
 #__________________________----
-# Estimação de Parâmetros  ----
-#------------------------------.
 
-
-#### Media ####
+#### 1 Media ####
 
 
 aba_estimacao_uma_media <- tabPanel(
@@ -79,13 +76,13 @@ aba_estimacao_uma_media <- tabPanel(
                  #                            placement = "left"),
                  br(),
                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("mean_from", "From:", value = 1, step = 1)
+                     numericInput("mean_from", "Mínimo:", value = 1, step = 1)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("mean_to", "To:", value = 5, step = 1)
+                     numericInput("mean_to", "Máximo:", value = 5, step = 1)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("mean_by", "By:", value = 0.5, min = 0, step = 0.5) %>%
+                     numericInput("mean_by", "Intervalo:", value = 0.5, min = 0, step = 0.5) %>%
                        help_buttom(body = "Defina a sequência de precisão. Essa sequência será utilizada para compor o eixo x do gráfico.",
                                    title = "Sequência da precisão")
                  ),
@@ -118,7 +115,7 @@ aba_estimacao_uma_media <- tabPanel(
                sidebarPanel(
                  wellPanel(
                    HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                    ),
                    uiOutput("th_mean_formula1"),
                    uiOutput("th_mean_formula2")
@@ -222,7 +219,7 @@ aba_estimacao_uma_media <- tabPanel(
 
 
 
-#### Proporcao ####
+#### 1 Proporcao ####
 aba_estimacao_uma_prop <- tabPanel(
   "Uma amostra",
   titlePanel("Uma proporção"),
@@ -318,13 +315,13 @@ aba_estimacao_uma_prop <- tabPanel(
                  #                          placement = "left"),
                  br(),
                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("prop_from", "From:", value = 0, step = 5, min = 0, max = 100)
+                     numericInput("prop_from", "Mínimo:", value = 0, step = 5, min = 0, max = 100)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("prop_to", "To:", value = 100, step = 5, min = 0, max = 100)
+                     numericInput("prop_to", "Máximo:", value = 100, step = 5, min = 0, max = 100)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("prop_by", "By:", value = 5, min = 0, step = 1, max = 99) %>%
+                     numericInput("prop_by", "Intervalo:", value = 5, min = 0, step = 1, max = 99) %>%
                        help_buttom(body = "Defina a sequência de proporção esperada. Essa sequência será utilizada para compor o eixo x do gráfico.",
                                    title = "Sequência da precisão")
                  ),
@@ -352,9 +349,7 @@ aba_estimacao_uma_prop <- tabPanel(
              sidebarLayout(
                sidebarPanel(
                  wellPanel(
-                   HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
-                   ),
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
                    uiOutput("th_prop_formula1")
                  ),
 
@@ -408,6 +403,60 @@ aba_estimacao_uma_prop <- tabPanel(
                ),
                mainPanel(
                  shinycssloaders::withSpinner(htmlOutput("TH1prop"), type = 5)
+               )
+             )
+    ),
+
+
+    tabPanel("Poder",
+             sidebarLayout(
+               sidebarPanel(
+
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   uiOutput("p_power_th")),
+
+                 numericInput( "p_power_observado",
+                               "Percentual esperado (%)",
+                               value = 30,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ),
+                 numericInput( "p_power_h0",
+                               "Percentual sob a hipótese nula (%)",
+                               value = 20,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ),
+                 numericInput( "p_power_n",
+                               "Tamanho amostral",
+                               value = 150,
+                               min = 0,
+                               max = Inf,
+                               step = 1
+                 ),
+                 numericInput( "p_power_alpha",
+                               "Nível de significância (%)",
+                               value = 5,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ),
+
+                 checkboxInput("p_power_approx", "Calcular utilizando a aproximação pela normal", value = FALSE
+                 ) %>% help_buttom(body = "Calcular utilizando a aproximação pela normal?
+                                   Se esta opção estiver desmarcada será utilizado o método exato."),
+
+                 conditionalPanel("input.p_power_approx == true",
+                                  checkboxInput("p_power_correction", "Aplicar correção de continuidade", value = TRUE
+                                  ) %>% help_buttom(body = "Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade")
+                 )
+
+               ),
+               mainPanel(
+                 shinycssloaders::withSpinner(htmlOutput("p_power_output"), type = 5)
                )
              )
     )
@@ -503,134 +552,135 @@ aba_estimacao_Cronbach <- tabPanel("Cronbach",
 
 
 
-#### Proporcao ####
-aba_TH_uma_prop <- tabPanel("Proporção",
-                            titlePanel("Teste de Hipótese para proporção em uma amostra"),
-                            wellPanel('Essa técnica é utilizada quando se deseja comparar a proporção obtida de uma
-                    amostra contra um valor já estabelecido, podendo ser, por exemplo, um valor de
-                    referência, um valor histórico ou a prevalência de uma doença.'),
-                            tabsetPanel(
-
-                              tabPanel("Testar",
-                                       sidebarLayout(
-                                         sidebarPanel(
-                                           numericInput( "alpha_TH_prop",
-                                                         "Nível de significância",
-                                                         value = .05,
-                                                         min = 0,
-                                                         max = 1,
-                                                         step = .01
-                                           ),
-                                           numericInput( "beta_TH_prop",
-                                                         "Poder",
-                                                         value = 0.8,
-                                                         min = 0,
-                                                         max = 1,
-                                                         step = .01
-                                           ),
-                                           numericInput( "p_TH_prop",
-                                                         "Proporção verdadeira (ou valor de referência)",
-                                                         value = .7,
-                                                         min = 0,
-                                                         max = 1,
-                                                         step = .01
-                                           ),
-                                           numericInput( "margin_TH_prop",
-                                                         "Diferença",
-                                                         value = .075,
-                                                         min = 0,
-                                                         max = Inf,
-                                                         step = .01
-                                           ),
-
-
-                                           actionButton("help_th1_prop_trialsize", "Ajuda")
-                                         ),
-
-                                         #                    numericInput( "prop1_TH1_prop_pwr",
-                                         #                                  "Proporção de referência",
-                                         #                                  value = .5,
-                                         #                                  min = 0,
-                                         #                                  max = 1,
-                                         #                                  step = .01
-                                         #                    ),
-                                         #                    numericInput( "prop2_TH1_prop_pwr",
-                                         #                                  "Proporção de referência acrescida da diferença mínima a ser detectada",
-                                         #                                  value = .6,
-                                         #                                  min = 0,
-                                         #                                  max = 1,
-                                         #                                  step = .01
-                                         #                    ),
-                                         #                    numericInput( "power_TH1_prop_pwr",
-                                         #                                  "Poder",
-                                         #                                  value = .8,
-                                         #                                  min = 0,
-                                         #                                  max = 1,
-                                         #                                  step = 1
-                                         #                    ),
-                                         #                    numericInput( "sig_TH1_prop_pwr",
-                                         #                                  "Nível de significância",
-                                         #                                  value = .05,
-                                         #                                  min = 0,
-                                         #                                  max = 1,
-                                         #                                  step = .01
-                                         #                    ),
-                                         #                    selectInput('alternative_TH1_prop_pwr',
-                                         #                                'Tipo de teste de acordo com hipótese alternativa:',
-                                         #                                choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less'),
-                                         #                                selected = 'two.sided'),
-                                         #                    actionButton("help_th1_prop_pwr", "Ajuda"))
-                                         # ),
-
-                                         mainPanel(
-                                           shinycssloaders::withSpinner(htmlOutput("THprop"), type = 5)
-                                         )
-                                       )
-                              ),
-                              tabPanel("Poder",
-                                       sidebarLayout(
-                                         sidebarPanel(
-                                           numericInput( "prop1_TH1_prop_pwr_power",
-                                                         "Proporção 1",
-                                                         value = .5,
-                                                         min = 0,
-                                                         max = 1,
-                                                         step = .01
-                                           ),
-                                           numericInput( "prop2_TH1_prop_pwr_power",
-                                                         "Proporção 2",
-                                                         value = .5,
-                                                         min = 0,
-                                                         max = 1,
-                                                         step = .01
-                                           ),
-                                           numericInput( "n_TH1_prop_pwr_power",
-                                                         "Tamanho de amostra",
-                                                         value = 20,
-                                                         min = 0,
-                                                         max = Inf,
-                                                         step = 1
-                                           ),
-                                           numericInput( "sig_TH1_prop_pwr_power",
-                                                         "Nível de significância",
-                                                         value = .05,
-                                                         min = 0,
-                                                         max = 1,
-                                                         step = .01
-                                           ),
-                                           selectInput('alternative_TH1_prop_pwr_power',
-                                                       'Tipo de teste de acordo com hipótese alternativa:',
-                                                       choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less')
-                                           ),
-                                           actionButton("help_th1_prop_pwr_power", "Ajuda")),
-                                         mainPanel(
-                                           shinycssloaders::withSpinner(htmlOutput("poder_TH1_prop"), type = 5)
-                                         )
-                                       ))
-                            ),
-
-                            HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
-)
+#### Proporcao
+# Ver aqui...... -----
+# aba_TH_uma_prop <- tabPanel("Proporção",
+#                             titlePanel("Teste de Hipótese para proporção em uma amostra"),
+#                             wellPanel('Essa técnica é utilizada quando se deseja comparar a proporção obtida de uma
+#                     amostra contra um valor já estabelecido, podendo ser, por exemplo, um valor de
+#                     referência, um valor histórico ou a prevalência de uma doença.'),
+#                             tabsetPanel(
+#
+#                               tabPanel("Testar",
+#                                        sidebarLayout(
+#                                          sidebarPanel(
+#                                            numericInput( "alpha_TH_prop",
+#                                                          "Nível de significância",
+#                                                          value = .05,
+#                                                          min = 0,
+#                                                          max = 1,
+#                                                          step = .01
+#                                            ),
+#                                            numericInput( "beta_TH_prop",
+#                                                          "Poder",
+#                                                          value = 0.8,
+#                                                          min = 0,
+#                                                          max = 1,
+#                                                          step = .01
+#                                            ),
+#                                            numericInput( "p_TH_prop",
+#                                                          "Proporção verdadeira (ou valor de referência)",
+#                                                          value = .7,
+#                                                          min = 0,
+#                                                          max = 1,
+#                                                          step = .01
+#                                            ),
+#                                            numericInput( "margin_TH_prop",
+#                                                          "Diferença",
+#                                                          value = .075,
+#                                                          min = 0,
+#                                                          max = Inf,
+#                                                          step = .01
+#                                            ),
+#
+#
+#                                            actionButton("help_th1_prop_trialsize", "Ajuda")
+#                                          ),
+#
+#                                          #                    numericInput( "prop1_TH1_prop_pwr",
+#                                          #                                  "Proporção de referência",
+#                                          #                                  value = .5,
+#                                          #                                  min = 0,
+#                                          #                                  max = 1,
+#                                          #                                  step = .01
+#                                          #                    ),
+#                                          #                    numericInput( "prop2_TH1_prop_pwr",
+#                                          #                                  "Proporção de referência acrescida da diferença mínima a ser detectada",
+#                                          #                                  value = .6,
+#                                          #                                  min = 0,
+#                                          #                                  max = 1,
+#                                          #                                  step = .01
+#                                          #                    ),
+#                                          #                    numericInput( "power_TH1_prop_pwr",
+#                                          #                                  "Poder",
+#                                          #                                  value = .8,
+#                                          #                                  min = 0,
+#                                          #                                  max = 1,
+#                                          #                                  step = 1
+#                                          #                    ),
+#                                          #                    numericInput( "sig_TH1_prop_pwr",
+#                                          #                                  "Nível de significância",
+#                                          #                                  value = .05,
+#                                          #                                  min = 0,
+#                                          #                                  max = 1,
+#                                          #                                  step = .01
+#                                          #                    ),
+#                                          #                    selectInput('alternative_TH1_prop_pwr',
+#                                          #                                'Tipo de teste de acordo com hipótese alternativa:',
+#                                          #                                choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less'),
+#                                          #                                selected = 'two.sided'),
+#                                          #                    actionButton("help_th1_prop_pwr", "Ajuda"))
+#                                          # ),
+#
+#                                          mainPanel(
+#                                            shinycssloaders::withSpinner(htmlOutput("THprop"), type = 5)
+#                                          )
+#                                        )
+#                               ),
+#                               tabPanel("Poder",
+#                                        sidebarLayout(
+#                                          sidebarPanel(
+#                                            numericInput( "prop1_TH1_prop_pwr_power",
+#                                                          "Proporção 1",
+#                                                          value = .5,
+#                                                          min = 0,
+#                                                          max = 1,
+#                                                          step = .01
+#                                            ),
+#                                            numericInput( "prop2_TH1_prop_pwr_power",
+#                                                          "Proporção 2",
+#                                                          value = .5,
+#                                                          min = 0,
+#                                                          max = 1,
+#                                                          step = .01
+#                                            ),
+#                                            numericInput( "n_TH1_prop_pwr_power",
+#                                                          "Tamanho de amostra",
+#                                                          value = 20,
+#                                                          min = 0,
+#                                                          max = Inf,
+#                                                          step = 1
+#                                            ),
+#                                            numericInput( "sig_TH1_prop_pwr_power",
+#                                                          "Nível de significância",
+#                                                          value = .05,
+#                                                          min = 0,
+#                                                          max = 1,
+#                                                          step = .01
+#                                            ),
+#                                            selectInput('alternative_TH1_prop_pwr_power',
+#                                                        'Tipo de teste de acordo com hipótese alternativa:',
+#                                                        choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less')
+#                                            ),
+#                                            actionButton("help_th1_prop_pwr_power", "Ajuda")),
+#                                          mainPanel(
+#                                            shinycssloaders::withSpinner(htmlOutput("poder_TH1_prop"), type = 5)
+#                                          )
+#                                        ))
+#                             ),
+#
+#                             HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+# )
 
 
 #### Equiv. uma media ####
@@ -868,7 +918,7 @@ aba_TH_duas_amostra_media <- tabPanel(
              sidebarLayout(
                sidebarPanel(
                  wellPanel(
-                   HTML("<b><font size = '2.8'>Hipótese a ser testada</font></b>"),
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
                    uiOutput("th2_mean_formula1"),
                    uiOutput("th2_mean_formula2")
                  ),
@@ -971,13 +1021,13 @@ aba_TH_duas_amostra_media <- tabPanel(
                                   HTML("<b>Defina a sequência de valores para a magnitude do efeito:</b>"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("th2_mean_from", "From:", value = 0.2, step = 0.5)
+                                      numericInput("th2_mean_from", "Mínimo:", value = 0.2, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_to", "To:", value = 1, step = 0.5)
+                                      numericInput("th2_mean_to", "Máximo:", value = 1, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_by", "By:", value = 0.2, min = 0, step = 0.1) %>%
+                                      numericInput("th2_mean_by", "Intervalo:", value = 0.2, min = 0, step = 0.1) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência da precisão"))
                  ),
@@ -986,13 +1036,13 @@ aba_TH_duas_amostra_media <- tabPanel(
                                   HTML("<b>Defina a sequência de valores para a diferença a ser detectada:</b>"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("th2_mean_from_diff", "From:", value = 0.5, step = 0.5)
+                                      numericInput("th2_mean_from_diff", "Mínimo:", value = 0.5, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_to_diff", "To:", value = 5, step = 0.5)
+                                      numericInput("th2_mean_to_diff", "Máximo:", value = 5, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_by_diff", "By:", value = 0.5, min = 0, step = 0.1) %>%
+                                      numericInput("th2_mean_by_diff", "Intervalo:", value = 0.5, min = 0, step = 0.1) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência da precisão"))
                  ),
@@ -1145,7 +1195,7 @@ aba_TH_duas_amostra_prop <- tabPanel(
              sidebarLayout(
                sidebarPanel(
                  # wellPanel(
-                 HTML("<b><font size = '2.8'>Hipótese a ser testada</font></b>"),
+                 HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
                  uiOutput("th2_prop_formula1"),
                  uiOutput("th2_prop_formula2"),
                  # ),
@@ -1235,13 +1285,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                   #                            placement = "left"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("p2_TH_from", "From:", value = 0, step = 1, min = 0, max = 99)
+                                      numericInput("p2_TH_from", "Mínimo:", value = 0, step = 1, min = 0, max = 99)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_TH_to", "To:", value = 100, step = 1, min = 1, max = 100)
+                                      numericInput("p2_TH_to", "Máximo:", value = 100, step = 1, min = 1, max = 100)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_TH_by", "By:", value = 5, min = 0, step = 1, max = 99) %>%
+                                      numericInput("p2_TH_by", "Intervalo:", value = 5, min = 0, step = 1, max = 99) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência")
                                   )
@@ -1263,13 +1313,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                   #                            placement = "left"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("rr_p2_TH_from", "From:", value = 1.5, step = .1, min = 0, max = Inf)
+                                      numericInput("rr_p2_TH_from", "Mínimo:", value = 1.5, step = .1, min = 0, max = Inf)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rr_p2_TH_to", "To:", value = 3, step = .1, min = 0, max = Inf)
+                                      numericInput("rr_p2_TH_to", "Máximo:", value = 3, step = .1, min = 0, max = Inf)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rr_p2_TH_by", "By:", value = 0.1, min = 0, step = .1) %>%
+                                      numericInput("rr_p2_TH_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência")
                                   )
@@ -1291,13 +1341,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                   #                            placement = "left"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("rc_p2_TH_from", "From:", value = 1.5, step = .1, min = 0, max = Inf)
+                                      numericInput("rc_p2_TH_from", "Mínimo:", value = 1.5, step = .1, min = 0, max = Inf)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rc_p2_TH_to", "To:", value = 3, step = .1, min = 0, max = Inf)
+                                      numericInput("rc_p2_TH_to", "Máximo:", value = 3, step = .1, min = 0, max = Inf)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rc_p2_TH_by", "By:", value = 0.1, min = 0, step = .1) %>%
+                                      numericInput("rc_p2_TH_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência")
                                   )
@@ -1448,13 +1498,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                   #                            placement = "left"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("p2_EST_from", "From:", value = 5, step = 1, min = 0, max = 99)
+                                      numericInput("p2_EST_from", "Mínimo:", value = 5, step = 1, min = 0, max = 99)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_EST_to", "To:", value = 95, step = 1, min = 1, max = 100)
+                                      numericInput("p2_EST_to", "Máximo:", value = 95, step = 1, min = 1, max = 100)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_EST_by", "By:", value = 5, min = 0, step = 1, max = 99) %>%
+                                      numericInput("p2_EST_by", "Intervalo:", value = 5, min = 0, step = 1, max = 99) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência")
                                   ),
@@ -1476,13 +1526,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                   #                  #                            placement = "left"),
                                   #                  br(),
                                   #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                  #                      numericInput("rr_p2_EST_from", "From:", value = 1.2, step = .1, min = 0, max = Inf)
+                                  #                      numericInput("rr_p2_EST_from", "Mínimo:", value = 1.2, step = .1, min = 0, max = Inf)
                                   #                  ),
                                   #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("rr_p2_EST_to", "To:", value = 1.7, step = .1, min = 0, max = Inf)
+                                  #                      numericInput("rr_p2_EST_to", "Máximo:", value = 1.7, step = .1, min = 0, max = Inf)
                                   #                  ),
                                   #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("rr_p2_EST_by", "By:", value = 0.1, min = 0, step = .1) %>%
+                                  #                      numericInput("rr_p2_EST_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
                                   #                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                   #                                    title = "Sequência")
                                   #                  )
@@ -1504,13 +1554,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                   #                  #                            placement = "left"),
                                   #                  br(),
                                   #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                  #                      numericInput("ods_p2_EST_from", "From:", value = 1.2, step = .1, min = 0, max = Inf)
+                                  #                      numericInput("ods_p2_EST_from", "Mínimo:", value = 1.2, step = .1, min = 0, max = Inf)
                                   #                  ),
                                   #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("ods_p2_EST_to", "To:", value = 1.7, step = .1, min = 0, max = Inf)
+                                  #                      numericInput("ods_p2_EST_to", "Máximo:", value = 1.7, step = .1, min = 0, max = Inf)
                                   #                  ),
                                   #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("ods_p2_EST_by", "By:", value = 0.1, min = 0, step = .1) %>%
+                                  #                      numericInput("ods_p2_EST_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
                                   #                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                   #                                    title = "Sequência")
                                   #                  )
@@ -1605,50 +1655,52 @@ aba_TH_duas_amostra_prop <- tabPanel(
 
 
 #### Equiv. 2 médias ####
-aba_TH_duas_amostra_media_equivalencia <- tabPanel("Dois grupos independentes (Inf/ Equi/ Sup)",
-                                                   titlePanel("Inf/ Equi/ Sup de duas médias de grupos independentes"),
-                                                   withMathJax(),
-                                                   wellPanel(
-                                                     HTML(paste0('Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
-                                                                 '<b><a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Teste de hipóteses: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
-                                                     ))
-                                                   ),
-                                                   #helpText("$$H_0: \\mu_{Tratamento} - \\mu_{Controle} \\le \\delta$$"),
+aba_TH_duas_amostra_media_equivalencia <- tabPanel(
+  "Dois grupos independentes (Inf/ Equi/ Sup)",
+  titlePanel("Inf/ Equi/ Sup de duas médias de grupos independentes"),
+  withMathJax(),
+  wellPanel(
+    HTML(paste0('Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
+                '<b><a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Teste de hipóteses: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+    ))
+  ),
+  #helpText("$$H_0: \\mu_{Tratamento} - \\mu_{Controle} \\le \\delta$$"),
 
-                                                   # helpText('An irrational number \\(\\sqrt{2}\\) and a fraction $$1-\\frac{1}{2}$$'),
-                                                   tabsetPanel(
-                                                     tabPanel("Testar",
-                                                              sidebarLayout(
-                                                                sidebarPanel(
-                                                                  wellPanel(
-                                                                    selectInput('mean_test_inf_eq_sup',
-                                                                                'Selecione o tipo de teste',
-                                                                                choices = c("Não inferioridade",
-                                                                                            "Equivalência",
-                                                                                            "Superioridade"
-                                                                                ),
-                                                                                selected = 'Não inferioridade'
-                                                                    ),
-                                                                    uiOutput("inf_sup_nomesUi")
-                                                                  ),
-                                                                  uiOutput("inf_sup_complementoUi")
-                                                                  # actionButton("help_mean_equivalence_2_ind", "Ajuda")
-                                                                ),
+  # helpText('An irrational number \\(\\sqrt{2}\\) and a fraction $$1-\\frac{1}{2}$$'),
+  tabsetPanel(
+    tabPanel("Testar",
+             sidebarLayout(
+               sidebarPanel(
+                 wellPanel(
+                   selectInput('mean_test_inf_eq_sup',
+                               'Selecione o tipo de teste',
+                               choices = c("Não inferioridade",
+                                           "Equivalência",
+                                           "Superioridade"
+                               ),
+                               selected = 'Não inferioridade'
+                   ),
+                   uiOutput("inf_sup_nomesUi")
+                 ),
+                 uiOutput("inf_sup_complementoUi")
+               ),
 
-                                                                mainPanel(
-                                                                  shinycssloaders::withSpinner(htmlOutput("mean_equivalence_2_ind"), type = 5),
-                                                                  br(), br(),
-                                                                  fluidRow(
-                                                                    column(12, align="center",
-                                                                           plotOutput("plot_eq_medias", width = "70%")
-                                                                    )
-                                                                  )
-                                                                )
-                                                              )
-                                                     )
-                                                   ),
+               mainPanel(
+                 shinycssloaders::withSpinner(htmlOutput("mean_equivalence_2_ind"), type = 5),
+                 br(), br(),
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   uiOutput("th2_equi_mean_formula1"),
+                   uiOutput("th2_equi_mean_formula2")
+                 ),
+                 br(),
+                 fluidRow(column(12, align="center",plotOutput("plot_eq_medias", width = "70%")))
+               )
+             )
+    )
+  ),
 
-                                                   HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
 )
 
 
@@ -1660,107 +1712,29 @@ aba_TH_duas_amostra_prop_equivalencia <- tabPanel(
 
 
   titlePanel("Para duas proporções de grupos independentes"),
-  wellPanel("Essa técnica é utilizada quando se deseja testar se duas proporções de amostras
-                     independentes estão próximas o suficiente para serem consideradas equivalentes.
-                     "),
+  withMathJax(),
+  wellPanel(
+    HTML(paste0('Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
+                '<b><a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Teste de hipóteses: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+    ))
+  ),
   tabsetPanel(
     tabPanel("Testar",
              sidebarLayout(
                sidebarPanel(
-                 radioButtons('prop_test_inf_eq_sup',
-                              'Selecione o tipo de teste',
-                              choices = c("Não inferioridade",
-                                          "Equivalência",
-                                          "Superioridade"),
-                              selected = 'Não inferioridade'
-                 ),
-                 numericInput( "margin_2_ind_prop",
-                               "Diferença mínima a ser detectada (%)",
-                               value = .5,
-                               min = 0,
-                               max = 1,
-                               step = .1
-                 ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
-                 uiOutput("margin_prop_inf_eq_sup"
-                 ),
 
-                 numericInput( "p2_2_ind_prop",
-                               "% esperado no grupo Controle",
-                               value = 8,
-                               min = 0,
-                               max = 100,
-                               step = 1
+                 wellPanel(
+                   selectInput('prop_test_inf_eq_sup',
+                               'Selecione o tipo de teste',
+                               choices = c("Não inferioridade",
+                                           "Equivalência",
+                                           "Superioridade"
+                               ),
+                               selected = 'Não inferioridade'
+                   ),
+                   uiOutput("inf_sup_nomesUi_prop")
                  ),
-
-                 radioButtons('prop2_estatistica_B_est_non_inf',
-                              'Para detectar:',
-                              choices = c("Odds ratio A/B" = "odds",
-                                          "Ratio A/B" = "ratio",
-                                          "% no Grupo B" = "percent"),
-                              selected = 'percent'
-                 ), #%>% help_buttom(body = "Escolha a maneira de entrar com os dados do grupo Tratamento."),
-
-
-                 conditionalPanel(condition = 'input.prop2_estatistica_B_est_non_inf == "percent"',
-                                  numericInput( "p1_2_ind_prop_kkk",
-                                                "% esperado no grupo Tratamento",
-                                                value = 75,
-                                                min = 0,
-                                                max = 100,
-                                                step = 1
-                                  ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Tratamento, geralmente é utilizado algum valor com base na literatura.")
-                 ),
-                 conditionalPanel(condition = 'input.prop2_estatistica_B_est_non_inf == "ratio"',
-                                  numericInput( "p2_TH_ratio_est_kkk",
-                                                "Ratio A/B",
-                                                value = 2,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 0.1
-                                  ) %>% help_buttom(body = "Risco relativo ou razão de prevalências esperado entre Tratamento e Controle, geralmente é utilizado algum valor com base na literatura.")
-                 ),
-                 conditionalPanel(condition = 'input.prop2_estatistica_B_est_non_inf == "odds"',
-                                  numericInput( "p2_TH_odds_est_kkk",
-                                                "Odds ratio A/B",
-                                                value = 2,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 0.1
-                                  ) %>% help_buttom(body = "Razão de chances esperada entre Tratamento e Controle, geralmente é utilizado algum valor com base na literatura.")
-                 ),
-
-                 numericInput( "k_2_ind_prop",
-                               "Razão Tratamento/ Controle",
-                               value = 1,
-                               min = 0,
-                               max = Inf,
-                               step = .01
-                 )%>% help_buttom("Nº de controles para cada tratamento. Se colocar o valor 2, será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 controles para cada tratamento. Se colocar o valor 0.5,
-                                                                      será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 tratamentos para cada controle."),
-                 numericInput( "beta_2_ind_prop",
-                               "Poder (%)",
-                               value = 80,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
-                 numericInput( "alpha_2_ind_prop",
-                               "Nível de significância (%)",
-                               value = 5,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
-                 numericInput( "eq_prop_perdas_recusa",
-                               "Perdas/ Recusa (%)",
-                               value = 10,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
-                 # actionButton("help_prop_equivalence_2_ind", "Ajuda")
+                 uiOutput("side_bar_prop_inf")
                ),
 
                mainPanel(
@@ -1791,7 +1765,7 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
                sidebarPanel(
                  wellPanel(
                    HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                    ),
                    uiOutput("mean_paired_formula"),
                  ),
@@ -1893,6 +1867,31 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
   HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
 )
 
+
+
+
+#_______________-----
+# Medidas repetidas ----
+
+
+aba_TH_medidas_repetidas <- tabPanel(
+  "Medidas repetidas",
+  titlePanel("Medidas repetidas"),
+  wellPanel("Nesta aba é calculado o tamanho de amostra e o poder do teste para análises de medidas repetidas.
+  O objetivo é detectar diferenças médias entre os grupos no último momento da coleta de dados.
+             É assumido que a variável de tempo será tratada como categórica."),
+  tabsetPanel(
+    tabPanel("Testar",
+             shinycssloaders::withSpinner(uiOutput("medidas_repetidas_ui_sided"), type = 5),
+             HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+    ),
+
+    tabPanel("Poder",
+             shinycssloaders::withSpinner(uiOutput("medidas_repetidas_ui_sided_poder"), type = 5),
+             HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+    )
+  )
+)
 
 
 
@@ -2027,7 +2026,7 @@ aba_anova_one_way <- tabPanel(
                sidebarPanel(
                  wellPanel(
                    HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                    ),
                    uiOutput("anova_formula"),
                  ),
@@ -2125,13 +2124,13 @@ aba_anova_one_way <- tabPanel(
                                   #                            placement = "left"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("anovaOne_from", "From:", value = 0.1, step = 0.5)
+                                      numericInput("anovaOne_from", "Mínimo:", value = 0.1, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_to", "To:", value = 1.1, step = 0.5)
+                                      numericInput("anovaOne_to", "Máximo:", value = 1.1, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_by", "By:", value = 0.2, min = 0, step = 0.1) %>%
+                                      numericInput("anovaOne_by", "Intervalo:", value = 0.2, min = 0, step = 0.1) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência")
                                   ),
@@ -2169,13 +2168,13 @@ aba_anova_one_way <- tabPanel(
                                   HTML("<b>Defina a sequência de valores para o desvio padrão:</b>"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("anovaOne_sd_from", "From:", value = 3, step = 0.5)
+                                      numericInput("anovaOne_sd_from", "Mínimo:", value = 3, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_sd_to", "To:", value = 5, step = 0.5)
+                                      numericInput("anovaOne_sd_to", "Máximo:", value = 5, step = 0.5)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_sd_by", "By:", value = 0.4, min = 0, step = 0.1) %>%
+                                      numericInput("anovaOne_sd_by", "Intervalo:", value = 0.4, min = 0, step = 0.1) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência de valores para o desvio padrão esperado")
                                   ),
@@ -2782,7 +2781,7 @@ aba_correlacao <- tabPanel(
                  HTML("<b>Cálculo realizado para o coeficiente de correlação linear de Pearson</b>"),
                  wellPanel(
                    HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                    ),
                    uiOutput("correlacao_th_formula"),
                  ),
@@ -2895,14 +2894,14 @@ aba_correlacao <- tabPanel(
                                max = 100,
                                step = 1
                  ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
-                 selectInput('alternative_r_power',
-                             'Tipo de teste de acordo com hipótese alternativa:',
-                             choices = c('A correlação é DIFERENTE de zero.' = 'two.sided',
-                                         'A correlação é MAIOR do que zero.' = 'greater',
-                                         'A correlação é MENOR do que zero.' =  'less'
-                             ),
-                             selected = 'two.sided'
-                 ) %>% help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+                 # selectInput('alternative_r_power',
+                 #             'Tipo de teste de acordo com hipótese alternativa:',
+                 #             choices = c('A correlação é DIFERENTE de zero.' = 'two.sided',
+                 #                         'A correlação é MAIOR do que zero.' = 'greater',
+                 #                         'A correlação é MENOR do que zero.' =  'less'
+                 #             ),
+                 #             selected = 'two.sided'
+                 # ) %>% help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
                ),
 
                mainPanel(
@@ -2938,7 +2937,7 @@ aba_inclinacao_linear <- tabPanel("Linear",
                                                sidebarPanel(
                                                  wellPanel(
                                                    HTML(
-                                                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                                                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                                                    ),
                                                    uiOutput("inclinacao_reg_formula"),
                                                  ),
@@ -3027,7 +3026,7 @@ aba_logistica <- tabPanel(
     tabPanel("Testar",
              sidebarLayout(
                sidebarPanel(
-                 wellPanel(HTML("<b><font size = '2.8'>Hipótese a ser testada</font></b>"),
+                 wellPanel(HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
                            uiOutput("rc_logistic_formula")),
 
                  radioButtons(inputId = "logistic_tipo_variavel",
@@ -3253,7 +3252,7 @@ aba_surv_cox <- tabPanel(
     tabPanel("Testar",
              sidebarLayout(
                sidebarPanel(
-                 wellPanel(HTML("<b><font size = '2.8'>Hipótese a ser testada</font></b>"),
+                 wellPanel(HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
                            withMathJax("$$H_0: HR = 1 \\text{  vs  } H_1: HR \\neq 1$$")),
 
                  radioButtons(inputId = "cox_tipo_variavel",
@@ -3393,13 +3392,13 @@ aba_surv_cox <- tabPanel(
                                   #                            placement = "left"),
                                   br(),
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("cox_from", "From:", value = 1.2, step = 0.05)
+                                      numericInput("cox_from", "Mínimo:", value = 1.2, step = 0.05)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("cox_to", "To:", value = 2, step = 0.05)
+                                      numericInput("cox_to", "Máximo:", value = 2, step = 0.05)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("cox_by", "By:", value = 0.05, min = 0, step = 0.05) %>%
+                                      numericInput("cox_by", "Intervalo:", value = 0.05, min = 0, step = 0.05) %>%
                                         help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                     title = "Sequência")
                                   ),
@@ -3959,7 +3958,7 @@ aba_curva_roc <- tabPanel(
                sidebarPanel(
                  wellPanel(
                    HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                    ),
                    withMathJax(
                      "$$H_0: AUC =0,5 \\text{  vs  } H_1: AUC \\neq 0,5$$"
@@ -4039,13 +4038,13 @@ aba_curva_roc <- tabPanel(
                  #                            placement = "left"),
                  br(),
                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("auc_from", "From:", value = 0.6, step = 0.05)
+                     numericInput("auc_from", "Mínimo:", value = 0.6, step = 0.05)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("auc_to", "To:", value = 0.95, step = 0.05)
+                     numericInput("auc_to", "Máximo:", value = 0.95, step = 0.05)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("auc_by", "By:", value = 0.05, min = 0, step = 0.05) %>%
+                     numericInput("auc_by", "Intervalo:", value = 0.05, min = 0, step = 0.05) %>%
                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                    title = "Sequência")
                  ),
@@ -4220,13 +4219,13 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                              #                            placement = "left"),
                                              br(),
                                              div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                                 numericInput("sensibil_from", "From:", value = 5, step = 5)
+                                                 numericInput("sensibil_from", "Mínimo:", value = 5, step = 5)
                                              ),
                                              div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                                 numericInput("sensibil_to", "To:", value = 95, step = 5)
+                                                 numericInput("sensibil_to", "Máximo:", value = 95, step = 5)
                                              ),
                                              div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                                 numericInput("sensibil_by", "By:", value = 10, min = 0, step = 1) %>%
+                                                 numericInput("sensibil_by", "Intervalo:", value = 10, min = 0, step = 1) %>%
                                                    help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                                                title = "Sequência")
                                              ),
@@ -4321,7 +4320,7 @@ aba_kappa <- tabPanel(
                sidebarPanel(
                  wellPanel(
                    HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                    ),
                    uiOutput("kappa_th_formula"),
                  ),
@@ -4466,7 +4465,7 @@ aba_kappa <- tabPanel(
                                max = 6,
                                step = 1
                  ) %>% help_buttom(body = "The number of raters that are available"),
-                 numericInput( "kappa_est_confiança",
+                 numericInput( "kappa_est_confianca",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
@@ -4509,7 +4508,7 @@ aba_icc <- tabPanel(
                sidebarPanel(
                  wellPanel(
                    HTML(
-                     "<b><font size = '2.8'>Hipótese a ser testada</font></b>"
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
                    ),
                    uiOutput("icc_th_formula"),
                  ),
@@ -4599,13 +4598,13 @@ aba_icc <- tabPanel(
                  #                            placement = "left"),
                  br(),
                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("icc_from", "From:", value = 0.6, step = 0.05)
+                     numericInput("icc_from", "Mínimo:", value = 0.6, step = 0.05)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("icc_to", "To:", value = 0.95, step = 0.05)
+                     numericInput("icc_to", "Máximo:", value = 0.95, step = 0.05)
                  ),
                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("icc_by", "By:", value = 0.05, min = 0, step = 0.05) %>%
+                     numericInput("icc_by", "Intervalo:", value = 0.05, min = 0, step = 0.05) %>%
                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                                    title = "Sequência")
                  ),
@@ -4732,13 +4731,13 @@ aba_estimacao_bland <- tabPanel(
       HTML("<b>Defina a sequência de valores para a amplitude do intervalo de confiança:</b>"),
       br(),
       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-          numericInput("bland_from", "From:", value = 0.3, step = 0.5)
+          numericInput("bland_from", "Mínimo:", value = 0.3, step = 0.5)
       ),
       div(style="display: inline-block;vertical-align:top; width: 70px;",
-          numericInput("bland_to", "To:", value = 1.1, step = 0.5)
+          numericInput("bland_to", "Máximo:", value = 1.1, step = 0.5)
       ),
       div(style="display: inline-block;vertical-align:top; width: 70px;",
-          numericInput("bland_by", "By:", value = 0.1, min = 0, step = 0.1) %>%
+          numericInput("bland_by", "Intervalo:", value = 0.1, min = 0, step = 0.1) %>%
             help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
                         title = "Sequência")
       ),
@@ -4780,6 +4779,18 @@ ui <- navbarPage( windowTitle = "PSS Health",
                            # HTML("Aplicativo para determinação do <b>T</b>amanho <b>A</b>mostral da <b>U</b>nidade de <b>B</b>io<b>e</b>statística (sei que não ficou com uma fonética agradável, mas é só pra ilustração inicial ;)<br><br><br>"),
                            HTML("<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers"),
 
+                           # uiOutput("PSS_CRAN"),
+                           #br(),br(),
+                           # h3("PSS Health no CRAN"),
+                           #HTML(paste0("O PSS Health está disponível no ",
+                           #            "<a href='https://cran.r-project.org/web/packages/PSS.Health/index.html' target='_blank'>CRAN</a>",
+                           #            " e pode ser utilizado pelo computador por meio do pacote ", code("PSS.Health"), ".")),
+                           #br(), br(),
+                           #code("install.packages('PSS.Health')"),
+                           #br(),
+                           #code("PSS.Health::PSS_Health()"),
+
+
                            br(),br(),br(),
                            h3("Instruções gerais"),
                            HTML("Navegue entre as abas para encontrar o cenário correspondente ao objetivo do estudo. Altere os parâmetros conforme necessidade e utilize o texto como auxílio para entender o cálculo.",
@@ -4789,7 +4800,9 @@ ui <- navbarPage( windowTitle = "PSS Health",
 
                            br(),br(),br(),
                            h3("Leituras recomendadas"),
-                           HTML("Frequentemente a Unidade de Bioestatística do Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre publica artigos na seção de bioestatística da revista Clinical & Biomedical Research. Nessas publicações são abordadas temas que podem te auxiliar na definição do tamanho amostral.",
+                           HTML("Frequentemente a Unidade de Bioestatística do Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre publica artigos na seção de bioestatística da revista ",
+                                "<a href='https://seer.ufrgs.br/hcpa' target='_blank'>Clinical & Biomedical Research</a>",
+                                ". Nessas publicações são abordadas temas que podem te auxiliar na definição do tamanho amostral e do poder do teste.",
 
                                 "<br><br>",
                                 "<ul>", # inicio da lista
@@ -4831,8 +4844,7 @@ ui <- navbarPage( windowTitle = "PSS Health",
                            h3("Sobre"),
                            HTML("Esse aplicativo foi concebido no trabalho de conclusão do curso de Bacharelado em estatística do aluno ",
                                 '<a href="https://lume.ufrgs.br/handle/10183/212679" target="_blank">Guilherme Azambuja</a>',
-                                ", sob a orientação da professora Stela Castro. <br><br>
-                                Recebeu incrementos, novas funcionalidades e é mantido pela equipe da Unidade de Bioestatística Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre:<br><br>",
+                                ", sob a orientação da professora Stela Castro. Recebeu incrementos, novas funcionalidades e é mantido pela equipe da Unidade de Bioestatística Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre:<br><br>",
 
                                 "<ul>", # inicio da lista
 
@@ -4868,20 +4880,20 @@ ui <- navbarPage( windowTitle = "PSS Health",
                                 "</ul>" # fim da lista de autores
                            ),
                            hr(),
-                           HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+                           HTML("<br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
 
 
                   ),
 
 
-                  #### Estimacao de parametros ####
+                  #### Estimacao de parametros ####.
                   # navbarMenu( "Estimação de Parâmetros",
                   #             aba_estimacao_uma_media,
                   #             aba_estimacao_uma_prop,
                   #             aba_estimacao_Cronbach
                   # ),
 
-                  #### Teste de hipoteses para uma amostra ####
+                  #### Teste de hipoteses para uma amostra ####.
                   # navbarMenu("Teste de Hipótese para uma amostra",
                   #            aba_TH_uma_media,
                   #            aba_TH_uma_prop,
@@ -4889,20 +4901,21 @@ ui <- navbarPage( windowTitle = "PSS Health",
                   #            aba_TH_uma_prop_equivalencia
                   #            ),
 
-                  #### Teste de hipotese para duas amostras ####
+                  #### Teste de hipotese para duas amostras ####.
                   navbarMenu("Médias",
                              aba_estimacao_uma_media,
                              aba_TH_duas_amostra_media,
                              aba_TH_duas_amostra_media_equivalencia,
                              aba_TH_duas_amostra_mean_pareado,
                              # aba_TH_duas_amostra_media_2tempos,
+                             aba_TH_medidas_repetidas,
                              aba_anova_one_way,
                              aba_anova_two_way
                   ),
                   navbarMenu("Proporções",
                              aba_estimacao_uma_prop,
-                             aba_TH_duas_amostra_prop
-                             # aba_TH_duas_amostra_prop_equivalencia
+                             aba_TH_duas_amostra_prop,
+                             aba_TH_duas_amostra_prop_equivalencia
                   ),
 
 
@@ -4915,17 +4928,21 @@ ui <- navbarPage( windowTitle = "PSS Health",
                              aba_surv_cox
                   ),
 
-                  # Classificacao ----
-                  navbarMenu("Classificação/ concordância",
+                  # Classificacao ----.
+                  navbarMenu("Classificação",
                              aba_curva_roc,
-                             aba_sensibilidade,
+                             aba_sensibilidade
+                  ),
+
+                  # Concordancia ----.
+                  navbarMenu("Concordância",
                              aba_kappa,
                              aba_icc,
                              aba_estimacao_bland
                   ),
 
 
-                  #### Cronbach  ####
+                  #### Cronbach  ####.
                   aba_estimacao_Cronbach,
 
 
