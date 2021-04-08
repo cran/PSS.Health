@@ -19,3 +19,6 @@ O $f$ também pode ser obtido da medida de efeito $\eta^2$ pela fórmula
 $$
 f = \sqrt{\dfrac{\eta^2}{(1-\eta^2)}}.
 $$
+
+
+<br><br><b>Pode ser um valor da literatura ou um valor que o pesquisador deseja encontrar e que tenha relevância clínica.</b>

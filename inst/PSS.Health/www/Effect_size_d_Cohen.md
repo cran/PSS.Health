@@ -32,4 +32,13 @@ onde
 - $s_B$ é o desvio padrão do grupo B.
 
 
+<br><br>
 
+
+*Você também pode calcular o d de Cohen na aba 'Outras ferramentas' --> 'd de Cohen'*
+
+
+<br>
+
+
+**Pode ser um valor da literatura ou um valor que o pesquisador deseja encontrar e que tenha relevância clínica.**

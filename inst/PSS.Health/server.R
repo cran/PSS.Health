@@ -5,9 +5,7 @@ server <- function(input, output, session) {
 
 
 
-  shinyhelper::observe_helpers(withMathJax = TRUE)
-
-
+  shinyhelper::observe_helpers(withMathJax = TRUE, help_dir = "www")
 
   #----------------------------.
   #      FUNCOES INTERNAS
@@ -16,7 +14,9 @@ server <- function(input, output, session) {
   print_r_code <- function(code){
     paste0("</br></br>",
            "<i>Comando R utilizado:</i><br>",
-           "<p style=\"font-family:'Courier New';font-size:100% \">", code(code), "</p>")
+           "<p style=\"font-family:'Courier New';font-size:100% \">", code(code), "</p>",
+           "<br><br><b><i>* Sempre procure um profissional de estatística para orientações no planejamento do estudo.</b></i>"
+           )
   }
 
 
@@ -159,7 +159,7 @@ server <- function(input, output, session) {
       if(is.na(input$', id,')){
         shinyFeedback::showFeedbackWarning(
           inputId = "', id, '",
-          text = ""
+          text = "Tem certeza que não considerarás perdas?"
         )
       } else if (input$', id,' >= 100) {
         shinyFeedback::showFeedbackWarning(
@@ -169,7 +169,7 @@ server <- function(input, output, session) {
       } else if (input$', id,' <= 0) {
         shinyFeedback::showFeedbackWarning(
           inputId = "', id, '",
-          text = "Deve ser maior do que 0%."
+          text = "Tem certeza que não considerarás perdas?"
         )
       }
     })
@@ -177,117 +177,30 @@ server <- function(input, output, session) {
     )
   }
 
-
-
-
-  # n_two_mean_d <- function(d, sig.level, power, alternative){
-  #   # Tamanho de amostra para comparar duas medias
-  #   tryCatch({
-  #     pwr::pwr.t.test(d = d,
-  #                     sig.level = sig.level,
-  #                     power = power,
-  #                     alternative = as.character(alternative),
-  #                     type = 'two.sample')$n* 2 # multiplica por 2 pois calcula o n por grupo!
-  #   }, warning = function(warning_condition) {
-  #     NA
-  #   }, error = function(error_condition) {
-  #     NA
-  #   }
-  #   )
-  # }
-
-
-
-
-
-  n_two_mean <- function(delta, sd1, sd2, ratio, power, sig.level, alternative){
-
-    tryCatch({
-
-      if(ratio){ # Grupo A eh maior
-        ratioo    <- ratio
-        sd       <- sd2
-        sd.ratio <- sd1/sd2
-      } else{
-        ratioo    <- 1/ratio
-        sd       <- sd1
-        sd.ratio <- sd2/sd1
-      }
-
-
-      npwr <- MESS::power_t_test(
-        delta = abs(delta),       # True difference in means
-        sd    = sd,          # Standard deviation
-        sd.ratio = sd.ratio, # The ratio sd2/sd1
-        power = power/100,
-        sig.level = sig.level/100,
-        ratio = ratioo,       # The ratio n2/n1
-        type  = "two.sample",
-        alternative = alternative)
-
-      npwr <- ceiling(npwr$n[1])
-
-      if(ratio >= 1){ # Grupo A eh maior
-        n1 <- ceiling(npwr*ratioo)
-        n2 <- npwr
-      } else{
-        n1 <- npwr
-        n2 <- ceiling(npwr*ratioo)
-      }
-
-      data.frame(n1 = n1, n2 = n2, n_total = n1 + n2)
-    },
-    warning = function(warning_condition) { NA },
-    error = function(error_condition) { NA }
-    )
-  }
-
-  # n_two_mean(delta = 5,
-  #            sigma1_TH2_mean_pwr = 2,
-  #            sigma2_TH2_mean_pwr = 2,
-  #            ratio = 1.52,
-  #            power = 80,
-  #            sig.level = 5,
-  #            alternative = "two.sided")
-
-
-
-
-
-  # n_anova_oneF <- function(k, f, sig.level, power){
-  #   tryCatch({
-  #     pwr::pwr.anova.test(n = NULL,
-  #                         k = k,
-  #                         f = f,
-  #                         sig.level = sig.level,
-  #                         power = power)$n %>% ceiling()
-    # }, warning = function(warning_condition) {
-    #   NA
-    # }, error = function(error_condition) {
-    #   NA
-    # }
-    # )
-  # }
-
-
-
-  n_cor <- function(r, rho0, sig.level, power, alternative){
-    tryCatch({
-      WebPower::wp.correlation(n = NULL,
-                               r = r,
-                               power = power/100,
-                               p = 0,  # Number of variables to partial out.
-                               rho0 = rho0,
-                               alpha = sig.level/100,
-                               alternative = alternative)$n %>% ceiling()
-    }, warning = function(warning_condition) {
-      NA
-    }, error = function(error_condition) {
-      NA
+  testar_valor_perdas_valido <- function(x){
+    if(!is.na(x)){
+      x > 0 & x < 100
+    } else{
+      FALSE
     }
-    )
   }
-  n_corV <- Vectorize(n_cor)
+
+
+
+
+  # n_cor <- function(r, rho0, sig.level, power, alternative){
+  #   tryCatch({
+  #     wp.correlation(n = NULL,
+  #                    r = r,
+  #                    power = power/100,
+  #                    p = 0,  # Number of variables to partial out.
+  #                    rho0 = rho0,
+  #                    alpha = sig.level/100,
+  #                    alternative = alternative)$n %>% ceiling() },
+  #   warning = function(warning_condition) { NA },
+  #   error = function(error_condition) { NA })
+  # }
+  # n_corV <- Vectorize(n_cor)
 
 
 
@@ -546,85 +459,43 @@ server <- function(input, output, session) {
 
 
 
+  text_input_to_vector <- function(input_text){
+
+    input_text %>%
+      strsplit(",") %>%
+      unlist() %>%
+      strsplit("\\n") %>%
+      unlist() %>%
+      as.numeric() %>%
+      na.omit()
+  }
 
 
-  #-----------------.
-  # Referencias ----
-  #-----------------.
+  check_text_input_to_vector <- function(id){
 
+    paste0("observeEvent(input$", id, ", {
 
+    vetor_teste <- text_input_to_vector(input$", id, ")
 
-  data_citacao_f1 <- format.Date(Sys.Date(), "%e de %B de %Y")
-  data_citacao_f2 <- format.Date(Sys.Date(), "%e %b. %Y")
-  data_citacao_f3 <- format.Date(Sys.Date(), "%Y-%m-%e")
-
-
-  txt_referencia_tap_site <-
-    paste0(
-      "<br><br><br><i>Sugestões de citação:</i><br>",
-      "<p style=\"font-size:75% \">",
-      paste0("<b>Vancouver: </b>PSS Health: Power and Sample Size for Health Researchers [Internet]. [cited ", data_citacao_f1, "]. Available from: https://hcpa-unidade-bioestatistica.shinyapps.io/PSS_Health<br><br>"),
-      paste0("<b>ABNT: </b> <b>PSS Health: Power and Sample Size for Health Researchers</b>. [s. l.],  [s. d.]. Disponível em: https://hcpa-unidade-bioestatistica.shinyapps.io/PSS_Health. Acesso em:", data_citacao_f2, ".<br><br>"),
-      paste0("<b>BibTex: </b>",
-             "@misc{PSShealth,<br>",
-             "title = {PSS Health},<br>",
-             "shorttitle = {PSS Health},<br>",
-             "url = {https://hcpa-unidade-bioestatistica.shinyapps.io/PSS_Health},<br>",
-             "urldate = {", data_citacao_f3, "}<br>",
-             "}"),
-      "</p>"
-
-
+    if(length(vetor_teste) == 0){
+      shinyFeedback::showFeedbackWarning(
+        inputId = '", id, "',
+        text = 'Entrada inválida.',
+        color = 'red')
+    } else {
+      shinyFeedback::hideFeedback('", id, "')
+    }
+  })
+  "
     )
+  }
 
 
-  # Versão online? ----
-  versao_online <- FALSE
-
-  # txt_referencia_pack <-  paste0(
-  #   "<br><br><br><i>Sugestões de citação:</i><br>",
-  #   "<p style=\"font-size:75% \">",
-  #   if(!versao_online) str_remove_all(format(citation("PSS.Health"), style = "text"), "_"),
-  #   ""
-  # )
-
-txt_referencia_pack <-
-    paste0(
-      "<br><br><br><i><b>Sugestões de citação:</b></i><br>",
-      "<p style=\"font-size:75% \">",
-      paste0("Borges RB, Azambuja GS, Mancuso ACB, Leotti VB, Hirakata VN, Camey SA, Castro SMJ (2020). PSS.Health: Power and Sample Size for Health Researchers via Shiny. R package version 0.1.5. ",
-      "Available from: https://CRAN.R-project.org/package=PSS.Health"),
-      "</p>")
 
 
-  txt_citacao_tap <- paste("ferramenta PSS Health versão",
-                           if(!versao_online){
-                             packageVersion("PSS.Health")
-                           } else{
-                             "on-line"
-                           },
-                           "(citação abaixo)")
-
-  txt_referencia_tap <- ifelse(!versao_online, txt_referencia_pack, txt_referencia_tap_site)
 
 
-  # output$PSS_CRAN <- renderUI({
-  #
-  #   if(versao_online){
-  #     fluidPage(
-  #       br(),br(),
-  #       # h3("PSS Health no CRAN"),
-  #       HTML(paste0("O PSS Health está disponível no ",
-  #                   "<a href='https://cran.r-project.org/web/packages/PSS.Health/index.html' target='_blank'>CRAN</a>",
-  #                   " e pode ser utilizado pelo computador por meio do pacote ", code("PSS.Health"), ".")),
-  #       br(), br(),
-  #       code("install.packages('PSS.Health')"),
-  #       br(),
-  #       code("PSS.Health::PSS_Health()")
-  #     )
-  #   }
-  #
-  # })
+
 
 
   #...........................-----
@@ -639,55 +510,26 @@ txt_referencia_pack <-
     textInput(inputId = "mean_unidade_medida",
               label   = paste("Descreva a unidade de medida de", input$mean_nome_desfecho),
               value   = "u.m.") %>%
-      help_buttom(body = "Descreva a unidade de medida para que sirva de guia no preenchimento dos demais valores.",
+      .help_buttom(body = .txt_um,
                   title = paste("Unidade de medida de", input$mean_nome_desfecho))
 
   })
 
+
+
+  # aas
   output$mean_sd <- renderUI({
+    req(input$mean_delineamento == "aas")
+
     numericInput( "s_mean",
                   paste0("Desvio padrão esperado de ", input$mean_nome_desfecho, " (em ", input$mean_unidade_medida, ")"),
                   value = 24,
                   min   = 0,
                   max   = Inf,
                   step  = 1) %>%
-      help_buttom(body = paste0("O desvio padrão esperado de", input$mean_nome_desfecho, " (em ", input$mean_unidade_medida, ")."),
-                  title = "Desvio padrão esperadp")
+      .help_buttom(body = .txt_dp,
+                  title = "Desvio padrão esperado")
   })
-
-  output$e_meanUi <- renderUI({
-    numericInput( "e_mean",
-                  paste0("Margem de erro/ semi-amplitude (em ", input$mean_unidade_medida, ")"),
-                  value = 10,
-                  min   = 0,
-                  max   = Inf,
-                  step  = 1
-    ) %>% help_buttom(body = "É a metade da amplitude do intervalo de confiança.",
-                      title = "Margem de erro (%)")
-  })
-
-
-
-
-
-  observeEvent(input$e_mean, {
-    if(is.na(input$e_mean)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "e_mean",
-        text = "Deve ser fornecido um valor de precisão.",
-        color = "red"
-      )
-    } else if (input$e_mean<= 0) {
-      shinyFeedback::showFeedbackWarning(
-        inputId = "e_mean",
-        text = "A precisão deve ser maior do que zero.",
-        color = "red"
-      )
-    } else {
-      shinyFeedback::hideFeedback("e_mean")
-    }
-  })
-
 
 
   observeEvent(input$s_mean, {
@@ -707,6 +549,255 @@ txt_referencia_pack <-
       shinyFeedback::hideFeedback("s_mean")
     }
   })
+
+
+
+
+
+  # ac1
+
+  output$mean_ac1Ui <- renderUI({
+    req(input$mean_delineamento == "ac1")
+
+
+    fluidPage(fluidRow(
+
+
+      numericInput( "mean_ac1_ac",
+                    "Número total de conglomerados",
+                    value = 5,
+                    min   = 1,
+                    max   = Inf,
+                    step  = 1) %>%
+        .help_buttom(body = paste0("Número total de conglomerados", .txt_definido_pesquisador),
+                    title = "Número total de conglomerados"),
+
+      numericInput( "mean_ac1_xbar",
+                    paste0("Média esperada de ", input$mean_nome_desfecho, " (em ", input$mean_unidade_medida, ")"),
+                    value = 34,
+                    min   = -Inf,
+                    max   = Inf,
+                    step  = 1),
+
+      numericInput( "mean_ac1_sd",
+                    paste0("Desvio padrão esperado de ", input$mean_nome_desfecho, " (em ", input$mean_unidade_medida, ")"),
+                    value = 5.5,
+                    min   = 0,
+                    max   = Inf,
+                    step  = 1) %>%
+        .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
+
+
+      numericInput( "mean_ac1_b",
+                    "Média do número de indivíduos em cada conglomerado",
+                    value = 25,
+                    min   = 1,
+                    max   = Inf,
+                    step  = 1) %>%
+        .help_buttom(body = paste0("Média do número de indivíduos em cada conglomerado", .txt_definido_pesquisador_OU_literatura),
+                    title = "Média do número de indivíduos em cada conglomerado"),
+
+      numericInput( "mean_ac1_b_sd",
+                    "Desvio padrão do número de indivíduos em cada conglomerado",
+                    value = 0,
+                    min   = 0,
+                    max   = Inf,
+                    step  = 1) %>%
+        .help_buttom(body = paste0("Desvio padrão do tamanho de cada conglomerado", .txt_definido_literatura),
+                    title = "Desvio padrão do tamanho de cada conglomerado"),
+
+      numericInput( "mean_ac1_rho",
+                    "Coeficiente de correlação intra conglomerados",
+                    value = 0.1,
+                    min   = 0,
+                    max   = 1,
+                    step  = .1) %>%
+        .help_buttom(body = paste0("Coeficiente de correlação intra conglomerados", .txt_definido_literatura),
+                    title = "Coeficiente de correlação intra conglomerados"),
+
+
+    ))
+
+  })
+
+
+   # aae
+  output$mean_aae_ui <- renderUI({
+    req(input$mean_delineamento == "aae")
+
+    fluidPage(fluidRow(
+
+      numericInput(inputId = "mean_aee_E",
+                   label   = "Número de estratos",
+                   value   = 3,
+                   min     = 2,
+                   max     = Inf,
+                   step    = 1),
+
+      textInput( "mean_aae_N_grupo",
+                 "Tamanho populacional de cada estrato",
+                 value = "600, 500, 400"),
+
+      textInput( "mean_aae_xbar_grupo",
+                 paste0("Médias esperadas de ", input$mean_nome_desfecho, " (em ", input$mean_unidade_medida, ") em cada estrato"),
+                 value = "0.164, 0.166, 0.236"),
+
+      textInput( "mean_aae_sigma_grupo",
+                 paste0("Desvios padrões esperados de ", input$mean_nome_desfecho, " (em ", input$mean_unidade_medida, ") em cada estrato"),
+                 value = "0.245, 0.296, 0.436"
+      )
+    ))
+  })
+
+  mean_aae_inputs <- reactive({
+    req(input$mean_delineamento == "aae")
+
+    req(!is.null(input$mean_aae_N_grupo))
+    req(!is.null(input$mean_aae_xbar_grupo))
+    req(!is.null(input$mean_aae_sigma_grupo))
+
+    N <- text_input_to_vector(input$mean_aae_N_grupo) %>%
+      keep(~.x > 1)
+
+    medias <- text_input_to_vector(input$mean_aae_xbar_grupo)
+
+    desvio <- text_input_to_vector(input$mean_aae_sigma_grupo) %>%
+      keep(~.x > 0)
+
+    list(N = N, medias = medias, desvio = desvio)
+  })
+
+
+  observeEvent(c(input$mean_aee_E, input$mean_aae_N_grupo, input$mean_aae_xbar_grupo, input$mean_aae_sigma_grupo), {
+
+    if(is.na(input$mean_aee_E)){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "mean_aee_E",
+        text = "Deve ser fornecido valores",
+        color = "red")
+
+    } else {
+      shinyFeedback::hideFeedback("mean_aee_E")
+
+      if(all(is.na(mean_aae_inputs()$N))){
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_N_grupo",
+          text = "Deve ser fornecido valores",
+          color = "red")
+
+      } else if (length(mean_aae_inputs()$N)  != input$mean_aee_E) {
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_N_grupo",
+          text = paste0("Deve ser menor fornecido ", input$mean_aee_E, " valores válidos."),
+          color = "red")
+
+      } else if (any(mean_aae_inputs()$N <= 0) | any(mean_aae_inputs()$N%%1 != 0) | any(mean_aae_inputs()$N < 2) ) {
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_N_grupo",
+          text = "Deve ser menor fornecido apenas valores positivos inteiros maiores do que 1.",
+          color = "red")
+
+      }else { shinyFeedback::hideFeedback("mean_aae_N_grupo")}
+
+
+
+
+
+      if(all(is.na(mean_aae_inputs()$medias))){
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_xbar_grupo",
+          text = "Deve ser fornecido valores.",
+          color = "red")
+
+      } else if (length(mean_aae_inputs()$medias) != input$mean_aee_E) {
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_xbar_grupo",
+          text = paste0("Deve ser menor fornecido ", input$mean_aee_E, " valores válidos."),
+          color = "red")
+
+      } else { shinyFeedback::hideFeedback("mean_aae_xbar_grupo")}
+
+
+
+
+
+      if(all(is.na(mean_aae_inputs()$desvio))){
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_sigma_grupo",
+          text = "Deve ser fornecido valores.",
+          color = "red")
+
+      } else if (length(mean_aae_inputs()$desvio) != input$mean_aee_E) {
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_sigma_grupo",
+          text = paste0("Deve ser menor fornecido ", input$mean_aee_E, " valores válidos."),
+          color = "red")
+
+      } else if (any(mean_aae_inputs()$desvio <= 0)) {
+        shinyFeedback::showFeedbackWarning(
+          inputId = "mean_aae_sigma_grupo",
+          text = "Deve ser menor fornecido apenas valores positivos.",
+          color = "red")
+
+      } else { shinyFeedback::hideFeedback("mean_aae_sigma_grupo")}
+    }
+
+ })
+
+
+
+
+
+
+
+
+
+  output$e_meanUi <- renderUI({
+    numericInput( "e_mean",
+                  label = case_when(input$mean_delineamento == "aas" ~ paste0("Margem de erro/ semi-amplitude absoluta (em ", input$mean_unidade_medida, ")"),
+                                    input$mean_delineamento == "aae" ~ "Diferença relativa (%) máxima entre a estimativa e o valor desconhecido da população",
+                                    input$mean_delineamento == "ac1" ~ "Diferença relativa (%) máxima entre a estimativa e o valor desconhecido da população"
+                  ),
+
+                  value = case_when(input$mean_delineamento == "aas" ~ 5,
+                                    input$mean_delineamento == "aae" ~ 20,
+                                    input$mean_delineamento == "ac1" ~ 10
+                                    ),
+                  min   = 0,
+                  max   = Inf,
+                  step  = 1
+    ) %>% .help_buttom(body =
+                        if(input$mean_delineamento == "aas"){
+                          .txt_precisao
+                        } else{
+                          paste0("Diferença relativa (%) máxima entre a estimativa e o valor desconhecido da população.", .txt_definido_literatura)
+                        },
+                      title = if(input$mean_delineamento == "aas"){
+                        "Margem de erro ou semi-amplitude"
+                      } else{
+                        "Diferença relativa (%)"
+                      })
+  })
+
+
+  observeEvent(input$e_mean, {
+    if(is.na(input$e_mean)){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "e_mean",
+        text = "Deve ser fornecido um valor de margem de erro.",
+        color = "red"
+      )
+    } else if (input$e_mean<= 0) {
+      shinyFeedback::showFeedbackWarning(
+        inputId = "e_mean",
+        text = "A margem de erro deve ser maior do que zero.",
+        color = "red"
+      )
+    } else {
+      shinyFeedback::hideFeedback("e_mean")
+    }
+  })
+
 
 
   observeEvent(input$conf_mean, {
@@ -735,26 +826,7 @@ txt_referencia_pack <-
 
 
 
-  observeEvent(input$mean_perdas_recusa, {
-    if(is.na(input$mean_perdas_recusa)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "mean_perdas_recusa",
-        text = ""
-      )
-    } else if (input$mean_perdas_recusa >= 100) {
-      shinyFeedback::showFeedbackWarning(
-        inputId = "mean_perdas_recusa",
-        text = "Percentual de perdas deve ser menor do que 100%."
-      )
-    } else if (input$mean_perdas_recusa <= 0) {
-      shinyFeedback::showFeedbackWarning(
-        inputId = "mean_perdas_recusa",
-        text = "Percentual de perdas deve ser maior do que 0%."
-      )
-    } else {
-      shinyFeedback::hideFeedback("mean_perdas_recusa")
-    }
-  })
+  eval(parse(text = warning_perdas("mean_perdas_recusa")))
 
 
 
@@ -766,82 +838,232 @@ txt_referencia_pack <-
 
     validate(
       need(!is.na(input$s_mean),    "É obrigatório fornecer um valor do desvio padrão."),
-      need(!is.na(input$e_mean),    "É obrigatório fornecer um valor da precisão."),
+      # need(!is.na(input$e_mean),    "É obrigatório fornecer um valor da precisão."),
       need(!is.na(input$conf_mean), "É obrigatório fornecer um valor do nível de confiança."),
 
       need(input$s_mean > 0,    "O desvio padrão deve ser maior do que zero."),
-      need(input$e_mean > 0,    "A precisão deve ser maior do que zero."),
+      # need(input$e_mean > 0,    "A precisão deve ser maior do que zero."),
       need(input$conf_mean > 0, "O nível de confiança deve ser maior do que 0%."),
       need(input$conf_mean < 100, "O nível de confiança deve ser menor do que 100%.")
 
     )
 
-    code <- paste0(
-      "presize::prec_mean(",
-      "mu = 0, ",
-      "sd = ", input$s_mean, ", ",
-      "conf.width = ", input$e_mean, "*2,",
-      "conf.level = ", input$conf_mean, "/100)"
-    )
-
-
-    n <- try_n(code)
-    eval(parse(text = validate_n("n")))
-    n <- ceiling(n$n)
-    eval(parse(text = validate_n_inf("n")))
-
 
     mean_unidade_medida <- ifelse(is.null(input$mean_unidade_medida), "u.m", input$mean_unidade_medida)
 
-    # if(input$n_size_mean == TRUE){
-    #   paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
-    #          "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
-    #
-    #          "O cálculo do tamanho de amostra foi realizado por meio da ", txt_citacao_tap, ". ",
-    #          "Para estimar a média do <b>", input$mean_nome_desfecho, "</b>, na qual o tamanho da população é igual a <b>",  input$N_pop_mean,
-    #          "</b>, com margem de erro de <b>", input$e_mean, " ", mean_unidade_medida,
-    #          "</b>, nível de confiança de <b>", input$conf_mean, "%</b>",
-    #          " e desvio padrão esperado de <b>", input$s_mean, " ", mean_unidade_medida, "</b> como referido em Fulano (1900), ",
-    #          "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
-    #          "Acrescentando <b>", input$mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
-    #          n_perdas(n, input$mean_perdas_recusa), "</b>.",
-    #          txt_referencia_tap, print_r_code(code)
-    #   )
-    #
-    # } else {
+
+
+    if(input$mean_delineamento == "aas"){
+
+      code <- paste0(
+        "presize::prec_mean(",
+        "mu = 0, ",
+        "sd = ", input$s_mean, ", ",
+        "conf.width = ", input$e_mean, "*2, ",
+        "conf.level = ", input$conf_mean, "/100)"
+      )
+
+
+      n <- try_n(code)
+      eval(parse(text = validate_n("n")))
+      n <- ceiling(n$n)
+      eval(parse(text = validate_n_inf("n")))
+
       paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
              "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-             "O cálculo do tamanho de amostra foi realizado por meio da ", txt_citacao_tap, ". ",
+             "O cálculo do tamanho de amostra foi realizado por meio da ", .txt_citacao_tap, ". ",
              "Para estimar a média do <b>", input$mean_nome_desfecho,
-             "</b> com uma margem de erro de <b>", input$e_mean, " ", mean_unidade_medida,
-             "</b>, com um nível de confiança de <b>", input$conf_mean, "%</b>,",
-             " e um desvio padrão esperado de <b>", input$s_mean, " ", mean_unidade_medida, "</b> como referido em Fulano (1900), ",
+             "</b> com margem de erro absoluta de <b>", input$e_mean, " ", mean_unidade_medida,
+             "</b> e nível de confiança de <b>", input$conf_mean, "%</b>. ",
+             "Considerando desvio padrão esperado do <b>", input$mean_nome_desfecho, "</b> de <b>", input$s_mean, " ", mean_unidade_medida, "</b> como referido em Fulano (1900), ",
              "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
-             "Acrescentando <b>", input$mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
-             n_perdas(n, input$mean_perdas_recusa), "</b>.",
-             txt_referencia_tap, print_r_code(code)
+
+             if(testar_valor_perdas_valido(input$mean_perdas_recusa)){
+               paste0(
+                 "Acrescentando <b>", input$mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
+                 n_perdas(n, input$mean_perdas_recusa), "</b>.")
+             },
+             .txt_referencia_tap, print_r_code(code))
+
+
+
+
+      # Amostragem estratificada
+    } else if(input$mean_delineamento == "aae"){
+
+
+      validate(need(all(sapply(mean_aae_inputs(),length) == input$mean_aee_E),
+                    'Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br.'))
+
+
+      code <- paste0(
+        "epiR::epi.ssstrataestc(",
+        "strata.n = c(", paste(mean_aae_inputs()$N, collapse = ", "), "), ",
+        "strata.xbar = c(", paste(mean_aae_inputs()$medias, collapse = ", "), "), ",
+        "strata.sigma = c(", paste(mean_aae_inputs()$desvio, collapse = ", "), "), ",
+        "epsilon.r = ", input$e_mean, "/100, ",
+        "conf.level = ", input$conf_mean, "/100)"
       )
-    # }
+
+
+      n <- try_n(code)
+      eval(parse(text = validate_n("n")))
+
+
+      paste0("<b><font size = '5'>Tamanho amostral calculado: ", n$total.sample,
+             "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
+
+             "O cálculo do tamanho de amostra foi realizado por meio da ", .txt_citacao_tap, ". ",
+             "Para estimar a média do <b>", input$mean_nome_desfecho,
+             "</b> com margem de erro relativa entre a estimativa e o valor desconhecido da população de <b>", input$e_mean,
+             "%</b> e nível de confiança de <b>", input$conf_mean, "%</b>. ",
+             "Considerando um processo de amostragem estratificada simples nos estratos ",
+             paste(LETTERS[1:input$mean_aee_E], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
+             ", com tamanhos populacionais de <b>",
+             paste(mean_aae_inputs()$N, collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
+             "</b> indivíduos, médias esperadas de <b>",
+             paste(mean_aae_inputs()$medias, collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
+             " ",
+             mean_unidade_medida,
+             "</b> e desvios padrões esperados de <b>",
+             paste(mean_aae_inputs()$desvio, collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
+             " ",
+             mean_unidade_medida,
+             "</b>, respectivamente, chegou-se ao tamanho de amostra total de <b>", n$total.sample, "</b> sujeitos, sendo <b>",
+
+             paste0(n$strata.sample, " no estrato ", LETTERS[1:input$mean_aee_E], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
+
+             "</b>. ",
+
+             if(testar_valor_perdas_valido(input$mean_perdas_recusa)){
+               paste0("Acrescentando <b>", input$mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser ",
+                      paste0(n_perdas(n$strata.sample, input$mean_perdas_recusa), " no estrato ", LETTERS[1:input$mean_aee_E], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(), ".")
+             },
+             .txt_referencia_tap, print_r_code(code))
+
+
+
+      # Amostragem por conglomerados em um estagio
+    } else if(input$mean_delineamento == "ac1"){
+
+
+      code <- paste0(
+        "epiR::epi.ssclus1estc(",
+        "b = c(", input$mean_ac1_b, ", ", input$mean_ac1_b_sd, "), ",
+        "N = ", input$mean_ac1_ac, "*", input$mean_ac1_b,", ",
+        "xbar = ", input$mean_ac1_xbar, ", ",
+        "xsigma = ", input$mean_ac1_sd, ", ",
+        "epsilon.r = ", input$e_mean, "/100, ",
+        "rho = ", input$mean_ac1_rho, ", ",
+        "conf.level = ", input$conf_mean, "/100)"
+      )
+
+
+      n <- try_n(code)
+      eval(parse(text = validate_n("n")))
+      nc <- n$n.psu
+
+      eval(parse(text = validate_n_inf("nc")))
+
+      # print_r_code(code)
+      paste0("<b><font size = '5'>Tamanho amostral calculado: <i>", nc, " conglomerados</i>",
+             "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
+
+             "O cálculo do tamanho de amostra foi realizado por meio da ", .txt_citacao_tap, ". ",
+             "Para estimar a média do <b>", input$mean_nome_desfecho,
+             "</b> com margem de erro relativa entre a estimativa e o valor desconhecido da população de <b>", input$e_mean,
+             "%</b> e nível de confiança de <b>", input$conf_mean, "%</b>. ",
+
+             "Considerando um processo de amostragem aleatória por conglomerados em um único estágio, ",
+             "de uma população dividida em <b>", input$mean_ac1_ac, "</b> conglomerados, ",
+             "na qual o número de indivíduos em cada conglomerado é em média de <b>", input$mean_ac1_b, "</b> ",
+             if(input$mean_ac1_b_sd != 0){
+               paste0("com desvio padrão de <b>", input$mean_ac1_b_sd, "</b> ")
+             },
+             "indivíduos; ",
+
+             "média de ", input$mean_nome_desfecho, " esperada de <b>", input$mean_ac1_xbar, " ", mean_unidade_medida, "</b> e ",
+             "desvio padrão esperado de <b>", input$mean_ac1_sd, " ", mean_unidade_medida, "</b>; ",
+
+             "coeficiente de correlação intra conglomerados de <b>", input$mean_ac1_rho, "</b>, como referido em Fulano (1900), ",
+
+             "será necessário amostrar <b>", nc, "</b> conglomerados. ",
+             .txt_referencia_tap, print_r_code(code))
+    }
+
+
+    })
+
+
+
+  ## Cenarios ----
+
+  output$cenarios_uma_media_estUi <- renderUI({
+
+    conditionalPanel("input.mean_delineamento == 'aas'",
+
+                     br(),
+                     HTML('<hr style="color: black;">'),
+                     br(),br(),
+
+                     titlePanel("Construção de cenários"),
+                     br(),
+
+                     wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode definir um intervalo de margem de erro e especificar diferentes valores para o desvio padrão.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+                     HTML("<b>Defina a sequência de valores para a margem de erro absoluta:</b>"),
+                     br(),
+                     div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                         numericInput("mean_from", "Mínimo", value = input$e_mean, step = 1)
+                     ),
+                     div(style="display: inline-block;vertical-align:top; width: 80px;",
+                         numericInput("mean_to", "Máximo", value = input$e_mean + 2, step = 1)
+                     ),
+                     div(style="display: inline-block;vertical-align:top; width: 80px;",
+                         numericInput("mean_by", "Intervalo", value = 0.5, min = 0, step = 0.5) %>%
+                           .help_buttom(body = "Defina a sequência de margem de erro absoluta. Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                       title = "Sequência da margem de erro absoluta")
+                     ),
+
+                     fluidRow(
+                       column(6,
+                              textInput(inputId = "mean_sd_plot",
+                                        label   = "Digite valores de desvio padrão (DP) para fazer o gráfico:",
+                                        value   = paste0(c(input$s_mean, input$s_mean + 0.2, input$s_mean + 0.5), collapse = ", "),
+                                        width   = "100%") %>%
+                                .help_buttom(body = "Defina os valores de desvio padrão.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+                       )
+                     ),
+
+                     shinycssloaders::withSpinner(plotly::plotlyOutput("mean_plot", width = "80%"), type = 5),
+                     br(), br(),
+                     downloadButton("download_mean_tab","Download tabela"),
+                     shinycssloaders::withSpinner(DT::dataTableOutput("mean_tab", width = "100%"), type = 5)
+
+    ) # Fecha conditionalPanel aas
+
   })
 
 
-
-  # Constroi a tabela com os cenarios
+  eval(parse(text = check_text_input_to_vector("mean_sd_plot")))
 
   tab_mean_cenarios <- reactive({
 
-    desvios_plot <- input$mean_sd_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    desvios_plot <- text_input_to_vector(input$mean_sd_plot)
 
-    expand.grid(`Precisão`      = seq(from = input$mean_from, to = input$mean_to, by = input$mean_by),
+    req(length(desvios_plot) > 0)
+
+    expand.grid(`Margem de erro`      = seq(from = input$mean_from, to = input$mean_to, by = input$mean_by),
                 `Desvio padrão` = desvios_plot,
                 `Nível de confiança (%)` = input$conf_mean) %>%
       mutate(`Tamanho da amostra` = mapply(
         function(sd, conf.width, conf.level){ presize::prec_mean(mu = 0, sd = sd, conf.width = conf.width*2, conf.level = conf.level/100)$n },
-        `Desvio padrão`, `Precisão`, `Nível de confiança (%)`),
+        `Desvio padrão`, `Margem de erro`, `Nível de confiança (%)`),
         `Tamanho da amostra`   = ceiling(`Tamanho da amostra`),
         `% de perdas/ recusas` = input$mean_perdas_recusa,
         `n + perdas/ recusas`  = n_perdas(`Tamanho da amostra`, input$mean_perdas_recusa))
@@ -858,12 +1080,12 @@ txt_referencia_pack <-
 
 
     g1 <- tab_mean_cenarios() %>%
-      mutate(`Desvio padrão` = factor(`Desvio padrão`)) %>%
-      ggplot(aes(x = `Precisão`, y = `Tamanho da amostra`, color = `Desvio padrão`))+
+      mutate(DP = factor(`Desvio padrão`)) %>%
+      ggplot(aes(x = `Margem de erro`, y = `Tamanho da amostra`, color = DP))+
       geom_line() +
       geom_point() +
       scale_x_continuous(breaks = seq(from = input$mean_from, to = input$mean_to, by = input$mean_by)) +
-      xlab("Precisão") +
+      xlab("Margem de erro absoluta") +
       ylab("Tamanho da amostra*")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
@@ -952,17 +1174,24 @@ txt_referencia_pack <-
 
   output$THmean <- renderText({
 
+    # code <- paste0(
+    #   "TrialSize::OneSampleMean.Equality(",
+    #   "alpha = ", input$alpha_TH_mean, "/100,",
+    #   "beta = 1 - ", input$beta_TH_mean, "/100, ",
+    #   "sigma = ", input$sigma_TH_mean, ", ",
+    #   "margin = ", input$media_TH_mean - input$margin_TH_mean, ")"
+    # )
+
     code <- paste0(
-      "TrialSize::OneSampleMean.Equality(",
-      "alpha = ", input$alpha_TH_mean, "/100,",
-      "beta = 1 - ", input$beta_TH_mean, "/100, ",
-      "sigma = ", input$sigma_TH_mean, ", ",
-      "margin = ", input$media_TH_mean - input$margin_TH_mean, ")"
+      "pwr::pwr.t.test(n = NULL, ",
+      "d = ", input$media_TH_mean - input$margin_TH_mean, "/ ", input$sigma_TH_mean, ", ",
+      "power = ", input$beta_TH_mean, "/100, ",
+      "type = 'one.sample')"
     )
 
     n <- try_n(code)
     eval(parse(text = validate_n("n")))
-    n <- ceiling(n)
+    n <- ceiling(n$n)
     eval(parse(text = validate_n_inf("n")))
 
 
@@ -970,15 +1199,19 @@ txt_referencia_pack <-
     paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
            "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "O cálculo do tamanho de amostra foi realizado por meio da ", txt_citacao_tap, ", ",
-           "para testar se a média de <b>", "Y", "</b> é diferente de ", input$margin_TH_mean, ". ",
+           "O cálculo do tamanho de amostra foi realizado por meio da ", .txt_citacao_tap, ", ",
+           "para testar se a média de <b>", "Y", "</b> é diferente de <b>", input$margin_TH_mean, " u.m.</b>. ",
            "Considerando poder de <b>", input$beta_TH_mean,
-           "%</b>, nível de significância de <b>", input$alpha_TH_mean, "%</b>",
-           ", desvio padrão de <b>", input$sigma_TH_mean, "</b> e média esperada de <b>", input$media_TH_mean, "</b> como referido em Fulano (1900), ",
+           "%</b>, nível de significância de <b>", input$alpha_TH_mean, "%</b>, ",
+           "média esperada de <b>", input$media_TH_mean, " u.m.</b> e ",
+           "desvio padrão esperado de <b>", input$sigma_TH_mean, " u.m.</b> como referido em Fulano (1900), ",
            "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
-           "Acrescentando <b>", input$mean_TH_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
-           n_perdas(n, input$mean_TH_recusa), "</b>.",
-           txt_referencia_tap, print_r_code(code)
+           if(testar_valor_perdas_valido(input$mean_TH_recusa)){
+             paste0(
+               "Acrescentando <b>", input$mean_TH_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
+               n_perdas(n, input$mean_TH_recusa), "</b>.")
+           },
+           .txt_referencia_tap, print_r_code(code)
     )
 
   })
@@ -1020,17 +1253,17 @@ txt_referencia_pack <-
     power_pwd <- eval(parse(text = code))
 
     paste0("<b><font size = '5'>Poder calculado: ",round(100*power_pwd$power, digits = 3),
-           "%</font></b></br></br><i></i></br></br>",
+           "%</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "Foi calculado o poder para testar uma média utilizando a ", txt_citacao_tap, ". ",
+           "Foi calculado o poder para testar uma média utilizando a ", .txt_citacao_tap, ". ",
 
-           "Considerando um nível de significância de <b>", input$mean1_power_sig, "</b>, ",
-           "uma diferença de <b>", input$mean1_power_diff, "</b>, ",
-           "desvio padrão das diferenças de <b>", input$mean1_power_sigma, "</b> ",
-           "e um tamanho de amostra de <b>", input$mean1_power_n, "</b>, ",
-           "chegou-se à um poder de de <b>", round(100*power_pwd$power, digits = 1), "%</b>.",
+           "Considerando um nível de significância de <b>", input$mean1_power_sig, "%</b>, ",
+           "diferença a ser detectada de <b>", input$mean1_power_diff, " u.m.</b>, ",
+           "desvio padrão das diferenças de <b>", input$mean1_power_sigma, " u.m.</b> ",
+           "e um tamanho de amostra de <b>", input$mean1_power_n, "</b> sujeitos, ",
+           "chegou-se à um poder de <b>", round(100*power_pwd$power, digits = 1), "%</b>.",
 
-           txt_referencia_tap, print_r_code(code))
+           .txt_referencia_tap, print_r_code(code))
 
   })
 
@@ -1072,7 +1305,7 @@ txt_referencia_pack <-
     #   paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
     #          "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
     #
-    #          "Para o cálculo do tamanho de amostra foi utilizado a ", txt_citacao_tap, ". ",
+    #          "Para o cálculo do tamanho de amostra foi utilizado a ", .txt_citacao_tap, ". ",
     #          "Considerando o tamanho da população igual a <b>", input$N_pop_prop, "</b>, um nível de confiança de <b>", input$conf_prop, "%</b>, ",
     #          "amplitude desejada para o intervalo de confiança de <b>", input$e_prop, "%</b> ",
     #          "%</b> utilizando o método de ", str_to_title(input$p1_metodo),
@@ -1080,35 +1313,90 @@ txt_referencia_pack <-
     #          "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
     #          "Acrescentando <b>", input$prop_perdas_recusa, "</b>% para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$prop_perdas_recusa), "</b>.",
     #
-    #          txt_referencia_tap, print_r_code(code)
+    #          .txt_referencia_tap, print_r_code(code)
     #   )
     #
     # } else {
       paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
              "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-             "Para o cálculo do tamanho de amostra foi utilizado a ", txt_citacao_tap, ". ",
-             "Considerando um nível de confiança de <b>", input$conf_prop, "%</b>, ",
-             "amplitude desejada para o intervalo de confiança de <b>", input$e_prop, "%</b> ",
-             "%</b> utilizando o método de ", str_to_title(input$p1_metodo),
+             "Foi calculado o tamanho de amostra para estimar o <b>", input$prop_nome_desfecho,
+             "</b> com uma amplitude máxima para o intervalo de confiança de <b>", input$e_prop, "%</b>, ",
+             "utilizando a ", .txt_citacao_tap, ". ",
+             "Considerando nível de confiança de <b>", input$conf_prop, "%</b>, ",
+             " método de ", str_to_title(input$p1_metodo), " para estimar o intervalo de confiança",
              " e proporção esperada de <b>", input$prop_nome_desfecho, "</b> de <b>", input$p_prop, "%</b> como é referida em Fulano (1900), ",
              "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
-             "Acrescentando <b>", input$prop_perdas_recusa, "</b>% para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$prop_perdas_recusa), "</b>.",
-
-             txt_referencia_tap, print_r_code(code)
+             if(testar_valor_perdas_valido(input$prop_perdas_recusa)){
+               paste0(
+                 "Acrescentando <b>", input$prop_perdas_recusa, "</b>% para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$prop_perdas_recusa), "</b>.")
+             },
+             .txt_referencia_tap, print_r_code(code)
       )
     # }
   })
 
 
+  ## Cenarios ----
+
+  output$prop_precisao_cenarioUi <- renderUI({
+    fluidPage(fluidRow(
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+      Você pode especificar uma sequência de valores para a proporção esperada e valores de precisão desejada. Demais informações serão recuperadas do painel lateral."),
+
+      HTML("<b>Defina a sequência de valores para a proporção (%) esperada:</b>"),
+      # bsplus::shiny_iconlink(name = "question-circle") %>%
+      # bsplus::bs_embed_popover(title = "Defina a sequência de proporção Essa sequência será utilizada para compor o eixo x do gráfico",
+      #                          placement = "left"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("prop_from", "Mínimo", value = 0, step = 5, min = 0, max = 100)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("prop_to", "Máximo", value = 100, step = 5, min = 0, max = 100)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("prop_by", "Intervalo", value = 5, min = 0, step = 1, max = 99) %>%
+            .help_buttom(body = "Defina a sequência de proporção esperada. Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                        title = "Sequência da proporção esperada")
+      ),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "prop_precisoes_plot",
+                         label   = "Digite valores de amplitude (%) para fazer o gráfico",
+                         value   = paste0(c(input$e_prop, input$e_prop + 1, input$e_prop + 2), collapse = ", "),
+                         width   = "600px") %>%
+                 .help_buttom(body = "Defina os valores de amplitude desejada.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+      shinycssloaders::withSpinner(plotly::plotlyOutput("prop_plot", width = "80%"), type = 5),
+      br(), br(),
+      downloadButton("download_prop_tab","Download tabela"),
+      DT::dataTableOutput("prop_tab", width = "100%")
+
+    ))
+  })
+
+
+  eval(parse(text = check_text_input_to_vector("prop_precisoes_plot")))
 
 
   tab_prop_cenarios <- reactive({
 
-    precisoes <- input$prop_precisoes_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    precisoes <- text_input_to_vector(input$prop_precisoes_plot)
+    req(length(precisoes) > 0)
+
 
     expand.grid(`Amplitude (%)` = precisoes,
                 `Proporção esperada (%)` = seq(from = input$prop_from, to = input$prop_to, by = input$prop_by),
@@ -1148,6 +1436,7 @@ txt_referencia_pack <-
       dplyr::select(`Proporção esperada (%)`,
                     `Nível de confiança (%)`,
                     `Amplitude (%)`,
+                    `Método`,
                     `Tamanho da amostra`,
                     `% de perdas/ recusas`,
                     `n + perdas/ recusas`)
@@ -1232,7 +1521,7 @@ txt_referencia_pack <-
     paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
            "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "O cálculo do tamanho de amostra foi realizado por meio da ", txt_citacao_tap, ", ",
+           "O cálculo do tamanho de amostra foi realizado por meio da ", .txt_citacao_tap, ", ",
            "para testar se a proporção de <b>", "Y", "</b> é diferente de ", input$p_TH_h0, ". ",
            "Considerando poder de <b>", input$beta_TH_prop,
            "%</b>, nível de significância de <b>", input$alpha_TH_prop, "%</b>",
@@ -1251,9 +1540,11 @@ txt_referencia_pack <-
 
 
            "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
-           "Acrescentando <b>", input$prop_1th_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
-           n_perdas(n, input$prop_1th_perdas_recusa), "</b>.",
-           txt_referencia_tap, print_r_code(code)
+           if(testar_valor_perdas_valido(input$prop_1th_perdas_recusa)){
+             paste0("Acrescentando <b>", input$prop_1th_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
+                    n_perdas(n, input$prop_1th_perdas_recusa), "</b>.")
+           },
+           .txt_referencia_tap, print_r_code(code)
     )
 
   })
@@ -1311,7 +1602,7 @@ txt_referencia_pack <-
     paste0("<b><font size = '5'>Poder calculado: ", n,
            "%</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "O cálculo do poder do teste foi realizado por meio da ", txt_citacao_tap, ", ",
+           "O cálculo do poder do teste foi realizado por meio da ", .txt_citacao_tap, ", ",
            "para testar se a proporção de <b>", "Y", "</b> é diferente de ", input$p_power_h0, ". ",
            "Considerando um tamanho amostral de <b>", input$input$p_power_n,
            "</b>, nível de significância de <b>", input$p_power_alpha, "%</b>",
@@ -1330,7 +1621,7 @@ txt_referencia_pack <-
 
 
            "chegou-se a um poder de <b>", n, "%</b>. ",
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
 
   })
@@ -1459,15 +1750,18 @@ txt_referencia_pack <-
     paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
            "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "Para o cálculo do tamanho de amostra para estimar o coeficiente alfa de Cronbach foi utilizado a ", txt_citacao_tap, ". ",
+           "Para o cálculo do tamanho de amostra para estimar o coeficiente alfa de Cronbach foi utilizado a ", .txt_citacao_tap, ". ",
            "Considerando um instrumento com <b>", input$k_Cronbach, "</b> itens, ",
            "margem de erro de <b>", input$Cronbach_precisao, "</b>, ",
            "</b> nível de confiança de <b>", input$conf_Cronbach, "%</b>",
            " e alfa de Cronbach esperado de <b>", input$Cronbach_espected,"</b> como referido em Fulano (1900), ",
            "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
-           "Acrescentando <b>", input$Cronbach_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
-           n_perdas(n, input$Cronbach_perdas_recusa), "</b>.",
-           txt_referencia_tap, print_r_code(code)
+           if(testar_valor_perdas_valido(input$Cronbach_perdas_recusa)){
+             paste0(
+               "Acrescentando <b>", input$Cronbach_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
+               n_perdas(n, input$Cronbach_perdas_recusa), "</b>.")
+           },
+           .txt_referencia_tap#, print_r_code(code)
 
            # "<br><br>Foi utilizada a função ", code("size.ci.cron1()"), " criada por: <br>Bonett, D.G. (2016). Sample Size Planning for Behavioral Science Research. Retrieved from ",
            # '<a href="https://people.ucsc.edu/~dgbonett/sample.html" target="_blank">https://people.ucsc.edu/~dgbonett/sample.html.</a>.'
@@ -1477,6 +1771,48 @@ txt_referencia_pack <-
   })
 
 
+  output$cronbach_code <- renderText({
+
+    paste0("</br></br>",
+           "<i>Comando R utilizado:</i><br>",
+           "<p style=\"font-family:'Courier New';font-size:100% \">",
+           HTML(
+             "# Douglas G. Bonett. (2020). Sample Size Planning for Behavioral Science Research. Sample Size Planning for Behavioral Science Research. https://people.ucsc.edu/~dgbonett/sample.html"
+           ),
+           br(),br(),
+
+           code("size.ci.cron1 <- function(alpha, k, rel, w) {"), br(),
+           code("# Computes sample size required to estimate a Cronbach"), br(),
+           code("# alpha reliability with desired precision"), br(),
+           code("# Arguments:"), br(),
+           code("#   alpha: alpha value for 1-alpha confidence"), br(),
+           code("#   k:     number of measurements"), br(),
+           code("#   rel:   reliability planning value"), br(),
+           code("#   w:     desired CI width"), br(),
+           code("# Returns:"), br(),
+           code("#   required sample size"), br(),
+           code("z <- qnorm(1 - alpha/2)"), br(),
+           code("n0 <- ceiling((8*k/(k - 1))*(1 - rel)^2*(z/w)^2 + 2)"), br(),
+           code("b <- log(n0/(n0 - 1))"), br(),
+           code("ll <- 1 - exp(log(1 - rel) - b + z*sqrt(2*k/((k - 1)*(n0 - 2))))"), br(),
+           code("ul <- 1 - exp(log(1 - rel) - b - z*sqrt(2*k/((k - 1)*(n0 - 2))))"), br(),
+           code("w0 <- ul - ll"), br(),
+           code("n <- ceiling((n0 - 2)*(w0/w)^2 + 2)"), br(),
+           code("return (n)"), br(),
+           code("}"), br(),
+           br(), br(),
+
+           code("size.ci.cron1("),
+           code(paste0("alpha = 1 - ", input$conf_Cronbach, "/100, ")),
+           code(paste0("k = ", input$k_Cronbach, ", ")),
+           code(paste0("rel = ", input$Cronbach_espected, ", ")),
+           code(paste0("w = ", input$Cronbach_precisao, ")")),
+
+           "</p>",
+           "<br><br><b><i>* Sempre procure um profissional de estatística para orientações no planejamento do estudo.</b></i>"
+    )
+
+  })
 
 
 
@@ -1494,9 +1830,7 @@ txt_referencia_pack <-
       modalDialog(
         title = "d de Cohen",
         fluidPage(
-          withMathJax(
-            includeMarkdown(file.path("Markdown", "Effect_size_d_Cohen.Rmd"))
-          )
+          withMathJax(includeMarkdown(file.path("www", "Effect_size_d_Cohen.Rmd")))
         ),
         easyClose = TRUE,
         footer    = NULL,
@@ -1504,6 +1838,9 @@ txt_referencia_pack <-
       )
     )
   })
+
+
+
 
   observeEvent(input$show_th_2mean, {
     showModal(
@@ -1516,22 +1853,25 @@ txt_referencia_pack <-
           textInput(inputId = "mean2_nome_desfecho",
                     label   = "Descreva o nome do desfecho",
                     value   = ifelse(input$show_th_2mean == 0, "Y", mean2_nome_desfecho())),
-
+          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
+          br(), br(),
           textInput(inputId = "mean2_unidade_medida",
                     label   = paste0("Descreva a unidade de medida do desfecho"),
                     value   = ifelse(input$show_th_2mean == 0, "u.m.", mean2_unidade_medida())),
+          HTML(paste0("<i>", str_remove_all(.txt_um, "<br><br>"), "</i>")),
+          br(), br(),
 
           textInput(inputId = "th2mean_grupoTratamento",
                     label   = "Descreva um nome para o grupo Tratamento",
                     value   = ifelse(input$show_th_2mean == 0, "Tratamento", th2mean_grupoTratamento())),
 
-          HTML("Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.<br><br>"),
+          HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
 
           textInput(inputId = "th2mean_grupoControle",
                     label   = "Descreva um nome para o grupo Controle",
                     value   = ifelse(input$show_th_2mean == 0, "Controle", th2mean_grupoControle())),
 
-          HTML("Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto."),
+          HTML("<i>Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
 
 
         ),
@@ -1562,91 +1902,162 @@ txt_referencia_pack <-
   })
 
 
+
+
+  observeEvent(c(input$show_desvio_pooled_2), {
+    validate(need(input$show_desvio_pooled_2 > 0, ''))
+
+    eval(parse(text = warning_numero_positivo("pooled_sigma1_modal_2")))
+    eval(parse(text = warning_numero_positivo("pooled_sigma2_modal_2")))
+    eval(parse(text = warning_numero_positivo("pooled_n1_modal_2")))
+    eval(parse(text = warning_numero_positivo("pooled_n2_modal_2")))
+
+
+    showModal(
+      modalDialog(
+        title = "Obter o desvio padrão combinado",
+        fluidPage(
+
+          HTML(paste0("<b><font size = '3'>", "Desvio padrão", " do</font></b><br>")),
+          div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+              numericInput( "pooled_sigma1_modal_2",
+                            th2mean_grupoTratamento(),
+                            value = 2.0,
+                            min = 0,
+                            max = Inf,
+                            step = .5)),
+          div(style="display: inline-block;vertical-align:top; width: 49%;",
+              numericInput( "pooled_sigma2_modal_2",
+                            th2mean_grupoControle(),
+                            value = 1.5,
+                            min = 0,
+                            max = Inf,
+                            step = .5)),
+
+
+          HTML(paste0("<b><font size = '3'>", "Tamanho amostral", " do</font></b><br>")),
+          div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+              numericInput( "pooled_n1_modal_2",
+                            th2mean_grupoTratamento(),
+                            value = 20,
+                            min = 3,
+                            max = Inf,
+                            step = 1)),
+          div(style="display: inline-block;vertical-align:top; width: 49%;",
+              numericInput( "pooled_n2_modal_2",
+                            th2mean_grupoControle(),
+                            value = 30,
+                            min = 3,
+                            max = Inf,
+                            step = 1)),
+
+          htmlOutput("ferramentas_pooled_modal_2"),
+
+          p("Foi utilizado a fórmula"),
+          withMathJax("$$s_{combinado} = \\sqrt{ \\dfrac{(n_A - 1)s_A^2 + (n_B - 1)s_B^2}{n_A+n_B-2} }$$")
+
+        ),
+        easyClose = TRUE,
+        footer    = NULL,
+        size      = "m"
+      )
+    )
+  })
+
+  output$ferramentas_pooled_modal_2 <- renderText({
+
+    s2a <- input$pooled_sigma1_modal_2^2
+    s2b <- input$pooled_sigma2_modal_2^2
+
+    n1 <- input$pooled_n1_modal_2
+    n2 <- input$pooled_n2_modal_2
+
+    numerador   <- (n1 - 1)*s2a + (n2 - 1)*s2b
+    denominador <- n1 + n2 - 2
+
+    s_pooled <- sqrt(numerador/denominador)
+
+    paste0("<br><br><b><font size = '5'>",
+           "<i>Desvio padrão<sub>combinado</sub></i> = ", round(s_pooled, 4),
+           "<br><br><br>")
+  })
+
+
+
+
+
+
+
   output$mean2Ui <- renderUI({
-    fluidPage(
+    fluidPage(fluidRow(
       numericInput( "TH2_mean_margin",
-                    paste0("Diferença do ", mean2_nome_desfecho(), " a ser detectada em ", mean2_unidade_medida(), ": (Média do ", th2mean_grupoTratamento(),
+                    paste0("Diferença do ", mean2_nome_desfecho(), " a ser detectada em ", mean2_unidade_medida(), " (Média do ", th2mean_grupoTratamento(),
                            ") - (Média do grupo ", th2mean_grupoControle(), ")"),
                     value = 1,
                     min = -Inf,
                     max = Inf,
                     step = .5
-      ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
+      ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada"),
 
-      HTML(paste0("<b><font size = '2.95'>Desvio padrão esperado de ", mean2_nome_desfecho(), " em ", mean2_unidade_medida(), " no grupo</font></b><br>")),
-      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-          numericInput( "sigma1_TH2_mean_pwr",
-                        th2mean_grupoTratamento(),
-                        value = 1.2,
-                        min = 0,
-                        max = Inf,
-                        step = 1
-          )
-      ),
-      div(style="display: inline-block;vertical-align:top; width: 49%;",
-          numericInput( "sigma2_TH2_mean_pwr",
-                        th2mean_grupoControle(),
-                        value = 1.4,
-                        min = 0,
-                        max = Inf,
-                        step = 1
-          ) %>% help_buttom(body = paste0("Desvio padrão esperado de ", mean2_nome_desfecho(), ", geralmente obtido de estudos anteriores."),
-                            title = "Desvio padrão esperado")
-      ),
+      numericInput( "sigma1_TH2_mean_pwr",
+                    "Desvio padrão esperado",
+                    value = 1.2,
+                    min = 0,
+                    max = Inf,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
+      actionLink("show_desvio_pooled_2", "Calcular o desvio padrão combinado"),
+      br(),
+      br(),
+
       numericInput( "ratio_TH2_mean_pwr",
                     paste0("Balanceamento (", th2mean_grupoTratamento(), ":", th2mean_grupoControle(), ")"),
                     value = 1,
                     min = 0,
                     max = Inf,
                     step = 0.5
-      ) %>% help_buttom(
-        paste0("Nº de ", th2mean_grupoControle(), " para cada ", th2mean_grupoTratamento(), ". Se colocar o valor 2, será calculado um tamanho de amostra ",
-               "tal que será necessário 2 ", th2mean_grupoControle(), " para cada ", th2mean_grupoTratamento(), " Se colocar o valor 0.5, ",
-               "será calculado um tamanho de amostra ",
-               "tal que será necessário 2 ", th2mean_grupoTratamento(), " para cada ", th2mean_grupoControle(), ".")
-      )
-    )
+      ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
+
+      numericInput( "deff_TH2_mean_pwr",
+                    "Efeito do plano amostral",
+                    value = 1,
+                    min = 0,
+                    max = Inf,
+                    step =.2
+      ) %>% .help_buttom(body = paste0(
+        "O efeito do plano amostral (em inglês, <i>design effect</i> ou, abreviadamente, <i>deff</i>) é utilizado para medir o efeito de um plano amostral sobre a variância de um estimador. <br><br>",
+        "Ele representa o quanto o plano amostral proposto é mais ou menos eficiente, em termos de variabilidade da estimativa, do que a amostragem aleatória simples. <br><br>",
+        "Se seu valor for igual a 1, então o plano amostral proposto é a amostragem aleatória simples ou é considerado tão eficiente quanto esta. Valores maiores do que 1 indicam que o plano amostral proposto é menos eficiente do que a amostragem aleatória simples (geralmente a amostragem por conglomerados tem essa característica) e valores menores do que 1 indicam que o plano amostral proposto é mais eficiente do que a amostragem aleatória simples (geralmente a amostragem estratificada tem essa característica).",
+        .txt_definido_literatura),
+        title = "Efeito do plano amostral")
+    ))
   })
 
-
-  output$alternative_TH2_mean_pwrUi <- renderUI({
-    nomes_opcoes_alternativa <- c(
-      paste0('A % no grupo ', th2mean_grupoTratamento(), ' é DIFERENTE da % do grupo ', th2mean_grupoControle()),
-      paste0('A % no grupo ', th2mean_grupoTratamento(), ' é MAIOR do que a % do grupo ', th2mean_grupoControle()),
-      paste0('A % no grupo ', th2mean_grupoTratamento(), ' é MENOR do que a % do grupo ', th2mean_grupoControle())
-    )
-
-    opcoes_alternativa <- c('two.sided', 'greater', "less")
-    names(opcoes_alternativa) <- nomes_opcoes_alternativa
-
-
-    selectInput('alternative_TH2_mean_pwr',
-                'Tipo de teste de acordo com hipótese alternativa:',
-                choices = opcoes_alternativa,
-                selected = 'two.sided'
-    ) %>% help_buttom(body = "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
-  })
 
 
   output$th2_mean_formula1 <- renderUI({
-
+    req(!is.null(sided_two_means_test()))
+    req(!is.null(th2mean_grupoTratamento()))
     sinal_h0 <- case_when(input$alternative_TH2_mean_pwr == 'two.sided' ~ "=",
-                          input$alternative_TH2_mean_pwr == 'greater'   ~ "\\leq",
-                          input$alternative_TH2_mean_pwr == 'less'      ~ "\\geq")
+                          input$alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test()$alternative_d == "greater"  ~ "\\leq",
+                          input$alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test()$alternative_d == "less" ~ "\\geq")
 
     withMathJax(
       paste0("$$H_0: \\mu_{", th2mean_grupoTratamento(), "} ", sinal_h0, " \\mu_{", th2mean_grupoControle(), "} $$"))
   })
 
   output$th2_mean_formula2 <- renderUI({
-
+    req(!is.null(sided_two_means_test()))
+    req(!is.null(th2mean_grupoTratamento()))
     sinal_h1 <- case_when(input$alternative_TH2_mean_pwr == 'two.sided' ~ "\\neq",
-                          input$alternative_TH2_mean_pwr == 'greater'   ~ ">",
-                          input$alternative_TH2_mean_pwr == 'less'      ~ "<")
+                          input$alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test()$alternative_d == "greater"  ~ ">",
+                          input$alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test()$alternative_d == "less" ~ "<")
 
     withMathJax(
       paste0("$$H_1: \\mu_{", th2mean_grupoTratamento(), "}", sinal_h1, " \\mu_{", th2mean_grupoControle(), "} $$"))
   })
+
+
 
 
 
@@ -1657,10 +2068,10 @@ txt_referencia_pack <-
         text = "Deve ser fornecido um valor do tamanho de efeito.",
         color = "red"
       )
-    } else if (input$cohen_TH2_mean_pwr<= 0) {
+    } else if (input$cohen_TH2_mean_pwr == 0) {
       shinyFeedback::showFeedbackWarning(
         inputId = "cohen_TH2_mean_pwr",
-        text = "O tamanho de efeito deve ser maior do que zero.",
+        text = "O tamanho de efeito deve ser diferente de que zero.",
         color = "red"
       )
     } else {
@@ -1674,6 +2085,12 @@ txt_referencia_pack <-
       shinyFeedback::showFeedbackWarning(
         inputId = "TH2_mean_margin",
         text = "Deve ser fornecido um valor da diferença a ser detectada.",
+        color = "red"
+      )
+    } else if(input$TH2_mean_margin == 0){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "TH2_mean_margin",
+        text = "A diferença a ser detectada deve ser diferente de 0.",
         color = "red"
       )
     } else {
@@ -1701,24 +2118,6 @@ txt_referencia_pack <-
   })
 
 
-
-  observeEvent(input$sigma2_TH2_mean_pwr, {
-    if(is.na(input$sigma2_TH2_mean_pwr)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "sigma2_TH2_mean_pwr",
-        text = "Deve ser fornecido um valor de desvio padrão.",
-        color = "red"
-      )
-    } else if (input$sigma2_TH2_mean_pwr<= 0) {
-      shinyFeedback::showFeedbackWarning(
-        inputId = "sigma2_TH2_mean_pwr",
-        text = "O desvio padrão deve ser maior do que zero.",
-        color = "red"
-      )
-    } else {
-      shinyFeedback::hideFeedback("sigma2_TH2_mean_pwr")
-    }
-  })
 
 
 
@@ -1774,26 +2173,52 @@ txt_referencia_pack <-
   })
 
 
+  eval(parse(text = warning_perdas("TH_mean_perdas_recusa")))
+  eval(parse(text = warning_numero_positivo("deff_TH2_mean_pwr")))
 
-  observeEvent(input$TH_mean_perdas_recusa, {
-    if(is.na(input$TH_mean_perdas_recusa)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "TH_mean_perdas_recusa",
-        text = ""
-      )
-    } else if (input$TH_mean_perdas_recusa >= 100) {
-      shinyFeedback::showFeedbackWarning(
-        inputId = "TH_mean_perdas_recusa",
-        text = "Percentual de perdas deve ser menor do que 100%."
-      )
-    } else if (input$TH_mean_perdas_recusa <= 0) {
-      shinyFeedback::showFeedbackWarning(
-        inputId = "TH_mean_perdas_recusa",
-        text = "Percentual de perdas deve ser maior do que 0%."
-      )
+
+  sided_two_means_test <- reactive({
+
+    req(!is.null(input$alternative_TH2_mean_pwr))
+    # req(!is.null(input$cohen_TH2_mean_pwr) | !is.null(input$TH2_mean_margin))
+
+
+    # Se entrar com o d de Cohen
+    if(input$th2_mean_cohen){
+
+      if(input$alternative_TH2_mean_pwr != "two.sided" & input$cohen_TH2_mean_pwr < 0){
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
+        alternative <- 1
+        alternative_d <- "less"
+      } else{
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
+        alternative <- 1
+        alternative_d <- "greater"
+      }
     } else {
-      shinyFeedback::hideFeedback("TH_mean_perdas_recusa")
+
+      if(input$alternative_TH2_mean_pwr != "two.sided" & input$TH2_mean_margin < 0){
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
+        alternative <- 1
+        alternative_d <- "less"
+      } else{
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
+        alternative <- 1
+        alternative_d <- "greater"
+      }
     }
+
+
+    # O de dois lados se sobrepoe
+    if(input$alternative_TH2_mean_pwr == "two.sided"){
+      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar diferenças na média de <b>", mean2_nome_desfecho(), "</b> entre os grupos ", th2mean_grupoTratamento(), " e ", th2mean_grupoControle(), ", ")
+      alternative <- 2
+      alternative_d <- "two.sided"
+    }
+
+    list(alternative = alternative,
+         alternative_d = alternative_d,
+         texto_comparacao = texto_comparacao)
   })
 
 
@@ -1804,30 +2229,18 @@ txt_referencia_pack <-
       validate(
         need(!is.na(input$TH2_mean_margin),     "É obrigatório fornecer um valor da diferença a ser detectada."),
         need(!is.na(input$sigma1_TH2_mean_pwr), paste0("É obrigatório fornecer um valor de desvio padrão do ", th2mean_grupoTratamento(), ".")),
-        need(!is.na(input$sigma2_TH2_mean_pwr), paste0("É obrigatório fornecer um valor de desvio padrão do ", th2mean_grupoControle(), ".")),
-        # need(!is.na(input$n1_TH2_mean_pwr),     "É obrigatório fornecer um valor do n do grupo A."),
-        # need(!is.na(input$n2_TH2_mean_pwr),     "É obrigatório fornecer um valor do n do grupo B."),
 
         need(input$TH2_mean_margin != 0,       "A diferença a ser detectada deve ser diferente de zero."),
-        need(input$sigma1_TH2_mean_pwr > 0,    "O desvio padrão do grupo A deve ser maior do que zero."),
-        need(input$sigma2_TH2_mean_pwr > 0,    "O desvio padrão do grupo B deve ser maior do que zero."),
-        # need(input$n1_TH2_mean_pwr > 1,        "O n do grupo A deve ser maior do que um."),
-        # need(input$n2_TH2_mean_pwr > 1,        "O n do grupo B deve ser maior do que um."),
+        need(input$sigma1_TH2_mean_pwr > 0,    "O desvio padrão deve ser maior do que zero."),
 
-        need((input$TH2_mean_margin > 0 & input$alternative_TH2_mean_pwr != 'less') |
-               (input$TH2_mean_margin < 0 & input$alternative_TH2_mean_pwr != 'greater'),
-             "Não é possível calcular um tamanho de amostra para a diferença esperada especificada e para o tipo de hipótese alternativa escolhido.")
+        need(input$deff_TH2_mean_pwr > 0,    "O efeito do delineamento deve ser maior do que zero.")
 
-      )
+            )
     } else{
 
       validate(
         need(!is.na(input$cohen_TH2_mean_pwr), "É obrigatório fornecer um valor do tamanho do efeito."),
-        need(input$cohen_TH2_mean_pwr != 0,    "O tamanho do efeito deve ser diferente de zero."),
-
-        need((input$cohen_TH2_mean_pwr > 0 & input$alternative_TH2_mean_pwr != 'less') |
-               (input$cohen_TH2_mean_pwr < 0 & input$alternative_TH2_mean_pwr != 'greater'),
-             "Não é possível calcular um tamanho de amostra para a diferença esperada especificada e para o tipo de hipótese alternativa escolhido.")
+        need(input$cohen_TH2_mean_pwr != 0,    "O tamanho do efeito deve ser diferente de zero.")
       )
     }
 
@@ -1841,22 +2254,11 @@ txt_referencia_pack <-
 
 
 
-    if(input$alternative_TH2_mean_pwr == "two.sided"){
-      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar diferenças na média de <b>", mean2_nome_desfecho(), "</b> entre os grupos ", th2mean_grupoTratamento(), " e ", th2mean_grupoControle(), ", ")
-      alternative <- "two.sided"
-    } else if(input$alternative_TH2_mean_pwr == "less"){
-      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
-      alternative <- "one.sided"
-    } else{
-      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
-      alternative <- "one.sided"
-    }
-
-
 
     #----------------------------------------------------.
     # Se o usuario entrar com o tamanho do efeito !!!!
     #----------------------------------------------------.
+
 
     if(input$th2_mean_cohen){
 
@@ -1864,7 +2266,7 @@ txt_referencia_pack <-
         "pwr::pwr.t.test(d = ", input$cohen_TH2_mean_pwr, ", ",
         "sig.level = ", input$sig_TH2_mean_pwr/100, ", ",
         "power = ", input$power_TH2_mean_pwr/100, ", ",
-        "alternative = '", as.character(input$alternative_TH2_mean_pwr), "', ",
+        "alternative = '", sided_two_means_test()$alternative_d, "', ",
         "type = 'two.sample')")
 
       n <- try_n(code)
@@ -1883,16 +2285,19 @@ txt_referencia_pack <-
                           "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
 
-      texto_tamanho_efeito <- paste0(texto_comparacao,
-                                     " por meio da ", txt_citacao_tap, ". ",
+      texto_tamanho_efeito <- paste0(sided_two_means_test()$texto_comparacao,
+                                     " por meio da ", .txt_citacao_tap, ". ",
                                      "Considerando poder de <b>", input$power_TH2_mean_pwr, "%</b>, ",
-                                     "nível de significância de <b>", input$sig_TH2_mean_pwr, "%</b>, ",
-                                     "e tamanho de efeito de <b>", input$cohen_TH2_mean_pwr, "</b> (dados de Fulano (1900)), ",
+                                     "nível de significância de <b>", input$sig_TH2_mean_pwr, "%</b> ",
+                                     "e tamanho de efeito d de Cohen de <b>", input$cohen_TH2_mean_pwr, "</b> (dados de Fulano (1900) <b>OU</b> escolha do pesquisador), ",
                                      "chegou-se ao tamanho total da amostra de <b>", n, "</b> sujeitos, sendo <b>", n/2, "</b> sujeitos em cada grupo. ",
-                                     "Acrescentando <b>", input$TH_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas, "</b>."
+                                     if(testar_valor_perdas_valido(input$TH_mean_perdas_recusa)){
+                                       paste0(
+                                         "Acrescentando <b>", input$TH_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas, "</b>.")
+                                     }
       )
 
-      return(paste0(cabecalho, texto_tamanho_efeito, txt_referencia_tap, print_r_code(code)))
+      return(paste0(cabecalho, texto_tamanho_efeito, .txt_referencia_tap, print_r_code(code)))
 
 
     } else{
@@ -1902,41 +2307,28 @@ txt_referencia_pack <-
       #----------------------------------------.
 
 
-      if(input$ratio_TH2_mean_pwr >= 1){ # Grupo A eh maior
-        ratio    <- input$ratio_TH2_mean_pwr
-        sd       <- input$sigma2_TH2_mean_pwr
-        sd.ratio <- input$sigma1_TH2_mean_pwr/input$sigma2_TH2_mean_pwr
-      } else{
-        ratio    <- 1/input$ratio_TH2_mean_pwr
-        sd       <- input$sigma1_TH2_mean_pwr
-        sd.ratio <- input$sigma2_TH2_mean_pwr/input$sigma1_TH2_mean_pwr
-      }
 
+
+      ratio <- input$ratio_TH2_mean_pwr
 
       code <- paste0(
-        "MESS::power_t_test(delta = ", abs(input$TH2_mean_margin), ", ",
-        "sd    = ", sd, ", ",
-        "sd.ratio = ", sd.ratio,  ", ",
+        "epiR::epi.sscompc(",
+        "control = 0, ",
+        "treat = ", abs(input$TH2_mean_margin), ", ",
+        "sigma = ", input$sigma1_TH2_mean_pwr, ", ",
+        "n = NA, ",
         "power = ", input$power_TH2_mean_pwr, "/100,  ",
-        "sig.level = ", input$sig_TH2_mean_pwr, "/100, ",
-        "ratio = ", ratio, ", ",
-        "type  = 'two.sample', ",
-        "alternative = '", alternative, "')")
+        "conf.level = 1 - ", input$sig_TH2_mean_pwr, "/100, ",
+        "r = ", ratio, ", ",
+        "design = ", input$deff_TH2_mean_pwr, ", ",
+        "sided.test = ", sided_two_means_test()$alternative, ")")
 
-        npwr <- try_n(code)
+      npwr <- try_n(code)
       eval(parse(text = validate_n("npwr")))
 
 
-      npwr <- ceiling(npwr$n[1])
-
-      if(input$ratio_TH2_mean_pwr >= 1){ # Grupo A eh maior
-        n1 <- ceiling(npwr*ratio)
-        n2 <- npwr
-      } else{
-        n1 <- npwr
-        n2 <- ceiling(npwr*ratio)
-      }
-
+      n1 <- npwr$n.treat
+      n2 <- npwr$n.control
 
       n <- n1 + n2
       nperdas1 <- n_perdas(n1, input$TH_mean_perdas_recusa)
@@ -1949,14 +2341,19 @@ txt_referencia_pack <-
                           "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
 
-      texto_desvio <- paste0(texto_comparacao,
+      texto_desvio <- paste0(sided_two_means_test()$texto_comparacao,
                              " tendo uma diferença de <b>", input$TH2_mean_margin, " ", mean2_unidade_medida(), "</b> como relevante para o estudo. ",
-                             "Para isso foi utilizado a ", txt_citacao_tap, ". ",
+                             "Para isso foi utilizado a ", .txt_citacao_tap, ". ",
                              "Considerando poder de <b>", input$power_TH2_mean_pwr, "%</b>, ",
                              "nível de significância de <b>", input$sig_TH2_mean_pwr, "%</b> ",
-                             "e desvio padrão de <b>", input$sigma1_TH2_mean_pwr, " ", mean2_unidade_medida(),
-                             "</b> para o ", th2mean_grupoTratamento(), " e <b>", input$sigma2_TH2_mean_pwr, " ", mean2_unidade_medida(),
-                             "</b> para o ", th2mean_grupoControle(), " (dados de Fulano (1900)), ",
+
+                             if(input$deff_TH2_mean_pwr != 1){
+                               paste0("tamanho de efeito do delineamento de <b>", input$deff_TH2_mean_pwr, "</b> ")
+                             },
+
+                             "e desvio padrão de <b>", input$sigma1_TH2_mean_pwr, " ", mean2_unidade_medida(), "</b> (dados de Fulano (1900)), ",
+                             # "</b> para o ", th2mean_grupoTratamento(), " e <b>", input$sigma2_TH2_mean_pwr, " ", mean2_unidade_medida(),
+                             # "</b> para o ", th2mean_grupoControle(), " (dados de Fulano (1900)), ",
 
                              ifelse(ratio == 1,
                                     paste0(
@@ -1966,15 +2363,18 @@ txt_referencia_pack <-
                                     ),
                                     paste0(
                                       "chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> no ", th2mean_grupoTratamento(), " e <b>", n2, "</b> no ", th2mean_grupoControle(), ".",
-                                      " Acrescentando <b>", input$TH_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
-                                      "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " no ", th2mean_grupoTratamento(), " e ", nperdas2, " no ", th2mean_grupoControle(), ")."
+                                      if(testar_valor_perdas_valido(input$TH_mean_perdas_recusa)){
+                                        paste0(
+                                          " Acrescentando <b>", input$TH_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
+                                          "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " no ", th2mean_grupoTratamento(), " e ", nperdas2, " no ", th2mean_grupoControle(), ").")
+                                      }
                                     )
                              )
       )
 
       paste0(cabecalho,
              texto_desvio,
-             txt_referencia_tap, print_r_code(code))
+             .txt_referencia_tap, print_r_code(code))
 
     }
   })
@@ -1982,12 +2382,104 @@ txt_referencia_pack <-
 
 
 
+  ## Cenarios ----
+
+  output$cenarios_duas_medias_thUi <- renderUI({
+
+    if(input$th2_mean_cohen){
+      req(!is.null(input$cohen_TH2_mean_pwr))
+      val_min <- ifelse(input$cohen_TH2_mean_pwr < 0, input$cohen_TH2_mean_pwr - 1, input$cohen_TH2_mean_pwr)
+      val_max <- ifelse(input$cohen_TH2_mean_pwr < 0, input$cohen_TH2_mean_pwr, input$cohen_TH2_mean_pwr + 1)
+
+    } else{
+      req(!is.null(input$TH2_mean_margin))
+      val_min <- ifelse(input$TH2_mean_margin < 0, input$TH2_mean_margin - 1, input$TH2_mean_margin)
+      val_max <- ifelse(input$TH2_mean_margin < 0, input$TH2_mean_margin, input$TH2_mean_margin + 1)
+    }
+
+
+    fluidPage(fluidRow(
+
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),
+
+      conditionalPanel(condition = "input.th2_mean_cohen == true",
+                       wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de poder e uma sequência de magnitude de efeito desejado.
+                                        Demais informações serão recuperadas do painel lateral.")
+      ),
+
+      conditionalPanel(condition = "input.th2_mean_cohen == false",
+                       wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de poder e uma sequência da diferença a ser detectada.
+                                        Demais informações serão recuperadas do painel lateral.")
+      ),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "th2mean_power_plot",
+                         label   = "Digite valores de poder para fazer o gráfico",
+                         value   = "80, 90, 95",
+                         width   = "400px") %>%
+                 .help_buttom(body = "Defina os valores de poder desejado.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+      conditionalPanel(condition = "input.th2_mean_cohen == true",
+                       HTML("<b>Defina a sequência de valores para a magnitude do efeito:</b>"),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("th2_mean_from", "Mínimo", value = val_min, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("th2_mean_to", "Máximo", value = val_max, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("th2_mean_by", "Intervalo", value = 0.2, min = 0, step = 0.1) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência"))
+      ),
+
+      conditionalPanel(condition = "input.th2_mean_cohen == false",
+                       HTML("<b>Defina a sequência de valores para a diferença a ser detectada:</b>"),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("th2_mean_from_diff", "Mínimo", value = val_min, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("th2_mean_to_diff", "Máximo", value = val_max, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("th2_mean_by_diff", "Intervalo", value = 0.5, min = 0, step = 0.2) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência"))
+      ),
+
+      br(),
+
+      plotly::plotlyOutput("th2mean_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_th2mean_tab","Download tabela"),
+      DT::dataTableOutput("th2mean_tab", width = "100%")
+
+
+    ))
+  })
+
+
+  eval(parse(text = check_text_input_to_vector("th2mean_power_plot")))
+
   tab_mean2_cenarios <- reactive({
 
-    power <- input$th2mean_power_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    power <- text_input_to_vector(input$th2mean_power_plot)
+    req(length(power) > 0)
+
 
     if(input$th2_mean_cohen){
       expand.grid(`Magnitude do efeito` = seq(from = input$th2_mean_from,
@@ -1995,8 +2487,14 @@ txt_referencia_pack <-
                           by = input$th2_mean_by),
                   `Poder (%)` = power,
                   `Nível de significância (%)` =  input$sig_TH2_mean_pwr,
-                  `Hipótese alternativa` = input$alternative_TH2_mean_pwr,
+                  # `Hipótese alternativa` = sided_two_means_test()$alternative_d,
+                  alternativa_temp = sided_two_means_test()$alternative,
                   stringsAsFactors = FALSE) %>%
+
+        mutate(`Hipótese alternativa` = case_when(alternativa_temp == 2     ~ "two.sided",
+                                                  `Magnitude do efeito` > 0 ~ "greater",
+                                                  `Magnitude do efeito` < 0 ~ "less")) %>%
+        select(- alternativa_temp) %>%
 
         mutate(`Tamanho da amostra` = mapply(
           function(d, sig.level, power, alternative){
@@ -2015,7 +2513,7 @@ txt_referencia_pack <-
 
     } else{
 
-      req(!is.null(input$sigma2_TH2_mean_pwr))
+      # req(!is.null(input$sigma2_TH2_mean_pwr))
       req(!is.null(input$sigma1_TH2_mean_pwr))
 
 
@@ -2026,17 +2524,38 @@ txt_referencia_pack <-
         `Poder (%)` = power,
         `Nível de significância (%)` =  input$sig_TH2_mean_pwr,
         sd1 = input$sigma1_TH2_mean_pwr,
-        sd2 = input$sigma2_TH2_mean_pwr,
+        # sd2 = input$sigma2_TH2_mean_pwr,
         Balanceamento = input$ratio_TH2_mean_pwr,
-        `Hipótese alternativa` = input$alternative_TH2_mean_pwr,
+        `Hipótese alternativa` = sided_two_means_test()$alternative,
+        `Efeito do delineamento` = input$deff_TH2_mean_pwr,
         stringsAsFactors = FALSE)
 
       simul_n <- simul_n_inputs %$%
         purrr::pmap_dfr(.l = list(`Diferença entre as médias`,
-                                  sd1, sd2, Balanceamento, `Poder (%)`,
+                                  sd1,
+                                  Balanceamento,
+                                  `Poder (%)`,
                                   `Nível de significância (%)`,
-                                  `Hipótese alternativa`),
-                        .f = n_two_mean)
+                                  `Hipótese alternativa`,
+                                  `Efeito do delineamento`),
+                        .f = function(a, b, d, e, f, g, h){
+                          n <- epiR::epi.sscompc(
+                            control = 0,
+                            treat = a,
+                            n = NA,
+                            sigma = b,
+                            power = e/100,
+                            r = d,
+                            conf.level = 1 - f/100,
+                            sided.test = g,
+                            design = h
+                          )
+
+                          return(data.frame(n1 = n$n.treat,
+                                            n2 = n$n.control,
+                                            n_total = n$n.total))
+
+                        })
 
       bind_cols(simul_n_inputs, simul_n)
     }
@@ -2096,22 +2615,25 @@ txt_referencia_pack <-
                       n1,
                       n2,
                       sd1,
-                      sd2,
+                      # sd2,
                       Balanceamento,
                       `Poder (%)`,
                       `Nível de significância (%)`,
-                      `Hipótese alternativa`)
+                      `Hipótese alternativa`,
+                      `Efeito do delineamento`)
 
       colnames(df_) <- c("Diferença entre as médias",
                          "n total",
                          paste0("n ", th2mean_grupoTratamento()),
                          paste0("n ", th2mean_grupoControle()),
-                         paste0("Desvio padrão ", th2mean_grupoTratamento()),
-                         paste0("Desvio padrão ", th2mean_grupoControle()),
+                         "Desvio padrão",
+                         # paste0("Desvio padrão ", th2mean_grupoTratamento()),
+                         # paste0("Desvio padrão ", th2mean_grupoControle()),
                          "Balanceamento",
                          "Poder (%)",
                          "Nível de significância (%)",
-                         "Hipótese alternativa")
+                         "Hipótese alternativa",
+                         "Efeito do delineamento")
 
       df_
 
@@ -2158,7 +2680,8 @@ txt_referencia_pack <-
   output$mean2TH_um <- renderUI({
     textInput(inputId = "meanTH2_unidade_medida",
               label   = paste("Descreva a unidade de medida de", input$mean2TH_nome_desfecho),
-              value   = "u.m.")
+              value   = "u.m.") %>%
+      .help_buttom(body = .txt_um)
   })
 
 
@@ -2191,15 +2714,18 @@ txt_referencia_pack <-
       "<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n/2, " em cada grupo</i>)",
       "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-      "O cálculo do tamanho de amostra foi realizado por meio da ", txt_citacao_tap, ". ",
-      "Para estimar a diferença entre as médias de <b>", input$mean2TH_nome_desfecho, "</b> nos grupos A e B, ",
-      "com uma margem de erro de <b>", input$TH2_mean_precisao, " ", input$meanTH2_unidade_medida,
-      "</b> com um nível de confiança de <b>", input$conf_TH2_mean_pwr, "%</b>",
-      " e um desvio padrão esperado de <b>", input$s_mean, " ", input$meanTH2_unidade_medida, "</b> como referido em Fulano (1900), ",
-      "chegou-se ao tamanho de amostra de <b>", n, " sujeitos </b> (sendo <b><i>", n/2, "</b></i> em cada grupo). ",
-      "Acrescentando <b>", input$TH_mean_perdas_recusa_est, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas, "</b>.",
+      "O cálculo do tamanho de amostra foi realizado por meio da ", .txt_citacao_tap, ", ",
+      "para estimar a diferença entre as médias de <b>", input$mean2TH_nome_desfecho, "</b> nos grupos A e B, ",
+      "com margem de erro de <b>", input$TH2_mean_precisao, " ", input$meanTH2_unidade_medida,
+      "</b>, nível de confiança de <b>", input$conf_TH2_mean_pwr, "%</b>",
+      " e desvio padrão esperado de <b>", input$sigma_TH2_mean_est, " ", input$meanTH2_unidade_medida, "</b> como referido em Fulano (1900), ",
+      "chegou-se ao tamanho de amostra de <b>", n, " sujeitos </b> (sendo <b>", n/2, "</b> em cada grupo). ",
+      if(testar_valor_perdas_valido(input$TH_mean_perdas_recusa_est)){
+        paste0(
+      "Acrescentando <b>", input$TH_mean_perdas_recusa_est, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas, "</b>.")
+      },
 
-      txt_referencia_tap, print_r_code(code)
+      .txt_referencia_tap, print_r_code(code)
     )
 
 
@@ -2213,83 +2739,181 @@ txt_referencia_pack <-
   # Poder ----
 
   eval(parse(text = warning_prop("poder_sig_TH2_mean_pwr")))
-  eval(parse(text = warning_numero_positivo("poder_TH2_mean_margin")))
-  eval(parse(text = warning_numero_positivo("poder_n2_TH2_mean_pwr")))
+  eval(parse(text = warning_inteiro("poder_n1_TH2_mean_pwr")))
+  eval(parse(text = warning_inteiro("poder_n2_TH2_mean_pwr")))
   eval(parse(text = warning_numero_positivo("poder_sigma1_TH2_mean_pwr")))
   eval(parse(text = warning_numero_positivo("poder_sigma2_TH2_mean_pwr")))
+
 
   observeEvent(input$cohen_TH2_mean_pwr_poder, {
     if(is.na(input$cohen_TH2_mean_pwr_poder)){
       shinyFeedback::showFeedbackWarning(
         inputId = "cohen_TH2_mean_pwr_poder",
-        text = "Deve ser fornecido um valor.",
-        color = "red")
+        text = "Deve ser fornecido um valor do tamanho de efeito.",
+        color = "red"
+      )
+    } else if (input$cohen_TH2_mean_pwr_poder == 0) {
+      shinyFeedback::showFeedbackWarning(
+        inputId = "cohen_TH2_mean_pwr_poder",
+        text = "O tamanho de efeito deve ser diferente de que zero.",
+        color = "red"
+      )
     } else {
       shinyFeedback::hideFeedback("cohen_TH2_mean_pwr_poder")
     }
   })
 
+
+  observeEvent(input$poder_TH2_mean_margin, {
+    if(is.na(input$poder_TH2_mean_margin)){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "poder_TH2_mean_margin",
+        text = "Deve ser fornecido um valor da diferença a ser detectada.",
+        color = "red"
+      )
+    } else if(input$poder_TH2_mean_margin == 0){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "poder_TH2_mean_margin",
+        text = "A diferença a ser detectada deve ser diferente de 0.",
+        color = "red"
+      )
+    } else {
+      shinyFeedback::hideFeedback("poder_TH2_mean_margin")
+    }
+  })
+
+
+  output$poder_th2_mean_formula1 <- renderUI({
+    sinal_h0 <- case_when(input$poder_alternative_TH2_mean_pwr == 'two.sided' ~ "=",
+                          input$poder_alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test_power()$alternative_d == "greater"  ~ "\\leq",
+                          input$poder_alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test_power()$alternative_d == "less" ~ "\\geq")
+
+    withMathJax(
+      paste0("$$H_0: \\mu_{", "Grupo A", "} ", sinal_h0, " \\mu_{", "Grupo B", "} $$"))
+  })
+
+  output$poder_th2_mean_formula2 <- renderUI({
+    sinal_h1 <- case_when(input$poder_alternative_TH2_mean_pwr == 'two.sided' ~ "\\neq",
+                          input$poder_alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test_power()$alternative_d == "greater"  ~ ">",
+                          input$poder_alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test_power()$alternative_d == "less" ~ "<")
+
+    withMathJax(
+      paste0("$$H_1: \\mu_{", "Grupo A", "}", sinal_h1, " \\mu_{", "Grupo B", "} $$"))
+  })
+
+
+
+
+  sided_two_means_test_power <- reactive({
+
+    req(!is.null(input$poder_alternative_TH2_mean_pwr))
+
+
+    # Se entrar com o d de Cohen
+    if(input$th2_pwr_mean_cohen){
+
+      if(input$poder_alternative_TH2_mean_pwr != "two.sided" & input$cohen_TH2_mean_pwr < 0){
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
+        alternative <- 1
+        alternative_d <- "less"
+      } else{
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
+        alternative <- 1
+        alternative_d <- "greater"
+      }
+    } else {
+
+      if(input$poder_alternative_TH2_mean_pwr != "two.sided" & input$poder_TH2_mean_margin < 0){
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
+        alternative <- 1
+        alternative_d <- "less"
+      } else{
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
+        alternative <- 1
+        alternative_d <- "greater"
+      }
+    }
+
+
+    # O de dois lados se sobrepoe
+    if(input$poder_alternative_TH2_mean_pwr == "two.sided"){
+      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar diferenças na média de <b>", mean2_nome_desfecho(), "</b> entre os grupos ", th2mean_grupoTratamento(), " e ", th2mean_grupoControle(), ", ")
+      alternative <- 2
+      alternative_d <- "two.sided"
+    }
+
+    list(alternative = alternative,
+         alternative_d = alternative_d,
+         texto_comparacao = texto_comparacao)
+  })
+
+
+
+
+
+
+
+
   output$THmean2_power <- renderText({
     if(!input$th2_pwr_mean_cohen){
 
       cohens_d <- cohen_d(mean_diff = input$poder_TH2_mean_margin,
-                          n_1 = input$poder_n2_TH2_mean_pwr,
+                          n_1 = input$poder_n1_TH2_mean_pwr,
                           n_2 = input$poder_n2_TH2_mean_pwr,
                           sd_1 = input$poder_sigma1_TH2_mean_pwr,
                           sd_2 = input$poder_sigma2_TH2_mean_pwr)
 
     } else {
-      cohens_d <- if(input$poder_alternative_TH2_mean_pwr == "less") - input$cohen_TH2_mean_pwr_poder else input$cohen_TH2_mean_pwr_poder
+      cohens_d <- if(sided_two_means_test_power()$texto_comparacao == "less") - input$cohen_TH2_mean_pwr_poder else input$cohen_TH2_mean_pwr_poder
     }
 
     code <- paste0(
-      "pwr::pwr.t.test(n = ", input$poder_n2_TH2_mean_pwr, ", ",
+      "pwr::pwr.t2n.test(",
+      "n1 = ", input$poder_n1_TH2_mean_pwr, ", ",
+      "n2 = ", input$poder_n2_TH2_mean_pwr, ", ",
       "d = ", cohens_d, ", ",
       "sig.level = ", input$poder_sig_TH2_mean_pwr, "/100, ",
       "power = NULL, ",
-      "alternative = '", input$poder_alternative_TH2_mean_pwr, "')")
+      "alternative = '", sided_two_means_test_power()$alternative_d, "')")
 
     npwr <- eval(parse(text = code))
 
     cabecalho <- paste0("<b><font size = '5'>Poder calculado: ",round(100*npwr$power, digits = 1),
                         "%</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
-    if(input$poder_alternative_TH2_mean_pwr == "two.sided"){
-      texto_comparacao <- "Foi calculado o poder para detectar diferenças entre as médias de X1 e X2, "
-    } else if(input$poder_alternative_TH2_mean_pwr == "less"){
-      texto_comparacao <- "Foi calculado o poder para detectar que a média de X1 é inferior a de X2, "
-    } else{
-      texto_comparacao <- "Foi calculado o poder para detectar que a média de X1 é superior a de X2, "
-    }
-
-
-
-    texto_tamanho_efeito <- paste0(texto_comparacao,
-                                   "por meio da ", txt_citacao_tap, ". ",
-                                   "Considerando nível de significância de <b>", input$poder_sig_TH2_mean_pwr, "%</b> ",
-                                   "e tamanho de efeito de <b>", round( input$cohen_TH2_mean_pwr, 2), "</b>, ",
-                                   "chegou-se à um poder de de <b>", round(100*npwr$power, digits = 1), "%</b>."
-    )
-
-
     if(!input$th2_pwr_mean_cohen){
-      texto_desvio <- paste0(texto_comparacao,
-                             "tendo uma diferença de <b>", input$poder_TH2_mean_margin, "</b> como relevante para o estudo. ",
-                             "Para isso foi utilizado a ", txt_citacao_tap, ". ",
-                             "Considerando nível de significância de <b>", input$poder_sig_TH2_mean_pwr, "%</b> ",
-                             "e desvio padrão de <b>", input$poder_sigma1_TH2_mean_pwr, "</b> para o grupo A e <b>", input$poder_sigma2_TH2_mean_pwr, "</b> para o grupo B, ",
+      texto_desvio <- paste0(sided_two_means_test_power()$texto_comparacao,
+                             "tendo uma diferença de <b>", input$poder_TH2_mean_margin, " u.m.</b> como relevante para o estudo. ",
+                             "Para isso foi utilizado a ", .txt_citacao_tap, ". ",
+                             "Considerando nível de significância de <b>", input$poder_sig_TH2_mean_pwr, "%</b>, ",
+                             "tamanho amostral de ", input$poder_n1_TH2_mean_pwr, " para o grupo A e ", input$poder_n2_TH2_mean_pwr, " para o grupo B, ",
+                             " desvio padrão de <b>", input$poder_sigma1_TH2_mean_pwr, " u.m.</b> para o grupo A e <b>", input$poder_sigma2_TH2_mean_pwr, " u.m.</b> para o grupo B, ",
                              "chegou-se à um poder de de <b>", round(100*npwr$power, digits = 1), "%</b>.")
 
       paste0(cabecalho,
              texto_desvio,
-             txt_referencia_tap, print_r_code(code))
+             .txt_referencia_tap, print_r_code(code))
+
     } else{
+      texto_tamanho_efeito <- paste0(sided_two_means_test_power()$texto_comparacao,
+                                     "por meio da ", .txt_citacao_tap, ". ",
+                                     "Considerando nível de significância de <b>", input$poder_sig_TH2_mean_pwr, "%</b>, ",
+                                     "tamanho amostral de ", input$poder_n1_TH2_mean_pwr, " para o grupo A e ", input$poder_n2_TH2_mean_pwr, " para o grupo B, ",
+                                     "e tamanho de efeito de <b>", round( input$cohen_TH2_mean_pwr, 2), "</b>, ",
+                                     "chegou-se à um poder de de <b>", round(100*npwr$power, digits = 1), "%</b>.")
       paste0(cabecalho,
              texto_tamanho_efeito,
-             txt_referencia_tap, print_r_code(code))
+             .txt_referencia_tap, print_r_code(code))
     }
 
   })
+
+
+
+
+
+
+
 
   #---------------.
   # Equivalência ----
@@ -2308,7 +2932,10 @@ txt_referencia_pack <-
                   min   = -Inf,
                   max   = Inf,
                   step  = 1) %>%
-      help_buttom(body = "Margem com o objetivo de determinar a partir de que valor....")
+      .help_buttom(body = case_when(input$mean_test_inf_eq_sup == "Não inferioridade"  ~ .txt_margem_nao_inferior,
+                                    input$mean_test_inf_eq_sup == "Superioridade"      ~ .txt_margem_superior,
+                                    TRUE ~ .txt_margem_equivalencia),
+                   title = paste0("Margem de ", input$mean_test_inf_eq_sup))
   })
 
 
@@ -2321,12 +2948,12 @@ txt_referencia_pack <-
       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
           textInput(inputId = "inf_sup_groupA",
                     label   = "Comparar se o grupo:",
-                    value   = "Tratamento")),
+                    value   = "Experimental")),
 
       div(style="display: inline-block;vertical-align:top; width: 49%;",
           textInput(inputId = "inf_sup_groupB",
                     label   = label_,
-                    value   = "Controle"))
+                    value   = "Convencional"))
     )
   })
 
@@ -2359,22 +2986,23 @@ txt_referencia_pack <-
                              input$mean_test_inf_eq_sup == "Superioridade"     ~ 1,
                              TRUE ~ 0)
 
-    fluidPage(
+    fluidPage(fluidRow(
       numericInput( "delta_2_ind",
                     paste0("Diferença esperada entre as médias (", input$inf_sup_groupA, " - ", input$inf_sup_groupB, ")"),
                     value = delta_2_ind,
                     min = -Inf,
                     max = Inf,
                     step = .5
-      )  %>% help_buttom(body = "Diferença esperada/ desejada"),
+      )  %>% .help_buttom(body = paste0("É a diferença que se espera observar entre os dois grupos. ", .txt_definido_literatura),
+                          title = "Diferença esperada entre as médias"),
       uiOutput("margin_mean_inf_eq_sup"),
       numericInput( "sigma_2_ind",
-                    "Desvio padrão combinado",
+                    "Desvio padrão esperado",
                     value = 2,
                     min = 0,
                     max = Inf,
                     step = 1
-      ) %>% help_buttom(body = "Desvio padrão combinado (pooled). Se necessário utilize a opção abaixo do campo para calcular."),
+      ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
 
       actionLink("show_desvio_pooled", "Calcular o desvio padrão combinado"),
       br(), br(),
@@ -2386,33 +3014,34 @@ txt_referencia_pack <-
                     min = 0,
                     max = Inf,
                     step = .5
-      ) %>% help_buttom("Nº de controles para cada tratamento. Se colocar o valor 2, será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 controles para cada tratamento. Se colocar o valor 0.5,
-                                                                      será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 tratamentos para cada controle."),
+      ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
       numericInput( "beta_2_ind",
                     "Poder (%)",
                     value = 80,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+      ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
       numericInput( "alpha_2_ind",
                     "Nível de significância (%)",
                     value = 5,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+      ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
       numericInput( "eq_mean_perdas_recusa",
                     "Perdas/ Recusa (%)",
                     value = 10,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisas. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
-    )
+      ) %>% .help_buttom(body = "Percentual de perdas previstas ao longo da pesquisas. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+    ))
   })
+
+
+
+
 
   observeEvent(c(input$show_desvio_pooled), {
     validate(need(input$show_desvio_pooled > 0, ''))
@@ -2425,7 +3054,7 @@ txt_referencia_pack <-
 
     showModal(
       modalDialog(
-        title = "Obter o desvio padrão da diferença entre grupos pareados",
+        title = "Obter o desvio padrão combinado",
         fluidPage(
 
           HTML(paste0("<b><font size = '3'>", "Desvio padrão", " do</font></b><br>")),
@@ -2464,7 +3093,7 @@ txt_referencia_pack <-
           htmlOutput("ferramentas_pooled_modal"),
 
           p("Foi utilizado a fórmula"),
-          withMathJax("$$s_{pooled} = \\sqrt{ \\dfrac{(n_A - 1)s_A^2 + (n_B - 1)s_B^2}{n_A+n_B-2} }$$")
+          withMathJax("$$s_{combinado} = \\sqrt{ \\dfrac{(n_A - 1)s_A^2 + (n_B - 1)s_B^2}{n_A+n_B-2} }$$")
 
         ),
         easyClose = TRUE,
@@ -2500,7 +3129,6 @@ txt_referencia_pack <-
   problemaMedia <- reactive({
 
     mensagem_print <- NULL
-    mensagem_input <- NULL
 
     if(input$mean_test_inf_eq_sup == "Não inferioridade"){
       if(input$margem_2_ind > 0){
@@ -2533,6 +3161,10 @@ txt_referencia_pack <-
   })
 
 
+
+
+
+
   eval(parse(text = warning_prop("alpha_2_ind")))
   eval(parse(text = warning_prop("beta_2_ind")))
   eval(parse(text = warning_numero_positivo("sigma_2_ind")))
@@ -2554,7 +3186,7 @@ txt_referencia_pack <-
 
 
     alpha  = input$alpha_2_ind/100
-    beta   = 1 - input$beta_2_ind/100
+    power  = input$beta_2_ind/100
     sigma  = input$sigma_2_ind
     k      = input$k_2_ind
     margin = input$margem_2_ind
@@ -2577,48 +3209,62 @@ txt_referencia_pack <-
       problemaMedia()
     } else {
 
+
       shinyFeedback::hideFeedback("margem_2_ind")
       shinyFeedback::hideFeedback("delta_2_ind")
 
       if(input$mean_test_inf_eq_sup == "Equivalência"){
 
-        # pagina 96 Sample size for clinical trials - Steven A. Julious
-        # n2 <- (qnorm(1 - alpha) + qnorm(1 - beta/2))^2 * sigma^2 *  (1 + 1/k)/(delta - abs(margin))^2
-
-
-        # } else if(input$mean_test_inf_eq_sup == "Não inferioridade"){
-
-        # pagina 96 Sample size for clinical trials - Steven A. Julious
-        # n2 <- (qnorm(1 - alpha) + qnorm(1 - beta))^2 * sigma^2 * (1 + 1/k)/(delta - margin)^2
-
         code <- paste0(
-          "TrialSize::TwoSampleMean.Equivalence(",
+          "epiR::epi.ssequc(",
+          "control = 0, ",
+          "treat = ", margin, ", ",
+          "n = NA, ",
+          "sd = ",  sigma, ", ",
+          "delta = ",  delta, ", ",
+          "r = ",  k, ", ",
           "alpha = ", alpha, ", ",
-          "beta  = ", beta, ", ",
-          "sigma = ", sigma, ", ",
-          "k =", k, ", ",
-          "delta = ", margin, ", ",
-          "margin = ", delta, ")"
+          "power  = ",  power, ")"
         )
 
-      } else{
+      } else if(input$mean_test_inf_eq_sup == "Não inferioridade"){
+
 
         code <- paste0(
-          "TrialSize::TwoSampleMean.NIS(",
+          "epiR::epi.ssninfc(",
+          "control = 0, ",
+          "treat = ", margin, ", ",
+          "n = NA, ",
+          "sd = ",  sigma, ", ",
+          "delta = ",  delta, ", ",
+          "r = ",  k, ", ",
           "alpha = ", alpha, ", ",
-          "beta  = ",  beta, ", ",
-          "sigma = ",  sigma, ", ",
-          "k = ",  k, ", ",
-          "delta = ",  margin, ", ",
-          "margin = ",  delta, ")"
+          "power  = ",  power, ")"
         )
+
+      } else {
+
+        code <- paste0(
+          "epiR::epi.sssupc(",
+          "control = 0, ",
+          "treat = ", margin, ", ",
+          "n = NA, ",
+          "sd = ",  sigma, ", ",
+          "delta = ",  delta, ", ",
+          "r = ",  k, ", ",
+          "alpha = ", alpha, ", ",
+          "power  = ",  power, ")"
+        )
+
       }
 
-      n1 <- try_n(code)
-      eval(parse(text = validate_n("n1")))
 
-      n1 <- ceiling(n1)
-      n2 <- ceiling(n1/k)
+
+      n <- try_n(code)
+      eval(parse(text = validate_n("n")))
+
+      n1 <- n$n.treat
+      n2 <- n$n.control
       n <- n1 + n2
 
       nperdas1 <- n_perdas(n1, input$eq_mean_perdas_recusa)
@@ -2634,20 +3280,20 @@ txt_referencia_pack <-
 
       #---- Texto do teste
       if(input$mean_test_inf_eq_sup == "Equivalência"){
-        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>equivalência</b>, em termos de médias, entre os grupos ", input$inf_sup_groupA, " e ", input$inf_sup_groupB,
-                                   " por meio da ", txt_citacao_tap, ". ",
-                                   "Considerando uma margem de equivalência de <b>", margin, "</b>"
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>equivalência</b>, em termos de médias de <b>Y</b>, entre os grupos ", input$inf_sup_groupA, " e ", input$inf_sup_groupB,
+                                   " por meio da ", .txt_citacao_tap, ". ",
+                                   "Considerando uma margem de equivalência de <b>", margin, " u.m.</b>"
         )
       } else if(input$mean_test_inf_eq_sup == "Não inferioridade"){
-        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>não inferioridade</b>, em termos de médias, do grupo ", input$inf_sup_groupA, " em relação ao grupo ", input$inf_sup_groupB,
-                                   " por meio da ", txt_citacao_tap, ". ",
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>não inferioridade</b>, em termos de médias de <b>Y</b>, do grupo ", input$inf_sup_groupA, " em relação ao grupo ", input$inf_sup_groupB,
+                                   " por meio da ", .txt_citacao_tap, ". ",
                                    # " utilizando as fómulas descritas por Julious, S.A. (2009). ",
-                                   "Considerando uma margem de não inferioridade de <b>", margin, "</b>"
+                                   "Considerando uma margem de não inferioridade de <b>", margin, " u.m.</b>"
         )
       } else{
-        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>superioridade</b>, em termos de médias, do grupo ", input$inf_sup_groupA, " em relação ao grupo ", input$inf_sup_groupB,
-                                   " por meio da ", txt_citacao_tap, ". ",
-                                   "Considerando uma margem de não inferioridade de <b>", margin, "</b>"
+        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>superioridade</b>, em termos de médias de <b>Y</b>, do grupo ", input$inf_sup_groupA, " em relação ao grupo ", input$inf_sup_groupB,
+                                   " por meio da ", .txt_citacao_tap, ". ",
+                                   "Considerando uma margem de superioridade de <b>", margin, " u.m.</b>"
         )
       }
       #----------------.
@@ -2655,20 +3301,24 @@ txt_referencia_pack <-
 
       texto_final <- paste0(", poder de <b>", input$beta_2_ind, "%</b>, ",
                             "nível de significância de <b>", input$alpha_2_ind, "%</b>, ",
-                            "diferença entre as médias de <b>", delta, "</b> ",
-                            "e desvio padrão de <b>", input$sigma_2_ind, "</b> (dados de Fulano (1900)), ",
+                            "diferença entre as médias de <b>", delta, " u.m.</b> ",
+                            "e desvio padrão esperado de <b>", input$sigma_2_ind, " u.m.</b> (dados de Fulano (1900)), ",
                             "chegou-se ao tamanho total da amostra de <b>", n, "</b> sujeitos, ",
 
                             if(input$k_2_ind == 1){
                               paste0(
                                 "sendo <b>", n1, "</b> sujeitos em cada grupo. ",
-                                "Acrescentando <b>", input$eq_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas1 + nperdas2, "</b>."
+                                if(testar_valor_perdas_valido(input$eq_mean_perdas_recusa)){
+                                  paste0("Acrescentando <b>", input$eq_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas1 + nperdas2, "</b>.")
+                                }
                               )
                             } else{
                               paste0(
                                 "sendo <b>", n1, "</b> sujeitos no grupo ", input$inf_sup_groupA, " e ", n2, " sujeitos no grupo ", input$inf_sup_groupB,
-                                " Acrescentando <b>", input$eq_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas1 + nperdas2, "</b>",
-                                " (<b>", nperdas1, "</b> no grupo ", input$inf_sup_groupA, " e <b>", nperdas2, "</b> no grupo ", input$inf_sup_groupB, ")."
+                                if(testar_valor_perdas_valido(input$eq_mean_perdas_recusa)){
+                                  paste0(" Acrescentando <b>", input$eq_mean_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas1 + nperdas2, "</b>",
+                                         " (<b>", nperdas1, "</b> no grupo ", input$inf_sup_groupA, " e <b>", nperdas2, "</b> no grupo ", input$inf_sup_groupB, ").")
+                                }
                               )
                             }
 
@@ -2680,7 +3330,7 @@ txt_referencia_pack <-
       paste0(cabecalho,
              texto_comparacao,
              texto_final,
-             txt_referencia_tap, print_r_code(code)
+             .txt_referencia_tap, print_r_code(code)
       )
     }
 
@@ -2878,7 +3528,7 @@ txt_referencia_pack <-
                   min = 0,
                   max = 100,
                   step = 1
-    ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Controle, geralmente é utilizado algum valor com base na literatura.")
+    ) %>% .help_buttom(body = .txt_perc_esperado)
   })
 
   output$perc_tratamento_estimar <- renderUI({
@@ -2888,7 +3538,7 @@ txt_referencia_pack <-
                   min = 0,
                   max = 100,
                   step = 1
-    ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Tratamento, geralmente é utilizado algum valor com base na literatura.")
+    ) %>% .help_buttom(body = .txt_perc_esperado)
   })
 
 
@@ -2923,7 +3573,7 @@ txt_referencia_pack <-
       p2 <- (input$p2_TH_prop2_est/100)*input$p2_TH_ratio_est
 
       text_just <- paste0("e uma proporção esperada de <b>", input$prop2_nome_desfecho_est, "</b> no grupo Controle de <b>", input$p2_TH_prop2_est, "% </b>",
-                          "e um risco relativo de <b>", input$p2_TH_ratio_est, "</b> como é referida em Fulano (1900), ")
+                          "e um risco relativo de <b>", input$p2_TH_ratio_est, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador, ")
 
     } else {
       # https://stats.stackexchange.com/questions/324410/converting-odds-ratio-to-percentage-increase-reduction
@@ -2931,7 +3581,7 @@ txt_referencia_pack <-
       p2 <- (input$p2_TH_odds_est*prob_control)/ (1 + input$p2_TH_odds_est*prob_control - prob_control)
 
       text_just <- paste0("e uma proporção de <b>", input$prop2_nome_desfecho_est, "</b> no grupo Controle de <b>", input$p2_TH_prop2_est, "% </b>",
-                          "e uma razão de chance de <b>", input$p2_TH_odds_est, "</b> como é referida em Fulano (1900), ")
+                          "e uma razão de chance de <b>", input$p2_TH_odds_est, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador, ")
     }
 
 
@@ -3004,8 +3654,8 @@ txt_referencia_pack <-
                         "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
     texto_comparacao <- paste0("Foi calculado o tamanho de amostra para estimar a diferença entre as proporções de <b>",
-                               input$prop2_nome_desfecho_est, "</b> entre os Tratamentos e Controles com uma precisão de <b>", input$prop2_TH_precisao, "%</b>",
-                               " por meio da ", txt_citacao_tap, ". ",
+                               input$prop2_nome_desfecho_est, "</b> entre os Tratamentos e Controles com uma margem de erro de <b>", input$prop2_TH_precisao, "%</b>",
+                               " por meio da ", .txt_citacao_tap, ". ",
                                "Considerando nível de confiança de <b>", input$conf_TH_prop2, "% </b>",
                                text_just)
 
@@ -3013,13 +3663,17 @@ txt_referencia_pack <-
     if(input$k_TH_prop2_est == 1){
 
       texto_grupos <- paste0("chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> em cada grupo.",
-                             " Acrescentando <b>", input$TH_prop_perdas_recusa_est, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
-                             "deverá ser <b>", nperdas1 + nperdas2, "</b>.")
+                             if(testar_valor_perdas_valido(input$TH_prop_perdas_recusa_est)){
+                               paste0(" Acrescentando <b>", input$TH_prop_perdas_recusa_est, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
+                                      "deverá ser <b>", nperdas1 + nperdas2, "</b>.")
+                             })
     } else{
 
       texto_grupos <- paste0("chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> no Tratamento e <b>", n2, "</b> no grupo Controle.",
-                             " Acrescentando <b>", input$TH_prop_perdas_recusa_est, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
-                             "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " no Tratamento e ", nperdas2, " no grupo Controle).")
+                             if(testar_valor_perdas_valido(input$TH_prop_perdas_recusa_est)){
+                               paste0(" Acrescentando <b>", input$TH_prop_perdas_recusa_est, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
+                                      "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " no Tratamento e ", nperdas2, " no grupo Controle).")
+                             })
     }
 
     paste0(cabecalho,
@@ -3030,218 +3684,170 @@ txt_referencia_pack <-
            round(poder_teste*100, 1), "</b>%.",
 
            "</br></br>",
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
   })
 
 
 
 
-  # COnstroi a tabela com os cenarios
-  tab_p2_EST_cenarios <- reactive({
-
-
-    precisao <- input$precisao_p2_EST_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
-
-    if(input$prop2_estatistica_B_est == "percent"){
-      rrrr <- NA
-      odssss <- NA
-      prop_tratamento <- seq(from = input$p2_EST_from, to = input$p2_EST_to, by = input$p2_EST_by)/100
-
-    } else if (input$prop2_estatistica_B_est == "ratio") {
-
-      rrrr <- seq(from = input$rr_p2_EST_from, to = input$rr_p2_EST_to, by = input$rr_p2_EST_by)
-      odssss <- NA
-      prop_tratamento <- (input$p2_TH_prop2_est/100)*rrrr
-
-    } else {
-
-      rrrr <- NA
-      odssss <- seq(from = input$ods_p2_EST_from, to = input$ods_p2_EST_to, by = input$ods_p2_EST_by)
-      prob_control <- input$p2_TH_prop2_est/100
-      prop_tratamento <- (odssss*prob_control)/ (1 + odssss*prob_control - prob_control)
-
-    }
-
-
-    df_inputs_prop <- tibble::tibble(rrrr, odssss, prop_tratamento)
-
-    # df_inputs_prop
-
-
-    simul_n <- expand.grid(prop_controle   = input$p2_TH_prop2_est,
-                           prop_tratamento = prop_tratamento*100,
-                           confianca       = input$conf_TH_prop2,
-                           precisao           = precisao,
-                           ratio_controle_caso = input$k_TH_prop2_est,
-                           correct        = input$prop_correction_est,
-                           ci.method      = input$prop_TH_est_method,
-                           stringsAsFactors = FALSE)
-
-    simul_n_grid_n <- dplyr::filter(simul_n, prop_tratamento != prop_controle) %$%
-      purrr::pmap_dfr(.l = list(prop_controle, prop_tratamento, confianca, precisao,
-                                ratio_controle_caso, correct, ci.method),
-                      .f = n_est2_prop)
-
-    simul_n_grid_n %>%
-      left_join(df_inputs_prop, by = "prop_tratamento") %>%
-      rename(`Risco relativo` = rrrr,
-             `Razão de chance` = odssss)
-
-
-  })
-
-
-  output$p2_EST_plot <- plotly::renderPlotly({
-
-    req(!(is.null(input$p2_TH_prop2_est) | is.null(input$precisao_p2_EST_plot)))
-    # req(!(is.na(input$p2_TH_prop2_est) | is.na(input$p2_EST_from) | is.na(input$power_p2_EST_plot)))
-    df <- tab_p2_EST_cenarios() %>%
-      mutate(`Precisão (%)` = factor(`Precisão (%)`)) %>%
-      filter(!is.na(`n total`))
-
-    if(input$prop2_estatistica_B_est == 'percent'){
-
-      g1 <- df %>%
-        ggplot(aes(x = `% no Tratamento`,
-                   y = `n total`,
-                   color = `Precisão (%)`,
-                   Tratamento = `n Tratamento`,
-                   Controle   = `n Controle`))+
-        geom_line() +
-        geom_point() +
-        geom_vline(xintercept=input$p2_TH_prop2_est, linetype="dashed", color = "red") +
-        scale_x_continuous(breaks = seq(from = input$p2_EST_from, to = input$p2_EST_to, by = input$p2_EST_by)) +
-        xlab("% no Tratamento") +
-        ylab("Tamanho da amostra*")
-    } else if(input$prop2_estatistica_B_est == 'ratio'){
-
-      g1 <- ggplot(df,
-                   aes(x = `Risco relativo`,
-                       y = `n total`,
-                       color = `Precisão (%)`,
-                       Tratamento = `n Tratamento`,
-                       Controle   = `n Controle`))+
-        geom_line() +
-        geom_point() +
-        # geom_vline(xintercept=input$p2_TH_prop2_est, linetype="dashed", color = "red") +
-        scale_x_continuous(breaks = seq(from = input$rr_p2_EST_from, to = input$rr_p2_EST_to, by = input$rr_p2_EST_by)) +
-        xlab("Risco relativo (Tratamento/Controle)") +
-        ylab("Tamanho da amostra*")
-    } else{
-
-      g1 <- ggplot(df,
-                   aes(x = `Razão de chance`,
-                       y = `n total`,
-                       color = `Precisão (%)`,
-                       Tratamento = `n Tratamento`,
-                       Controle   = `n Controle`))+
-        geom_line() +
-        geom_point() +
-        # geom_vline(xintercept=input$p2_TH_prop2_est, linetype="dashed", color = "red") +
-        scale_x_continuous(breaks = seq(from = input$rr_p2_EST_from, to = input$rr_p2_EST_to, by = input$rr_p2_EST_by)) +
-        xlab("Razão de chance (Tratamento/Controle)") +
-        ylab("Tamanho da amostra*")
-    }
-
-
-
-    plotly::ggplotly(g1,
-                     tooltip = c("x", "colour", "y", "Tratamento", "Controle")) %>%
-      plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
-                                showarrow = F, xref='paper', yref='paper',
-                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                font=list(size=10)))
-  })
-
-
-  return_table_p2_EST_tab <- reactive({
-    tab_p2_EST_cenarios()
-    # if(input$prop2_estatistica_B_est == 'percent'){
-    #
-    #   tab_p2_EST_cenarios() %>%
-    #     dplyr::select(`% Controle`,
-    #            `% Tratamento`,
-    #            `Nível de confiança (%)`,
-    #            `Precisão (%)`,
-    #            `Balanço da amostra (Controle/ Tratamento)`,
-    #            `Correção de continuidade`,
-    #            `% de perdas/ recusas`,
-    #            `n Tratamento`,
-    #            `n Controle`,
-    #            `n total`,
-    #            `Trat + perdas/ recusas`,
-    #            `Cont + perdas/ recusas`,
-    #            `n total + perdas/ recusas`)
-    #
-    # } else if(input$prop2_estatistica_B_est == 'ratio'){
-    #
-    #   tab_p2_EST_cenarios()  %>%
-    #     dplyr::select(`% Controle`,
-    #            `Risco relativo`,
-    #            `Nível de confiança (%)`,
-    #            `Precisão (%)`,
-    #            `Balanço da amostra (Controle/ Tratamento)`,
-    #            `Correção de continuidade`,
-    #            `% de perdas/ recusas`,
-    #            `n Tratamento`,
-    #            `n Controle`,
-    #            `n total`,
-    #            `Trat + perdas/ recusas`,
-    #            `Cont + perdas/ recusas`,
-    #            `n total + perdas/ recusas`)
-    # } else{
-    #
-    #   tab_p2_EST_cenarios()  %>%
-    #     dplyr::select(`% Controle`,
-    #            `Razão de chance`,
-    #            `Nível de confiança (%)`,
-    #            `Precisão (%)`,
-    #            `Balanço da amostra (Controle/ Tratamento)`,
-    #            `Correção de continuidade`,
-    #            `% de perdas/ recusas`,
-    #            `n Tratamento`,
-    #            `n Controle`,
-    #            `n total`,
-    #            `Trat + perdas/ recusas`,
-    #            `Cont + perdas/ recusas`,
-    #            `n total + perdas/ recusas`)
-    # }
-  })
-
-
-
-  output$p2_EST_tab <- DT::renderDataTable({
-
-    req(!(is.null(input$p2_TH_prop2_est) | is.null(input$precisao_p2_EST_plot)))
-    # req(!(is.na(input$p2_TH_prop2_est) | is.na(input$p2_EST_from) | is.na(input$power_p2_EST_plot)))
-
-
-    return_table_p2_EST_tab() %>%
-      DT::datatable(extensions = c('FixedColumns'),
-                rownames   = FALSE,
-                filter     = "none",
-                #callback   = DT::JS("$('div.dwnld').append($('#download_p2_EST_tab'));"),
-                options    = list(pageLength = 10,
-                                  scrollX = TRUE,
-                                  scrollY = TRUE,
-                                  searching = FALSE,
-                                  fixedColumns = list(leftColumns = 1),
-                                  dom = 'B<"dwnld">frtip'
-                                  # buttons = list(list(extend = 'none'))
-                )
-      )
-  })
-
-
-  output$download_p2_EST_tab <- downloadHandler(
-    filename = function() { "Cenarios_tamanho_amostra_duas_prop_estimar.xlsx"},
-    content = function(file) {writexl::write_xlsx(return_table_p2_EST_tab(),
-                                                  path = file)}
-  )
+  # eval(parse(text = check_text_input_to_vector("precisao_p2_EST_plot")))
+  #
+  #
+  # # COnstroi a tabela com os cenarios
+  # tab_p2_EST_cenarios <- reactive({
+  #
+  #
+  #   precisao <- text_input_to_vector(input$precisao_p2_EST_plot)
+  #   req(length(precisao) > 0)
+  #
+  #
+  #   if(input$prop2_estatistica_B_est == "percent"){
+  #     rrrr <- NA
+  #     odssss <- NA
+  #     prop_tratamento <- seq(from = input$p2_EST_from, to = input$p2_EST_to, by = input$p2_EST_by)/100
+  #
+  #   } else if (input$prop2_estatistica_B_est == "ratio") {
+  #
+  #     rrrr <- seq(from = input$rr_p2_EST_from, to = input$rr_p2_EST_to, by = input$rr_p2_EST_by)
+  #     odssss <- NA
+  #     prop_tratamento <- (input$p2_TH_prop2_est/100)*rrrr
+  #
+  #   } else {
+  #
+  #     rrrr <- NA
+  #     odssss <- seq(from = input$ods_p2_EST_from, to = input$ods_p2_EST_to, by = input$ods_p2_EST_by)
+  #     prob_control <- input$p2_TH_prop2_est/100
+  #     prop_tratamento <- (odssss*prob_control)/ (1 + odssss*prob_control - prob_control)
+  #
+  #   }
+  #
+  #
+  #   df_inputs_prop <- tibble::tibble(rrrr, odssss, prop_tratamento)
+  #
+  #   # df_inputs_prop
+  #
+  #
+  #   simul_n <- expand.grid(prop_controle   = input$p2_TH_prop2_est,
+  #                          prop_tratamento = prop_tratamento*100,
+  #                          confianca       = input$conf_TH_prop2,
+  #                          precisao           = precisao,
+  #                          ratio_controle_caso = input$k_TH_prop2_est,
+  #                          correct        = input$prop_correction_est,
+  #                          ci.method      = input$prop_TH_est_method,
+  #                          stringsAsFactors = FALSE)
+  #
+  #   simul_n_grid_n <- dplyr::filter(simul_n, prop_tratamento != prop_controle) %$%
+  #     purrr::pmap_dfr(.l = list(prop_controle, prop_tratamento, confianca, precisao,
+  #                               ratio_controle_caso, correct, ci.method),
+  #                     .f = n_est2_prop)
+  #
+  #   simul_n_grid_n %>%
+  #     left_join(df_inputs_prop, by = "prop_tratamento") %>%
+  #     rename(`Risco relativo` = rrrr,
+  #            `Razão de chance` = odssss)
+  #
+  #
+  # })
+  #
+  #
+  # output$p2_EST_plot <- plotly::renderPlotly({
+  #
+  #   req(!(is.null(input$p2_TH_prop2_est) | is.null(input$precisao_p2_EST_plot)))
+  #   # req(!(is.na(input$p2_TH_prop2_est) | is.na(input$p2_EST_from) | is.na(input$power_p2_EST_plot)))
+  #   df <- tab_p2_EST_cenarios() %>%
+  #     mutate(`Precisão (%)` = factor(`Precisão (%)`)) %>%
+  #     filter(!is.na(`n total`))
+  #
+  #   if(input$prop2_estatistica_B_est == 'percent'){
+  #
+  #     g1 <- df %>%
+  #       ggplot(aes(x = `% no Tratamento`,
+  #                  y = `n total`,
+  #                  color = `Precisão (%)`,
+  #                  Tratamento = `n Tratamento`,
+  #                  Controle   = `n Controle`))+
+  #       geom_line() +
+  #       geom_point() +
+  #       geom_vline(xintercept=input$p2_TH_prop2_est, linetype="dashed", color = "red") +
+  #       scale_x_continuous(breaks = seq(from = input$p2_EST_from, to = input$p2_EST_to, by = input$p2_EST_by)) +
+  #       xlab("% no Tratamento") +
+  #       ylab("Tamanho da amostra*")
+  #   } else if(input$prop2_estatistica_B_est == 'ratio'){
+  #
+  #     g1 <- ggplot(df,
+  #                  aes(x = `Risco relativo`,
+  #                      y = `n total`,
+  #                      color = `Precisão (%)`,
+  #                      Tratamento = `n Tratamento`,
+  #                      Controle   = `n Controle`))+
+  #       geom_line() +
+  #       geom_point() +
+  #       # geom_vline(xintercept=input$p2_TH_prop2_est, linetype="dashed", color = "red") +
+  #       scale_x_continuous(breaks = seq(from = input$rr_p2_EST_from, to = input$rr_p2_EST_to, by = input$rr_p2_EST_by)) +
+  #       xlab("Risco relativo (Tratamento/Controle)") +
+  #       ylab("Tamanho da amostra*")
+  #   } else{
+  #
+  #     g1 <- ggplot(df,
+  #                  aes(x = `Razão de chance`,
+  #                      y = `n total`,
+  #                      color = `Precisão (%)`,
+  #                      Tratamento = `n Tratamento`,
+  #                      Controle   = `n Controle`))+
+  #       geom_line() +
+  #       geom_point() +
+  #       # geom_vline(xintercept=input$p2_TH_prop2_est, linetype="dashed", color = "red") +
+  #       scale_x_continuous(breaks = seq(from = input$rr_p2_EST_from, to = input$rr_p2_EST_to, by = input$rr_p2_EST_by)) +
+  #       xlab("Razão de chance (Tratamento/Controle)") +
+  #       ylab("Tamanho da amostra*")
+  #   }
+  #
+  #
+  #
+  #   plotly::ggplotly(g1,
+  #                    tooltip = c("x", "colour", "y", "Tratamento", "Controle")) %>%
+  #     plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
+  #                               showarrow = F, xref='paper', yref='paper',
+  #                               xanchor='right', yanchor='auto', xshift=0, yshift=0,
+  #                               font=list(size=10)))
+  # })
+  #
+  #
+  # return_table_p2_EST_tab <- reactive({
+  #   tab_p2_EST_cenarios()
+  # })
+  #
+  #
+  #
+  # output$p2_EST_tab <- DT::renderDataTable({
+  #
+  #   req(!(is.null(input$p2_TH_prop2_est) | is.null(input$precisao_p2_EST_plot)))
+  #   # req(!(is.na(input$p2_TH_prop2_est) | is.na(input$p2_EST_from) | is.na(input$power_p2_EST_plot)))
+  #
+  #
+  #   return_table_p2_EST_tab() %>%
+  #     DT::datatable(extensions = c('FixedColumns'),
+  #               rownames   = FALSE,
+  #               filter     = "none",
+  #               #callback   = DT::JS("$('div.dwnld').append($('#download_p2_EST_tab'));"),
+  #               options    = list(pageLength = 10,
+  #                                 scrollX = TRUE,
+  #                                 scrollY = TRUE,
+  #                                 searching = FALSE,
+  #                                 fixedColumns = list(leftColumns = 1),
+  #                                 dom = 'B<"dwnld">frtip'
+  #                                 # buttons = list(list(extend = 'none'))
+  #               )
+  #     )
+  # })
+  #
+  #
+  # output$download_p2_EST_tab <- downloadHandler(
+  #   filename = function() { "Cenarios_tamanho_amostra_duas_prop_estimar.xlsx"},
+  #   content = function(file) {writexl::write_xlsx(return_table_p2_EST_tab(),
+  #                                                 path = file)}
+  # )
 
 
 
@@ -3267,18 +3873,19 @@ txt_referencia_pack <-
           textInput(inputId = "prop2_nome_desfecho",
                     label   = "Descreva o nome do desfecho",
                     value   = ifelse(input$show_th_2prop == 0, "Y", prop2_nome_desfecho())),
-
+          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
+          br(), br(),
           textInput(inputId = "th2prop_grupoTratamento",
                     label   = "Descreva um nome para o grupo Tratamento",
                     value   = ifelse(input$show_th_2prop == 0, "Tratamento", th2prop_grupoTratamento())),
 
-          HTML("Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.<br><br>"),
+          HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
 
           textInput(inputId = "th2prop_grupoControle",
                     label   = "Descreva um nome para o grupo Controle",
                     value   = ifelse(input$show_th_2prop == 0, "Controle", th2prop_grupoControle())),
 
-          HTML("Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto."),
+          HTML("<i>Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
 
 
         ),
@@ -3315,7 +3922,7 @@ txt_referencia_pack <-
                   min = 0,
                   max = 100,
                   step = 1
-    ) %>% help_buttom(body = paste0("O percentual esperado de eventos no grupo ", th2prop_grupoControle(), ", geralmente é utilizado algum valor com base na literatura."))
+    ) %>% .help_buttom(body = .txt_perc_esperado)
   })
 
   output$prop2_estatistica_BUi <- renderUI({
@@ -3343,7 +3950,7 @@ txt_referencia_pack <-
                   min   = 0,
                   max   = Inf,
                   step  = .5
-    ) %>% help_buttom(
+    ) %>% .help_buttom(
       paste0("Nº de ", th2prop_grupoControle(), " para cada ", th2prop_grupoTratamento(), ". Se colocar o valor 2, será calculado um tamanho de amostra ",
              "tal que será necessário 2 ", th2prop_grupoControle(), " para cada ", th2prop_grupoTratamento(), " Se colocar o valor 0.5, ",
              "será calculado um tamanho de amostra ",
@@ -3359,44 +3966,62 @@ txt_referencia_pack <-
                   min = 0,
                   max = 100,
                   step = 1
-    ) %>% help_buttom(body = paste0("O percentual esperado de eventos no grupo ", th2prop_grupoTratamento(), ", geralmente é utilizado algum valor com base na literatura."))
+    ) %>% .help_buttom(body = .txt_perc_esperado)
   })
 
 
-  output$alternative_TH2_prop_pwr2Ui <- renderUI({
-    nomes_opcoes_alternativa <- c(
-      paste0('A % no grupo ', th2prop_grupoTratamento(), ' é DIFERENTE da % do grupo ', th2prop_grupoControle()),
-      paste0('A % no grupo ', th2prop_grupoTratamento(), ' é MAIOR do que a % do grupo ', th2prop_grupoControle()),
-      paste0('A % no grupo ', th2prop_grupoTratamento(), ' é MENOR do que a % do grupo ', th2prop_grupoControle())
-    )
+  # output$alternative_TH2_prop_pwr2Ui <- renderUI({
+  #   nomes_opcoes_alternativa <- c(
+  #     paste0('A % no grupo ', th2prop_grupoTratamento(), ' é DIFERENTE da % do grupo ', th2prop_grupoControle()),
+  #     paste0('A % no grupo ', th2prop_grupoTratamento(), ' é MAIOR do que a % do grupo ', th2prop_grupoControle()),
+  #     paste0('A % no grupo ', th2prop_grupoTratamento(), ' é MENOR do que a % do grupo ', th2prop_grupoControle())
+  #   )
+  #
+  #   opcoes_alternativa <- c('two.sided', 'greater', "less")
+  #   names(opcoes_alternativa) <- nomes_opcoes_alternativa
+  #
+  #
+  #   selectInput('alternative_TH2_prop_pwr2',
+  #               'Tipo de teste de acordo com hipótese alternativa:',
+  #               choices = opcoes_alternativa,
+  #               selected = 'two.sided'
+  #   ) %>% .help_buttom(body = .txt_h1)
+  # })
 
-    opcoes_alternativa <- c('two.sided', 'greater', "less")
-    names(opcoes_alternativa) <- nomes_opcoes_alternativa
 
+  alternative_TH2_prop2 <- reactive({
 
-    selectInput('alternative_TH2_prop_pwr2',
-                'Tipo de teste de acordo com hipótese alternativa:',
-                choices = opcoes_alternativa,
-                selected = 'two.sided'
-    ) %>% help_buttom(body = "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+    if(input$alternative_TH2_prop_pwr2 == "Bilateral"){
+      "two.sided"
+    } else if(input$prop2_estatistica_B == "percent"){
+      ifelse(input$p1_TH_prop2 > input$p2_TH_prop2, "greater", "less")
+    } else if(input$prop2_estatistica_B == "ratio"){
+      ifelse(input$p2_TH_ratio > 1, "greater", "less")
+    } else if(input$prop2_estatistica_B == "odds"){
+      ifelse(input$p2_TH_odds > 1, "greater", "less")
+    }
+
   })
 
+  # output$lala <- renderText({alternative_TH2_prop2()})
 
   output$th2_prop_formula1 <- renderUI({
+    req(!is.null(alternative_TH2_prop2()))
 
-    sinal_h0 <- case_when(input$alternative_TH2_prop_pwr2 == 'two.sided' ~ "=",
-                          input$alternative_TH2_prop_pwr2 == 'greater'   ~ "\\leq",
-                          input$alternative_TH2_prop_pwr2 == 'less'      ~ "\\geq")
+    sinal_h0 <- case_when(alternative_TH2_prop2() == 'two.sided' ~ "=",
+                          alternative_TH2_prop2() == 'greater'   ~ "\\leq",
+                          alternative_TH2_prop2() == 'less'      ~ "\\geq")
 
     withMathJax(
       paste0("$$H_0: \\pi_{", th2prop_grupoTratamento(), "} ", sinal_h0, " \\pi_{", th2prop_grupoControle(), "}$$"))
   })
 
   output$th2_prop_formula2 <- renderUI({
+    req(!is.null(alternative_TH2_prop2()))
 
-    sinal_h1 <- case_when(input$alternative_TH2_prop_pwr2 == 'two.sided' ~ "\\neq",
-                          input$alternative_TH2_prop_pwr2 == 'greater'   ~ ">",
-                          input$alternative_TH2_prop_pwr2 == 'less'      ~ "<")
+    sinal_h1 <- case_when(alternative_TH2_prop2() == 'two.sided' ~ "\\neq",
+                          alternative_TH2_prop2() == 'greater'   ~ ">",
+                          alternative_TH2_prop2() == 'less'      ~ "<")
 
     withMathJax(
       paste0("$$H_1: \\pi_{", th2prop_grupoTratamento(), "}", sinal_h1, " \\pi_{", th2prop_grupoControle(), "}$$"))
@@ -3445,7 +4070,7 @@ txt_referencia_pack <-
       )
 
       p2 <- input$p1_TH_prop2/100
-      text_just <- paste0("e uma proporção de <b>", prop2_nome_desfecho(), "</b> no ", th2prop_grupoTratamento(), " de <b>", input$p1_TH_prop2, "% </b>",
+      text_just <- paste0("e proporção de <b>", prop2_nome_desfecho(), "</b> no ", th2prop_grupoTratamento(), " de <b>", input$p1_TH_prop2, "% </b>",
                           "e no ", th2prop_grupoControle(), " de <b>", input$p2_TH_prop2, "%</b> como é referida em Fulano (1900), ")
 
     } else if (input$prop2_estatistica_B == "ratio") {
@@ -3455,8 +4080,8 @@ txt_referencia_pack <-
       )
 
       p2 <- (input$p2_TH_prop2/100)*input$p2_TH_ratio
-      text_just <- paste0("e uma proporção de <b>", prop2_nome_desfecho(), "</b> no ", th2prop_grupoControle(), " de <b>", input$p2_TH_prop2, "% </b>",
-                          "e um risco relativo de <b>", input$p2_TH_ratio, "</b> como é referida em Fulano (1900), ")
+      text_just <- paste0("e proporção de <b>", prop2_nome_desfecho(), "</b> no ", th2prop_grupoControle(), " de <b>", input$p2_TH_prop2, "% </b>",
+                          "e risco relativo de <b>", input$p2_TH_ratio, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador, ")
 
     } else {
       validate(
@@ -3467,15 +4092,15 @@ txt_referencia_pack <-
       # https://stats.stackexchange.com/questions/324410/converting-odds-ratio-to-percentage-increase-reduction
       prob_control <- input$p2_TH_prop2/100
       p2 <- (input$p2_TH_odds*prob_control)/ (1 + input$p2_TH_odds*prob_control - prob_control)
-      text_just <- paste0("e uma proporção de <b>", prop2_nome_desfecho(), "</b> no ", th2prop_grupoControle(), " de <b>", input$p2_TH_prop2, "% </b>",
-                          "e uma razão de chance de <b>", input$p2_TH_odds, "</b> como é referida em Fulano (1900), ")
+      text_just <- paste0("e proporção de <b>", prop2_nome_desfecho(), "</b> no ", th2prop_grupoControle(), " de <b>", input$p2_TH_prop2, "% </b>",
+                          "e razão de chance de <b>", input$p2_TH_odds, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador, ")
     }
 
-    validate(
-      need((p2 > input$p2_TH_prop2/100 & input$alternative_TH2_prop_pwr2 != 'less') |
-             (p2 < input$p2_TH_prop2/100 & input$alternative_TH2_prop_pwr2 != 'greater'),
-           "Não é possível calcular um tamanho de amostra para a diferença esperada especificada e para o tipo de hipótese alternativa escolhido.")
-    )
+    # validate(
+    #   need((p2 > input$p2_TH_prop2/100 & alternative_TH2_prop2() != 'less') |
+    #          (p2 < input$p2_TH_prop2/100 & alternative_TH2_prop2() != 'greater'),
+    #        "Não é possível calcular um tamanho de amostra para a diferença esperada especificada e para o tipo de hipótese alternativa escolhido.")
+    # )
 
 
     ratio_controle_caso <- input$k_TH_prop2
@@ -3493,7 +4118,7 @@ txt_referencia_pack <-
       "alpha       = ", input$alpha_TH_prop2/100,  ", ",
       "power       = ", input$beta_TH_prop2/100, ", ",
       "sample.type = 'two.sample', ",
-      "alternative = '", input$alternative_TH2_prop_pwr2, "', ",
+      "alternative = '", alternative_TH2_prop2(), "', ",
       "ratio       = ", ifelse(ratio_controle_caso >= 1, ratio_controle_caso, 1/ratio_controle_caso), ", ",
       "correct     = ", input$prop_correction, ", ",
       "warn = FALSE)"
@@ -3531,10 +4156,10 @@ txt_referencia_pack <-
 
 
 
-    if(input$alternative_TH2_prop_pwr2 == "two.sided"){
+    if(alternative_TH2_prop2() == "two.sided"){
       texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar diferenças entre as proporções de <b>",
                                  prop2_nome_desfecho(), "</b> entre os ", th2prop_grupoTratamento(), " e ", th2prop_grupoControle(), ",")
-    } else if(input$alternative_TH2_prop_pwr2 == "less"){
+    } else if(alternative_TH2_prop2() == "less"){
       texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a proporções de <b>",
                                  prop2_nome_desfecho(), "</b> no ", th2prop_grupoTratamento(), " é menor do que no ", th2prop_grupoControle(), ",")
     } else{
@@ -3549,40 +4174,184 @@ txt_referencia_pack <-
 
     if(input$k_TH_prop2 == 1){
 
-      texto_grupos <- paste0(" por meio da ", txt_citacao_tap, ". ",
+      texto_grupos <- paste0(" por meio da ", .txt_citacao_tap, ". ",
                              "Considerando poder de <b>", input$beta_TH_prop2, "%</b>, nível de significância de <b>", input$alpha_TH_prop2, "% </b>",
                              text_just,
                              "chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> em cada grupo.",
-                             " Acrescentando <b>", input$TH_prop_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
-                             "deverá ser <b>", nperdas1 + nperdas2, "</b>.")
+                             if(testar_valor_perdas_valido(input$TH_prop_perdas_recusa)){
+                               paste0(" Acrescentando <b>", input$TH_prop_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
+                                      "deverá ser <b>", nperdas1 + nperdas2, "</b>.")
+                             })
     } else{
 
-      texto_grupos <- paste0(" por meio da ", txt_citacao_tap, ". ",
+      texto_grupos <- paste0(" por meio da ", .txt_citacao_tap, ". ",
                              "Considerando poder de <b>", input$beta_TH_prop2, "%</b>, nível de significância de <b>", input$alpha_TH_prop2, "% </b>",
                              text_just,
-                             "chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> no ", th2prop_grupoTratamento(), " e <b>", n2, "</b> no ", th2prop_grupoControle(), "",
-                             " Acrescentando <b>", input$TH_prop_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
-                             "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " no ", th2prop_grupoTratamento(), " e ", nperdas2, " no ", th2prop_grupoControle(), ").")
+                             "chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> no ", th2prop_grupoTratamento(), " e <b>", n2, "</b> no ", th2prop_grupoControle(), ". ",
+                             if(testar_valor_perdas_valido(input$TH_prop_perdas_recusa)){
+                               paste0("Acrescentando <b>", input$TH_prop_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
+                                      "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " no ", th2prop_grupoTratamento(), " e ", nperdas2, " no ", th2prop_grupoControle(), ").")
+                             })
     }
 
     paste0(cabecalho,
            texto_comparacao,
            texto_grupos,
            txt_ic_p,
-           txt_referencia_tap, print_r_code(code))
+           .txt_referencia_tap, print_r_code(code))
 
 })
 
 
 
-  # COnstroi a tabela com os cenarios
+
+
+  ## Cenarios ----
+
+  output$cenarios_duas_prop_thUi <- renderUI({
+
+
+    razao_usada <- ifelse(input$prop2_estatistica_B == 'ratio', input$p2_TH_ratio, input$p2_TH_odds)
+
+    if(razao_usada > 1){
+      ratio_start <- razao_usada
+      ratio_end  <- razao_usada + 1
+      ratio_by   <- 0.1
+    } else{
+      ratio_start <- max(0, razao_usada - 0.3)
+      ratio_end  <- razao_usada
+      ratio_by   <- 0.05
+    }
+
+
+
+
+    fluidPage(fluidRow(
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+      titlePanel("Construção de cenários"),
+      br(),
+
+
+      ###
+      conditionalPanel(condition = "input.prop2_estatistica_B == 'percent'",
+
+                       wellPanel(paste0(
+                         "Utilize os argumentos abaixo para construir diferentes cenários. ",
+                         "Você pode definir um intervalo de % para o grupo ", th2prop_grupoTratamento(),
+                         "e especificar valores do poder (%). ",
+                         "Demais informações serão recuperadas do painel lateral."
+                       )),
+                       HTML(paste0("<b>Defina a sequência de valores (%) para o grupo ", th2prop_grupoTratamento(), ":</b>")),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("p2_TH_from", "Mínimo", value = 5, step = 1, min = 0, max = 99)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("p2_TH_to", "Máximo", value = 95, step = 1, min = 1, max = 100)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("p2_TH_by", "Intervalo", value = 5, min = 0, step = 1, max = 99) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência")
+                       )
+      ),
+
+
+      # ratio
+      conditionalPanel(condition = "input.prop2_estatistica_B == 'ratio'",
+
+
+                       wellPanel(paste0(
+                       "Utilize os argumentos abaixo para construir diferentes cenários. ",
+                       "Você pode definir um intervalo para o Risco relativo (", th2prop_grupoTratamento(), "/", th2prop_grupoControle(),") e especificar valores do poder (%). ",
+                       "Demais informações serão recuperadas do painel lateral."
+                       )),
+                       HTML("<b>Defina a sequência do risco relativo:</b>"),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("rr_p2_TH_from", "Mínimo", value = ratio_start, step = .1, min = 0, max = Inf)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("rr_p2_TH_to", "Máximo", value = ratio_end, step = .1, min = 0, max = Inf)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("rr_p2_TH_by", "Intervalo", value = ratio_by, min = 0, step = .1) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência")
+                       )
+
+      ),
+
+      # odds
+      conditionalPanel(condition = "input.prop2_estatistica_B == 'odds'",
+
+
+                       wellPanel(paste0(
+                         "Utilize os argumentos abaixo para construir diferentes cenários. ",
+                         "Você pode definir um intervalo para a Razão de chances (", th2prop_grupoTratamento(), "/", th2prop_grupoControle(),") e especificar valores do poder (%). ",
+                         "Demais informações serão recuperadas do painel lateral."
+                       )),
+                       HTML("<b>Defina a sequência da razão de chance:</b>"),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("rc_p2_TH_from", "Mínimo", value = ratio_start, step = .1, min = 0, max = Inf)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("rc_p2_TH_to", "Máximo", value = ratio_end, step = .1, min = 0, max = Inf)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("rc_p2_TH_by", "Intervalo", value = ratio_by, min = 0, step = .1) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência")
+                       )
+
+      ),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "power_p2_th_plot",
+                         label   = "Digite valores de poder (%) para fazer o gráfico:",
+                         value   = "80, 90, 95",
+                         width   = "400px") %>%
+                 .help_buttom(body = "Defina os valores de poder (%).
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+
+
+
+      shinycssloaders::withSpinner(plotly::plotlyOutput("p2_TH_plot", width = "80%"), type = 5),
+      conditionalPanel(condition = "input.prop2_estatistica_B == 'percent'",
+                       p("Obs.: a linha tracejada representa a % no grupo controle definida no painel lateral.")
+      ),
+      conditionalPanel(condition = "input.prop2_estatistica_B == 'ratio'",
+                       p("Obs.: a linha tracejada representa o risco relativo definido no painel lateral.")
+      ),
+      conditionalPanel(condition = "input.prop2_estatistica_B == 'odds'",
+                       p("Obs.: a linha tracejada representa a razão de chances definida no painel lateral.")
+      ),
+
+      br(), br(),
+      downloadButton("download_p2_TH_tab","Download tabela"),
+      shinycssloaders::withSpinner(DT::dataTableOutput("p2_TH_tab", width = "100%"), type = 5)
+
+    ))
+
+  })
+
+
+
+  eval(parse(text = check_text_input_to_vector("power_p2_th_plot")))
+
   tab_p2_TH_cenarios <- reactive({
 
+    poder <- text_input_to_vector(input$power_p2_th_plot)
+    req(length(poder) > 0)
 
-    poder <- input$power_p2_th_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
 
     if(input$prop2_estatistica_B == "percent"){
       rrrr <- NA
@@ -3611,7 +4380,7 @@ txt_referencia_pack <-
                            prop_tratamento = prop_tratamento,
                            significancia   = input$alpha_TH_prop2/100,
                            poder           = poder/100,
-                           alternative     = input$alternative_TH2_prop_pwr2,
+                           alternative     = alternative_TH2_prop2(),
                            ratio_controle_caso = input$k_TH_prop2,
                            correct        = input$prop_correction,
                            type_info1     = "n1",
@@ -3829,33 +4598,53 @@ txt_referencia_pack <-
   #-------------------.
 
 
+  eval(parse(text = warning_numero_positivo("prop2a_th_n")))
+  eval(parse(text = warning_numero_positivo("prop2b_th_n")))
+
+  eval(parse(text = warning_prop("prop2a_th_power")))
+  eval(parse(text = warning_prop("prop2b_th_power")))
+  eval(parse(text = warning_prop("prop2_th_power_sig")))
+
 
   output$THprop2_power <- renderText({
 
 
     code <- paste0(
       "EnvStats::propTestPower(",
-      "n.or.n1     = ", input$prop2a_th_power, ", ",
+      "n.or.n1     = ", input$prop2a_th_n, ", ",
       "p.or.p1 = ", input$prop2a_th_power, "/100, ",
-      "n2 = ", input$prop2a_th_n, ", ",
+      "n2 = ", input$prop2b_th_n, ", ",
       "p0.or.p2	= ", input$prop2b_th_power, "/100, ",
       "alpha       = ", input$prop2_th_power_sig, "/100, ",
       "sample.type = 'two.sample', ",
       "alternative = 'two.sided', ",
-      "correct     = ", input$prop2_th_power_correction, ", ",
-      "warn = FALSE)"
+      "correct     = ", input$prop2_th_power_correction, ")"
     )
 
+    codeR <- str_replace(code, fixed(")"), ", warn = FALSE)")
 
-    poder <- eval(parse(text = code))
+    # code <- paste0(
+    #   "pwr::pwr.2p2n.test(",
+    #   "h = pwr::ES.h(", input$prop2a_th_power, "/100, ",  input$prop2b_th_power, "/100), ",
+    #   "n1 = 33000,
+    #                 n2 = 28700,
+    #                 sig.level = 0.05,
+    #                 power = NULL,
+    #                 alternative = c("two.sided", "less","greater"))
+    #
+    # )
+
+
+    poder <- eval(parse(text = codeR))
 
     paste0("<b><font size = '5'>Poder calculado: ", round(poder*100, digits = 1),
-           "%</font></b></br></br><i></i></br></br>",
+           "%</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "Foi calculado o poder para testar duas proporções independentes utilizando a ", txt_citacao_tap, ". ",
+
+           "Foi calculado o poder para testar duas proporções independentes utilizando a ", .txt_citacao_tap, ". ",
 
            "Considerando um nível de significância de <b>", input$prop2_th_power_sig, "%</b>, ",
-           "proporções do desfecho de <b>", input$prop2a_th_power, "%</b> e <b>", input$prop2b_th_power, "%</b> ",
+           "proporções do desfecho de <b>", input$prop2a_th_power, "%</b> e <b>", input$prop2b_th_power, "%</b>, ",
            " tamanho amostral de <b>", input$prop2a_th_n, "</b> e <b>", input$prop2b_th_n, "</b> ",
            "nos grupos A e B, respectivamente, ",
 
@@ -3865,7 +4654,7 @@ txt_referencia_pack <-
 
            "chegou-se à um poder de de <b>", round(100*poder, digits = 1), "%</b>.",
 
-           txt_referencia_tap, print_r_code(code))
+           .txt_referencia_tap, print_r_code(code))
 
 
   })
@@ -3905,6 +4694,33 @@ txt_referencia_pack <-
   # Equivalencia ----
 
 
+  observeEvent(input$margin_2_ind_prop, {
+    if(is.na(input$margin_2_ind_prop)){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "margin_2_ind_prop",
+        text = "Deve ser fornecido um valor do tamanho de efeito.",
+        color = "red"
+      )
+    } else if (input$prop_test_inf_eq_sup == "Não inferioridade" & input$margin_2_ind_prop > 0) {
+      shinyFeedback::showFeedbackWarning(
+        inputId = "margin_2_ind_prop",
+        text = "Para um estudo de não inferioridade a margem deve ser negativa.",
+        color = "red"
+      )
+    }  else if (input$prop_test_inf_eq_sup == "Superioridade" & input$margin_2_ind_prop < 0) {
+      shinyFeedback::showFeedbackWarning(
+        inputId = "margin_2_ind_prop",
+        text = "Para um estudo de superioridade a margem deve ser positiva.",
+        color = "red"
+      )
+    } else {
+      shinyFeedback::hideFeedback("margin_2_ind_prop")
+    }
+  })
+
+
+
+
   output$inf_sup_nomesUi_prop <- renderUI({
     label_ <- case_when(input$prop_test_inf_eq_sup == "Não inferioridade" ~ "é não inferior ao grupo:",
                         input$prop_test_inf_eq_sup == "Superioridade"     ~ "é superior ao grupo:",
@@ -3912,16 +4728,18 @@ txt_referencia_pack <-
 
     fluidPage(
       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-          textInput(inputId = "inf_sup_groupA_prop",
+          textInput(inputId = "inf_sup_groupB_prop",
                     label   = "Comparar se o grupo:",
-                    value   = "Tratamento")),
+                    value   = "Experimental")),
 
       div(style="display: inline-block;vertical-align:top; width: 49%;",
-          textInput(inputId = "inf_sup_groupB_prop",
+          textInput(inputId = "inf_sup_groupA_prop",
                     label   = label_,
-                    value   = "Controle"))
+                    value   = "Convencional"))
     )
   })
+
+
 
 
   output$prop2eq_estatistica_BUi <- renderUI({
@@ -3944,14 +4762,19 @@ txt_referencia_pack <-
 
 
   output$side_bar_prop_inf <- renderUI({
-    fluidPage(
+    fluidPage(fluidRow(
       numericInput( "margin_2_ind_prop",
                     paste0("Margem de ", input$prop_test_inf_eq_sup, " (%)"),
-                    value = 10,
-                    min   = 0,
+                    value = case_when(input$prop_test_inf_eq_sup == "Não inferioridade" ~ -10,
+                                      input$prop_test_inf_eq_sup == "Superioridade"     ~ 10,
+                                      TRUE ~ 15),
+                    min   = -100,
                     max   = 100,
-                    step  = 2
-      ) %>% help_buttom(body = "Margem com o objetivo de determinar a partir de que valor...."),
+                    step  = 1
+      ) %>% .help_buttom(body = case_when(input$prop_test_inf_eq_sup == "Não inferioridade"  ~ .txt_margem_nao_inferior,
+                                          input$prop_test_inf_eq_sup == "Superioridade"      ~ .txt_margem_superior,
+                                          TRUE ~ .txt_margem_equivalencia),
+                         title = paste0("Margem de ", input$prop_test_inf_eq_sup, " (%)")),
 
       numericInput( "p2_2_ind_prop",
                     paste0("% esperado no grupo ", input$inf_sup_groupB_prop),
@@ -3967,29 +4790,35 @@ txt_referencia_pack <-
       conditionalPanel(condition = 'input.prop2_estatistica_B_est_non_inf == "percent"',
                        numericInput( "p1_2_ind_prop_kkk",
                                      paste0("% esperado no grupo ", input$inf_sup_groupA_prop),
-                                     value = 10,
+                                     value = case_when(input$prop_test_inf_eq_sup == "Não inferioridade" ~ 40,
+                                                       input$prop_test_inf_eq_sup == "Superioridade"     ~ 70,
+                                                       TRUE ~ 45),
                                      min = 0,
                                      max = 100,
                                      step = 2
-                       ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Tratamento, geralmente é utilizado algum valor com base na literatura.")
+                       ) %>% .help_buttom(body = "O percentual esperado de eventos no grupo Tratamento, geralmente é utilizado algum valor com base na literatura.")
       ),
       conditionalPanel(condition = 'input.prop2_estatistica_B_est_non_inf == "ratio"',
                        numericInput( "p2_TH_ratio_est_kkk",
                                      "Risco relativo",
-                                     value = 2,
+                                     value = case_when(input$prop_test_inf_eq_sup == "Não inferioridade" ~ 0.8,
+                                                       input$prop_test_inf_eq_sup == "Superioridade"     ~ 1.5,
+                                                       TRUE ~ 1.2),
                                      min = 0,
                                      max = Inf,
                                      step = 0.1
-                       ) %>% help_buttom(body = "Risco relativo ou razão de prevalências esperado entre Tratamento e Controle, geralmente é utilizado algum valor com base na literatura.")
+                       ) %>% .help_buttom(body = .txt_risco_relativo, title = "Risco relativo/ Razão de prevalências")
       ),
       conditionalPanel(condition = 'input.prop2_estatistica_B_est_non_inf == "odds"',
                        numericInput( "p2_TH_odds_est_kkk",
                                      "Odds ratio",
-                                     value = 2,
+                                     value = case_when(input$prop_test_inf_eq_sup == "Não inferioridade" ~ 0.8,
+                                                       input$prop_test_inf_eq_sup == "Superioridade"     ~ 1.5,
+                                                       TRUE ~ 1.2),
                                      min = 0,
                                      max = Inf,
                                      step = 0.1
-                       ) %>% help_buttom(body = "Razão de chances esperada entre Tratamento e Controle, geralmente é utilizado algum valor com base na literatura.")
+                       ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance")
       ),
 
       numericInput( "k_2_ind_prop",
@@ -3998,34 +4827,30 @@ txt_referencia_pack <-
                     min = 0,
                     max = Inf,
                     step = 0.2
-      )%>% help_buttom("Nº de controles para cada tratamento. Se colocar o valor 2, será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 controles para cada tratamento. Se colocar o valor 0.5,
-                                                                      será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 tratamentos para cada controle."),
+      )%>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
       numericInput( "beta_2_ind_prop",
                     "Poder (%)",
                     value = 80,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+      ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
       numericInput( "alpha_2_ind_prop",
                     "Nível de significância (%)",
                     value = 5,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+      ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
       numericInput( "eq_prop_perdas_recusa",
                     "Perdas/ Recusa (%)",
                     value = 10,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+      ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
 
-
-    )
+    ))
   })
 
 
@@ -4038,6 +4863,9 @@ txt_referencia_pack <-
     req(!is.null(input$margin_2_ind_prop))
     req(!is.null(input$prop2_estatistica_B_est_non_inf))
     req(!is.null(input$k_2_ind_prop))
+
+    if(input$prop_test_inf_eq_sup == "Não inferioridade") req(input$margin_2_ind_prop <= 0)
+    if(input$prop_test_inf_eq_sup == "Superioridade") req(input$margin_2_ind_prop >= 0)
 
 
     prob_control <- input$p2_2_ind_prop/100
@@ -4054,37 +4882,41 @@ txt_referencia_pack <-
 
 
 
-    # margin <- if(input$prop_test_inf_eq_sup == "Não inferioridade") abs(input$margin_2_ind_prop) else abs(input$margin_2_ind_prop)
-    margin <- abs(input$margin_2_ind_prop)
-
     if(input$prop_test_inf_eq_sup == "Equivalência"){
-      code <- paste0("TrialSize::TwoSampleProportion.Equivalence(",
+
+      code <- paste0("epiR::epi.ssequb(",
                      "alpha = ", input$alpha_2_ind_prop, "/100, ",
-                     "beta = 1 - ", input$beta_2_ind_prop, "/100, ",
-                     "p1 = ", p1, ", ",
-                     "p2 = ", prob_control, ", ",
-                     "k = ", input$k_2_ind_prop, ", ",
-                     "delta = ", p1 - prob_control, ", ",
-                     "margin = ", margin, "/100)"
-      )
+                     "power = ", input$beta_2_ind_prop, "/100, ",
+                     "treat = ", p1, ", ",
+                     "control = ", prob_control, ", ",
+                     "r = ", input$k_2_ind_prop, ", ",
+                     "delta = ", input$margin_2_ind_prop, "/100, n = NA)")
+
+    } else if(input$prop_test_inf_eq_sup == "Não inferioridade"){
+
+      code <- paste0("epiR::epi.ssninfb(",
+                     "alpha = ", input$alpha_2_ind_prop, "/100, ",
+                     "power = ", input$beta_2_ind_prop, "/100, ",
+                     "control = ", p1, ", ",
+                     "treat = ", prob_control, ", ",
+                     "r = ", input$k_2_ind_prop, ", ",
+                     "delta = ", input$margin_2_ind_prop, "/100, n = NA)")
 
     } else{
 
-      code <- paste0("TrialSize::TwoSampleProportion.NIS(",
+      code <- paste0("epiR::epi.sssupb(",
                      "alpha = ", input$alpha_2_ind_prop, "/100, ",
-                     "beta = 1 - ", input$beta_2_ind_prop, "/100, ",
-                     "p1 = ", p1, ", ",
-                     "p2 = ", prob_control, ", ",
-                     "k = ", input$k_2_ind_prop, ", ",
-                     "delta = ", p1 - prob_control, ", ",
-                     "margin = ", margin, "/100)"
-      )
+                     "power = ", input$beta_2_ind_prop, "/100, ",
+                     "treat = ", p1, ", ",
+                     "control = ", prob_control, ", ",
+                     "r = ", input$k_2_ind_prop, ", ",
+                     "delta = ", input$margin_2_ind_prop, "/100, n = NA)")
     }
 
-    n1 <- eval(parse(text = code))
+    n <- eval(parse(text = code))
 
-    n1 <- ceiling(n1)
-    n2 <- ceiling(n1/input$k_2_ind_prop)
+    n1 <- n$n.treat
+    n2 <- n$n.control
     n <- n1 + n2
     eval(parse(text = validate_n("n1")))
     eval(parse(text = validate_n_inf("n1")))
@@ -4100,17 +4932,17 @@ txt_referencia_pack <-
     #---- Texto do teste
     if(input$prop_test_inf_eq_sup == "Equivalência"){
       texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>equivalência</b>, em termos de proporção, entre os grupos ", input$inf_sup_groupA_prop, " e ", input$inf_sup_groupB_prop, ", ",
-                                 "por meio da ", txt_citacao_tap, ". ",
+                                 "por meio da ", .txt_citacao_tap, ". ",
                                  "Considerando uma margem de equivalência de <b>", input$margin_2_ind_prop, "%</b>"
       )
     } else if(input$prop_test_inf_eq_sup == "Não inferioridade"){
       texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>não inferioridade</b>, em termos de proporção, do grupo ", input$inf_sup_groupA_prop, " em relação ao grupo ", input$inf_sup_groupB_prop, ", ",
-                                 "por meio da ", txt_citacao_tap, ". ",
+                                 "por meio da ", .txt_citacao_tap, ". ",
                                  "Considerando uma margem de não inferioridade de <b>", input$margin_2_ind_prop, "%</b>"
       )
     } else{
       texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar a <b>superioridade</b>, em termos de proporção, do grupo ", input$inf_sup_groupA_prop, " em relação ao grupo ", input$inf_sup_groupB_prop, ", ",
-                                 "por meio da ", txt_citacao_tap, ". ",
+                                 "por meio da ", .txt_citacao_tap, ". ",
                                  "Considerando uma margem de não inferioridade de <b>", input$margin_2_ind_prop, "%</b>"
       )
     }
@@ -4141,9 +4973,436 @@ txt_referencia_pack <-
     paste0(cabecalho,
            texto_comparacao,
            texto_final,
-           txt_referencia_tap, print_r_code(code))
+           .txt_referencia_tap, print_r_code(code))
 
   })
+
+
+
+
+
+  # 2 Dependentes ----
+
+
+
+  observeEvent(input$show_prop2n_dep, {
+    showModal(
+      modalDialog(
+        title = "Ajustes",
+        fluidPage(
+
+          HTML("<b>Preencha os campos abaixo de acordo com seu estudo para que sirvam de guia no preenchimento dos demais campos</b>."),
+          br(), br(),
+          textInput(inputId = "prop2n_dep_nome_desfecho",
+                    label   = "Descreva o nome do desfecho",
+                    value   = ifelse(input$show_prop2n_dep == 0, "Desfecho de interesse", prop2n_dep_nome_desfecho())),
+          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
+          br(), br(),
+          textInput(inputId = "prop2n_dep_cat1",
+                    label   = "Descreva o nome da categoria 1",
+                    value   = ifelse(input$show_prop2n_dep == 0, "A", prop2n_dep_cat1())),
+
+
+          textInput(inputId = "prop2n_dep_cat2",
+                    label   = "Descreva o nome da categoria 1",
+                    value   = ifelse(input$show_prop2n_dep == 0, "B", prop2n_dep_cat2())),
+        ),
+        easyClose = TRUE,
+        footer    = NULL
+      )
+    )
+  })
+
+
+
+
+
+  prop2n_dep_nome_desfecho <- reactive({
+    ifelse(is.null(input$prop2n_dep_nome_desfecho), "Desfecho de interesse", input$prop2n_dep_nome_desfecho)
+  })
+
+  prop2n_dep_cat1 <- reactive({
+    ifelse(is.null(input$prop2n_dep_cat1), "A", input$prop2n_dep_cat1)
+  })
+
+  prop2n_dep_cat2 <- reactive({
+    ifelse(is.null(input$prop2n_dep_cat2), "B", input$prop2n_dep_cat2)
+  })
+
+
+  output$prop2n_dep_sideUi <- renderUI({
+    req(!is.null(prop2n_dep_cat1()))
+    req(!is.null(prop2n_dep_cat2()))
+
+    fluidPage(fluidRow(
+      HTML(paste0("<b><font size = '2.99'>% de discordância na categoria</font></b><br>")),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+          numericInput( "prop2n_dep_discordante1",
+                        paste0(prop2n_dep_cat1(), " (célula pb)"),
+                        value = 50,
+                        min = 0,
+                        max = 100,
+                        step = 5
+          )
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 49%;",
+          numericInput( "prop2n_dep_discordante2",
+                        paste0(prop2n_dep_cat2(), " (célula pc)"),
+                        value = 30,
+                        min = 0,
+                        max = 100,
+                        step = 5
+          ) %>% .help_buttom(body = paste0(
+            "Percentual do total de pares disconcordantes (aqueles que obtiveram respostas diferentes) em cada categoria - ver explicação no cabeçalho da aba.",
+            .txt_definido_pesquisador_OU_literatura
+          )
+          )
+      ),
+
+      numericInput( "prop2n_dep_pwr",
+                    "Poder (%)",
+                    value = 80,
+                    min = 0,
+                    max = 100,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
+      numericInput( "prop2n_dep_sig",
+                    "Nível de significância (%)",
+                    value = 5,
+                    min = 0,
+                    max = 100,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+      selectInput('prop2n_dep_alternativa',
+                  'Tipo de teste de acordo com hipótese alternativa:',
+                  choices = c("Bilateral" = "two.sided", "Unilateral" = "one.sided"),
+                  selected = 'two.sided'
+      ) %>% .help_buttom(body = .txt_h1),
+      numericInput( "prop2n_dep_perdas_recusa",
+                    "Perdas/ Recusa (%)",
+                    value = 10,
+                    min = 0,
+                    max = 100,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
+
+    ))
+  })
+
+
+
+  eval(parse(text = warning_prop("prop2n_dep_discordante1")))
+  eval(parse(text = warning_prop("prop2n_dep_discordante2")))
+  eval(parse(text = warning_prop("prop2n_dep_sig")))
+  eval(parse(text = warning_prop("prop2n_dep_pwr")))
+  eval(parse(text = warning_perdas("prop2n_dep_perdas_recusa")))
+
+
+
+  observeEvent(c(input$prop2n_dep_discordante1, input$prop2n_dep_discordante2), {
+    req(!is.na(input$prop2n_dep_discordante1))
+    req(!is.na(input$prop2n_dep_discordante2))
+
+    if(input$prop2n_dep_discordante1 + input$prop2n_dep_discordante2 > 100){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "prop2n_dep_discordante1",
+        text = "A soma dos %deve ser menor do que 100%.",
+        color = "red"
+      )
+    }  else {
+      shinyFeedback::hideFeedback("prop2n_dep_discordante1")
+    }
+  })
+
+  observeEvent(c(input$prop2n_dep_discordante1, input$prop2n_dep_discordante2), {
+    req(!is.na(input$prop2n_dep_discordante1))
+    req(!is.na(input$prop2n_dep_discordante2))
+
+    if(input$prop2n_dep_discordante1 + input$prop2n_dep_discordante2 > 100){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "prop2n_dep_discordante2",
+        text = "",
+        color = "red"
+      )
+    }  else {
+      shinyFeedback::hideFeedback("prop2n_dep_discordante2")
+    }
+  })
+
+
+
+  output$prop2n_dep_th <- renderUI({
+    req(!is.null(input$prop2n_dep_discordante1))
+    req(!is.null(input$prop2n_dep_discordante2))
+
+    req(!is.na(input$prop2n_dep_discordante1))
+    req(!is.na(input$prop2n_dep_discordante2))
+
+    if(input$prop2n_dep_alternativa == "two.sided"){
+      withMathJax("$$H_0: p_b = p_c\\text{  vs  } H_1: p_b \\neq p_c$$")
+    } else if(input$prop2n_dep_discordante1 > input$prop2n_dep_discordante2){
+      withMathJax("$$H_0: p_b \\leq p_c\\text{  vs  } H_1: p_b > p_c$$")
+    } else {
+      withMathJax("$$H_0: p_b \\geq p_c\\text{  vs  } H_1: p_b < p_c$$")
+    }
+  })
+
+
+
+  output$prop2n_dep_resultadoUi <- renderText({
+    req(!is.null(input$prop2n_dep_discordante1))
+    req(!is.null(input$prop2n_dep_discordante2))
+
+    req(!is.na(input$prop2n_dep_discordante1))
+    req(!is.na(input$prop2n_dep_discordante2))
+
+    numerador   <- max(input$prop2n_dep_discordante1, input$prop2n_dep_discordante2)
+    denominador <- min(input$prop2n_dep_discordante1, input$prop2n_dep_discordante2)
+
+    code <- paste0(
+      "MESS::power_mcnemar_test(n = NULL, ",
+      "psi = ", numerador, "/", denominador, ", ",
+      "paid = ", denominador, "/100, ",
+      "sig.level = ", input$prop2n_dep_sig, "/100, ",
+      "power = ", input$prop2n_dep_pwr, "/100, ",
+      'alternative = "', input$prop2n_dep_alternativa, '", ',
+      'method = "normal")'
+    )
+
+
+    n <- try_n(code)
+    eval(parse(text = validate_n("n")))
+    n <- ceiling(n$n)
+    eval(parse(text = validate_n_inf("n")))
+
+
+    if(input$prop2n_dep_alternativa == "two.sided"){
+      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que as discordâncias de <b>", prop2n_dep_nome_desfecho(), "</b> na categoria <b><i>", prop2n_dep_cat1(), "</i></b> é diferente das discordâncias na categoria <b><i>", prop2n_dep_cat2(), "</i></b> após a <b><i>intervenção</i></b>, ")
+    } else if(input$prop2n_dep_discordante1 > input$prop2n_dep_discordante2){
+      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que as discordâncias de <b>", prop2n_dep_nome_desfecho(), "</b> na categoria <b><i>", prop2n_dep_cat1(), "</i></b> é maior do que as discordâncias na categoria <b><i>", prop2n_dep_cat2(), "</i></b> após a <b><i>intervenção</i></b>, ")
+    } else {
+      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que as discordâncias de <b>", prop2n_dep_nome_desfecho(), "</b> na categoria <b><i>", prop2n_dep_cat1(), "</i></b> é menor do que as discordâncias na categoria <b><i>", prop2n_dep_cat2(), "</i></b> após a <b><i>intervenção</i></b>, ")
+    }
+
+
+    cabecalho <- paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, "<i> pares</i>",
+                        "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
+
+
+    texto_desvio <- paste0(texto_comparacao,
+                           "utilizando a ", .txt_citacao_tap, ". ",
+                           "Considerando poder de <b>", input$prop2n_dep_pwr, "%</b>, ",
+                           "nível de significância de <b>", input$prop2n_dep_sig, "%</b>, ",
+                           "percentual de pares discordantes de <b>", input$prop2n_dep_discordante1, "%</b> e <b>", input$prop2n_dep_discordante2,
+                           "%</b> nas categorias <i>", prop2n_dep_cat1(), "</i> e <i>", prop2n_dep_cat2(), "</i>, respectivamente (dados de Fulano (1900)), ",
+                           "chegou-se ao tamanho total de <b>", n, "</b> pares. ",
+                           "Acrescentando <b>", input$prop2n_dep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
+                           n_perdas(n, input$prop2n_dep_perdas_recusa), "</b> pares.")
+
+    paste0(cabecalho,
+           texto_desvio,
+           .txt_referencia_tap, print_r_code(code))
+
+    # code
+  })
+
+
+
+
+  ## Cenarios ----
+
+  output$cenarios_duas_prop_dep_thUi <- renderUI({
+    req(!is.null(input$prop2n_dep_discordante1))
+    req(!is.null(input$prop2n_dep_discordante2))
+
+    req(!is.na(input$prop2n_dep_discordante1))
+    req(!is.na(input$prop2n_dep_discordante2))
+
+
+    fluidPage(fluidRow(
+
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel(
+        paste0("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de percentual de pares discordantes na categoria ", prop2n_dep_cat1(), " e uma sequência de percentual de pares discordantes na categoria ", prop2n_dep_cat2(), ".
+                                        Demais informações serão recuperadas do painel lateral."
+        )
+      ),
+
+
+      HTML(paste0(
+        "<b>Defina a sequência de valores para o percentual (%) de pares discordantes na categoria <i>", prop2n_dep_cat1(), "</i>:</b>")),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("prop2n_dep_from", "Mínimo", value = input$prop2n_dep_discordante1, step = 1)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("prop2n_dep_to", "Máximo", value = input$prop2n_dep_discordante1 + 10, step = 1)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("prop2n_dep_by", "Intervalo", value = 2, min = 0, step = 1) %>%
+            .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.")
+      ),
+
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "prop2n_dep_seq_prop2",
+                         label   = paste0("Digite valores de percentual de pares discordantes na categoria ", prop2n_dep_cat2(), " (Disc. 2) para fazer o gráfico"),
+                         value   = paste0(c(input$prop2n_dep_discordante2, input$prop2n_dep_discordante2 + 1, input$prop2n_dep_discordante2 + 3), collapse = ", "),
+                         width   = "400px") %>%
+                 .help_buttom(body = paste0("Defina os valores de percentual (%) de pares discordantes na categoria <i>", prop2n_dep_cat2(), "</i>.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."))
+        )
+      ),
+
+
+
+      br(),
+
+      plotly::plotlyOutput("prop2n_dep_plot", width = "80%"),
+      br(), br(),
+      downloadButton("prop2n_dep_down","Download tabela"),
+      DT::dataTableOutput("prop2n_dep_tab", width = "100%")
+
+
+    ))
+  })
+
+
+
+
+  eval(parse(text = check_text_input_to_vector("prop2n_dep_seq_prop2")))
+
+  prop2n_dep_cenarios <- reactive({
+
+    prop2 <- text_input_to_vector(input$prop2n_dep_seq_prop2)
+    req(length(prop2) > 0)
+
+
+    expand.grid(`% de pares discordantes no grupo 1` = seq(from = input$prop2n_dep_from,
+                                                           to = input$prop2n_dep_to,
+                                                           by = input$prop2n_dep_by),
+                `% de pares discordantes no grupo 2` = prop2,
+                `Poder (%)` = input$prop2n_dep_pwr,
+                `Nível de significância (%)` =  input$prop2n_dep_sig,
+                `Hipótese alternativa` = input$prop2n_dep_alternativa,
+                stringsAsFactors = FALSE) %>%
+
+      mutate(`Tamanho da amostra (pares)` = mapply(
+        function(perc1, perc2, sig, power, alternative){
+          tryCatch({
+
+            numerador   <- max(perc1, perc2)
+            denominador <- min(perc1, perc2)
+
+            ceiling(
+              MESS::power_mcnemar_test(n = NULL,
+                                       psi = numerador/denominador,
+                                       paid = denominador/100,
+                                       sig.level = sig/100,
+                                       power = power/100,
+                                       alternative = alternative,
+                                       method = "normal")$n)
+
+          },
+          warning = function(warning_condition) { NA },
+          error   = function(error_condition) { NA })
+        },
+        `% de pares discordantes no grupo 1`,
+        `% de pares discordantes no grupo 2`,
+        `Nível de significância (%)`, `Poder (%)`, `Hipótese alternativa`)
+      )
+  })
+
+
+
+
+
+  output$prop2n_dep_plot <- plotly::renderPlotly({
+
+
+    g1 <- prop2n_dep_cenarios() %>%
+      mutate(`Disc. 2` = factor(`% de pares discordantes no grupo 2`)) %>%
+      ggplot(aes(x = `% de pares discordantes no grupo 1`,
+                 y = `Tamanho da amostra (pares)`,
+                 color = `Disc. 2`))+
+      geom_point() +
+      geom_line() +
+      xlab(paste0("% de pares discordantes na categoria ", prop2n_dep_cat1())) +
+      ylab("Tamanho total da amostra (pares)*") +
+      scale_x_continuous(breaks = seq(from = input$prop2n_dep_from, to = input$prop2n_dep_to, by = input$prop2n_dep_by))
+
+
+    plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
+      plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
+                                        showarrow = F, xref='paper', yref='paper',
+                                        xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                        font=list(size=10)))
+  })
+
+
+  prop2n_dep_cenarios_print <- reactive({
+    dataset <- prop2n_dep_cenarios()
+    colnames(dataset) <- c(paste0("% de pares discordantes na categoria ", prop2n_dep_cat1()),
+                           paste0("% de pares discordantes na categoria ", prop2n_dep_cat2()),
+                           "Poder (%)",
+                           "Nível de significância (%)",
+                           "Hipótese alternativa",
+                           "Tamanho da amostra (pares)")
+
+    dataset
+  })
+
+
+  output$prop2n_dep_tab <- DT::renderDataTable({
+
+    prop2n_dep_cenarios_print() %>%
+      DT::datatable(extensions = c('FixedColumns'),
+                    rownames   = FALSE,
+                    filter     = "none",
+                    #callback   = DT::JS("$('div.dwnld').append($('#download_th2mean_tab'));"),
+                    options    = list(pageLength = 10,
+                                      scrollX = TRUE,
+                                      scrollY = TRUE,
+                                      searching = FALSE,
+                                      fixedColumns = list(leftColumns = 1),
+                                      dom = 'B<"dwnld">frtip'
+                                      # buttons = list(list(extend = 'none'))
+                    )
+      )
+  })
+
+
+  output$prop2n_dep_down <- downloadHandler(
+    filename = function() { "Cenarios_tamanho_amostra_duas_prop_dep.xlsx"},
+    content = function(file) {writexl::write_xlsx(prop2n_dep_cenarios_print(), path = file)}
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4238,19 +5497,25 @@ txt_referencia_pack <-
 
 
 
+  alternative_mean_paired_n <- reactive({
+    case_when(input$alternative_mean_paired_n == 'two.sided' ~ "two.sided",
+              input$alternative_mean_paired_n == 'one.sided' &  input$mean_paired_n_differenca > 0  ~ "greater",
+              input$alternative_mean_paired_n == 'one.sided' &  input$mean_paired_n_differenca < 0  ~ "less")
+  })
+
 
   output$mean_paired_formula <- renderUI({
 
-    sinal_h0 <- case_when(input$alternative_mean_paired_n == 'two.sided' ~ "=",
-                          input$alternative_mean_paired_n == 'greater'   ~ "\\leq",
-                          input$alternative_mean_paired_n == 'less'      ~ "\\geq")
+    sinal_h0 <- case_when(alternative_mean_paired_n() == 'two.sided' ~ "=",
+                          alternative_mean_paired_n() == 'greater'   ~ "\\leq",
+                          alternative_mean_paired_n() == 'less'      ~ "\\geq")
 
-    sinal_h1 <- case_when(input$alternative_mean_paired_n == 'two.sided' ~ "\\neq",
-                          input$alternative_mean_paired_n == 'greater'   ~ ">",
-                          input$alternative_mean_paired_n == 'less'      ~ "<")
+    sinal_h1 <- case_when(alternative_mean_paired_n() == 'two.sided' ~ "\\neq",
+                          alternative_mean_paired_n() == 'greater'   ~ ">",
+                          alternative_mean_paired_n() == 'less'      ~ "<")
 
-    withMathJax(paste0("$$H_0: \\mu_1 ", sinal_h0, " \\mu_2",
-                       " \\text{  vs  } H_1: \\mu_1", sinal_h1, " \\mu_2 $$"))
+    withMathJax(paste0("$$H_0: \\mu_D ", sinal_h0, " 0",
+                       " \\text{  vs  } H_1: \\mu_D", sinal_h1, " 0 $$"))
   })
 
 
@@ -4286,11 +5551,11 @@ txt_referencia_pack <-
       need(input$mean_paired_n_differenca != 0,       "A diferença a ser detectada deve ser diferente de zero."),
       need(input$sigma_mean_paired_n > 0,    "O desvio padrão da diferença entre as médias deve ser maior do que zero."),
 
-      need(input$alternative_mean_paired_n == "two.sided" |
-             (input$mean_paired_n_differenca > 0 & input$alternative_mean_paired_n != 'less') |
-             (input$mean_paired_n_differenca < 0 & input$alternative_mean_paired_n != 'greater'),
-           paste0("Não é possível calcular um tamanho de amostra para a diferença esperada especificada e para o tipo de hipótese alternativa escolhido. ",
-                  "Verifique o valor da diferença a ser detectada e a hipótese alternativa.")),
+      # need(input$alternative_mean_paired_n == "two.sided" |
+      #        (input$mean_paired_n_differenca > 0 & input$alternative_mean_paired_n != 'less') |
+      #        (input$mean_paired_n_differenca < 0 & input$alternative_mean_paired_n != 'greater'),
+      #      paste0("Não é possível calcular um tamanho de amostra para a diferença esperada especificada e para o tipo de hipótese alternativa escolhido. ",
+      #             "Verifique o valor da diferença a ser detectada e a hipótese alternativa.")),
 
       need(!is.na(input$power_mean_paired_n), "É obrigatório fornecer um valor do poder."),
       need(!is.na(input$sig_mean_paired_n),   "É obrigatório fornecer um valor do nível de significância."),
@@ -4329,7 +5594,7 @@ txt_referencia_pack <-
                    "sig.level = ", input$sig_mean_paired_n/100,  ", ",
                    "power = ", input$power_mean_paired_n/100, ", ",
                    "alternative = '",
-                   ifelse(input$alternative_mean_paired_n == "two.sided",
+                   ifelse(alternative_mean_paired_n() == "two.sided",
                           "two.sided", "one.sided"), "')")
 
     n <- try_n(code)
@@ -4343,34 +5608,197 @@ txt_referencia_pack <-
     cabecalho <- paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, "<i> pares</i>",
                         "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
-    if(input$alternative_mean_paired_n == "two.sided"){
-      texto_comparacao <- "Foi calculado o tamanho de amostra para detectar diferenças na média de <b>Y</b> entre os grupos 1 e 2, "
-    } else if(input$alternative_mean_paired_n == "less"){
-      texto_comparacao <- "Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo 1 é inferior a do grupo 2, "
-    } else{
-      texto_comparacao <- "Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo 1 é superior a do grupo 2, "
-    }
 
 
 
-    texto_desvio <- paste0(texto_comparacao,
-                           "tendo uma diferença de <b>", input$mean_paired_n_differenca, "</b> como relevante para o estudo. ",
-                           "Para isso foi utilizado a ", txt_citacao_tap, ". ",
-                           "Considerando poder de <b>", input$power_mean_paired_n, "%</b>, ",
-                           "nível de significância de <b>", input$sig_mean_paired_n, "%</b> ",
-                           "e desvio padrão da diferença entre as médias de <b>", input$sigma_mean_paired_n, "</b> (dados de Fulano (1900)), ",
-                           "chegou-se ao tamanho total de <b>", n, "</b> pares. ",
-                           "Acrescentando <b>", input$mean_paired_n_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas, "</b> pares."
-    )
+    texto_desvio <- paste0(
+      "Foi calculado o tamanho de amostra para detectar que a média das diferenças de <b>Y</b> entre os grupos 1 e 2 é ",
+      if(alternative_mean_paired_n() == "two.sided"){
+        "diferente de zero, "
+      } else if(alternative_mean_paired_n() == "less"){
+        "menor do que zero, "
+      } else{
+        "maior do que zero, "
+      },
 
-
+      "tendo uma média das diferenças de <b>", abs(input$mean_paired_n_differenca), " u.m.</b> como relevante para o estudo. ",
+      "Para isso foi utilizado a ", .txt_citacao_tap, ". ",
+      "Considerando poder de <b>", input$power_mean_paired_n, "%</b>, ",
+      "nível de significância de <b>", input$sig_mean_paired_n, "%</b> ",
+      "e desvio padrão da diferença esperado de <b>", input$sigma_mean_paired_n, " u.m.</b> (dados de Fulano (1900)), ",
+      "chegou-se ao tamanho total de <b>", n, "</b> pares. ",
+      "Acrescentando <b>", input$mean_paired_n_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas, "</b> pares.")
 
     paste0(cabecalho,
            texto_desvio,
-           txt_referencia_tap, print_r_code(code))
-
+           .txt_referencia_tap, print_r_code(code))
 
   })
+
+
+  ## Cenarios ----
+
+  output$cenarios_duas_medias_dep_thUi <- renderUI({
+
+    if(input$mean_paired_n_differenca > 0){
+      dif_start <- input$mean_paired_n_differenca
+      dif_end  <- input$mean_paired_n_differenca + 1
+      dif_by   <- 0.1
+    } else{
+      dif_start <- input$mean_paired_n_differenca - 1
+      dif_end  <- input$mean_paired_n_differenca
+      dif_by   <- 0.1
+    }
+
+
+    fluidPage(fluidRow(
+
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de desvio padrão e uma sequência de diferença a ser detectada.
+                                        Demais informações serão recuperadas do painel lateral."
+      ),
+
+
+      HTML("<b>Defina a sequência de valores para a diferença a ser detectada:</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("th2_mean_paired_from", "Mínimo", value = dif_start, step = 0.5)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("th2_mean_paired_to", "Máximo", value = dif_end, step = 0.5)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("th2_mean_paired_by", "Intervalo", value = dif_by, min = 0, step = 0.1) %>%
+            .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                        title = "Sequência")),
+
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "th2mean_paired_dep_desvio",
+                         label   = "Digite valores de desvio padrão (DP) da diferença para fazer o gráfico",
+                         value   = paste0(c(input$sigma_mean_paired_n, input$sigma_mean_paired_n + 0.2, input$sigma_mean_paired_n + 0.5), collapse = ", "),
+                         width   = "400px") %>%
+                 .help_buttom(body = "Defina os valores de desvio padrão.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+
+
+      br(),
+
+      plotly::plotlyOutput("th2mean_paired_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_th2mean_paired_tab","Download tabela"),
+      DT::dataTableOutput("th2mean_paired_tab", width = "100%")
+
+
+    ))
+  })
+
+
+
+
+  eval(parse(text = check_text_input_to_vector("th2mean_paired_dep_desvio")))
+
+  tab_mean2_paired_cenarios <- reactive({
+
+    desvios <- text_input_to_vector(input$th2mean_paired_dep_desvio)
+    req(length(desvios) > 0)
+
+    expand.grid(`Diferença a ser detectada` = seq(from = input$th2_mean_paired_from,
+                                                  to = input$th2_mean_paired_to,
+                                                  by = input$th2_mean_paired_by),
+                `Desvio padrão da diferença` = desvios,
+                `Poder (%)` = input$power_mean_paired_n,
+                `Nível de significância (%)` =  input$sig_mean_paired_n,
+                `Hipótese alternativa` = ifelse(alternative_mean_paired_n() == "two.sided",
+                                                "two.sided", "one.sided"),
+
+                stringsAsFactors = FALSE) %>%
+
+
+
+        mutate(`Tamanho da amostra (pares)` = mapply(
+          function(delta, sd, sig.level, power, alternative){
+            tryCatch({
+              ceiling(
+                stats::power.t.test(n = NULL,
+                                    delta = abs(delta),
+                                    sd = sd,
+                                    type = 'paired',
+                                    sig.level = sig.level/100,
+                                    power = power/100,
+                                    alternative = alternative)$n)
+
+              },
+              warning = function(warning_condition) { NA },
+              error   = function(error_condition) { NA })
+          }, `Diferença a ser detectada`, `Desvio padrão da diferença`, `Nível de significância (%)`, `Poder (%)`, `Hipótese alternativa`)
+        )
+  })
+
+
+
+
+
+  output$th2mean_paired_plot <- plotly::renderPlotly({
+
+
+    g1 <- tab_mean2_paired_cenarios() %>%
+      mutate(DP = factor(`Desvio padrão da diferença`)) %>%
+      ggplot(aes(x = `Diferença a ser detectada`, y = `Tamanho da amostra (pares)`, color = DP))+
+      geom_point() +
+      geom_line() +
+      xlab("Diferença a ser detectada") +
+      ylab("Tamanho total da amostra (pares)*") +
+      scale_x_continuous(breaks = seq(from = input$th2_mean_paired_from, to = input$th2_mean_paired_to, by = input$th2_mean_paired_by))
+
+
+    plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
+      plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
+                                        showarrow = F, xref='paper', yref='paper',
+                                        xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                        font=list(size=10)))
+  })
+
+
+
+  output$th2mean_paired_tab <- DT::renderDataTable({
+
+    tab_mean2_paired_cenarios() %>%
+      DT::datatable(extensions = c('FixedColumns'),
+                    rownames   = FALSE,
+                    filter     = "none",
+                    #callback   = DT::JS("$('div.dwnld').append($('#download_th2mean_tab'));"),
+                    options    = list(pageLength = 10,
+                                      scrollX = TRUE,
+                                      scrollY = TRUE,
+                                      searching = FALSE,
+                                      fixedColumns = list(leftColumns = 1),
+                                      dom = 'B<"dwnld">frtip'
+                                      # buttons = list(list(extend = 'none'))
+                    )
+      )
+  })
+
+
+  output$download_th2mean_paired_tab <- downloadHandler(
+    filename = function() { "Cenarios_tamanho_amostra_duas_medias.xlsx"},
+    content = function(file) {writexl::write_xlsx(tab_mean2_paired_cenarios(), path = file)}
+  )
+
+
+
 
 
 
@@ -4417,7 +5845,7 @@ txt_referencia_pack <-
            "%</font></b></br></br><i></i></br></br>",
 
            "Foi calculado o poder para detectar diferença entre as médias dos grupos dependentes  X1 e X2, ",
-           "por meio da ", txt_citacao_tap, ". ",
+           "por meio da ", .txt_citacao_tap, ". ",
 
            "Considerando um nível de significância de <b>", input$sig_mean_paired_power, "</b>, ",
            "uma diferença de <b>", input$mean_paired_poder_differenca, "</b>, ",
@@ -4425,7 +5853,7 @@ txt_referencia_pack <-
            "e um tamanho de amostra de <b>", input$n_mean_paired_power, "</b>, ",
            "chegou-se à um poder de de <b>", round(100*power_pwd$power, digits = 1), "%</b>.",
 
-           txt_referencia_tap, print_r_code(code))
+           .txt_referencia_tap, print_r_code(code))
 
   })
 
@@ -4433,98 +5861,98 @@ txt_referencia_pack <-
 
 
 
-  # Media dep2----...
+  # 2 Deltas----
 
 
-  # output$th2_mean_dep_out <- renderText({
-  #
-  #   if(!input$th2_mean_dep_utilizar_medias){
-  #     validate(
-  #       need(!is.na(input$th2_mean_dep_diff), "É obrigatório fornecer um valor da diferença a ser detectada."),
-  #       need(input$th2_mean_dep_diff != 0, "A diferença a ser detectada deve ser diferente de zero.")
-  #     )
-  #   } else{
-  #
-  #     validate(
-  #       need(!is.na(input$th2_mean_dep_delta_tratamento), "É obrigatório fornecer um valor da mudança média ao longo do tempo do grupo Tratamento."),
-  #       need(!is.na(input$th2_mean_dep_delta_controle), "É obrigatório fornecer um valor da mudança média ao longo do tempo do grupo Controle.")
-  #     )
-  #   }
-  #
-  #
-  #   validate(
-  #     need(!is.na(input$th2_mean_dep_pwr), "É obrigatório fornecer um valor do poder."),
-  #     need(!is.na(input$th2_mean_dep_sig),   "É obrigatório fornecer um valor do nível de significância."),
-  #     need(!is.na(input$th2_mean_dep_sigma1), "É obrigatório fornecer um valor do desvio padrão do grupo Tratamento no início do estudo."),
-  #     need(!is.na(input$th2_mean_dep_sigma2), "É obrigatório fornecer um valor do desvio padrão do grupo Tratamento no final do estudo."),
-  #     need(!is.na(input$th2_mean_dep_rho), "É obrigatório fornecer um valor da correlação das medidas (início e fim) dentro do grupo Tratamento."),
-  #
-  #     need(input$th2_mean_dep_pwr < 100, "O poder deve ser menor do que 100%."),
-  #     need(input$th2_mean_dep_sig < 100,   "O nível de significância deve ser menor do que 100%."),
-  #     need(input$th2_mean_dep_pwr > 0, "O poder deve ser maior do que zero."),
-  #     need(input$th2_mean_dep_sig > 0,   "O nível de significância deve ser maior do que zero."),
-  #     need(input$th2_mean_dep_sigma1 > 0, "O desvio padrão do grupo Tratamento no início do estudo deve ser maior do que zero."),
-  #     need(input$th2_mean_dep_sigma2 > 0, "O desvio padrão do grupo Tratamento no final do estudo deve ser maior do que zero."),
-  #     need(input$th2_mean_dep_rho >= -1 & input$th2_mean_dep_rho <= 1,
-  #          "A correlação das medidas (início e fim) dentro do grupo Tratamento deve ser estar entre -1 e 1.")
-  #   )
-  #
-  #
-  #
-  #
-  #   if(!input$th2_mean_dep_utilizar_medias){
-  #     delta <- input$th2_mean_dep_diff
-  #     info_texto <- paste0("diferença esperada/ desejada de <b>", input$th2_mean_dep_diff, "</b>, ")
-  #   } else {
-  #     delta <- abs(input$th2_mean_dep_delta_tratamento - input$th2_mean_dep_delta_controle)
-  #     info_texto <- paste0("uma variação média no intervalo de tempo de <b>",
-  #                          input$th2_mean_dep_delta_tratamento, "</b> e <b>",
-  #                          input$th2_mean_dep_delta_controle, "</b>",
-  #                          " para o grupo Tratamento e COntrole, respectivamente, ")
-  #
-  #   }
-  #
-  #
-  #   code <- paste0(
-  #     "powerMediation::ssLongFull(",
-  #     "delta  = ", delta, ", ",
-  #     "sigma1 = ", input$th2_mean_dep_sigma1, ", ",
-  #     "sigma2 = ", input$th2_mean_dep_sigma2, ", ",
-  #     "rho    = ", input$th2_mean_dep_rho, ", ",
-  #     "alpha  = ", input$th2_mean_dep_sig/100, ", ",
-  #     "power  = ", input$th2_mean_dep_pwr/100, ")"
-  #   )
-  #
-  #
-  #   n <- try_n(code)
-  #   eval(parse(text = validate_n("n")))
-  #
-  #   n <- 2 * ceiling(n/2)
-  #   nperdas <- n_perdas(n, input$th2_mean_dep_perdas_recusa)
-  #   nperdas <- 2 * ceiling(nperdas/2)
-  #
-  #   eval(parse(text = validate_n("n")))
-  #
-  #
-  #   paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n/2, " em cada grupo</i>)",
-  #          "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
-  #
-  #          "Foi calculado o tamanho de amostra para detectar diferenças, na mudança média de <b>Y</b>, em um intervalo de tempo entre o grupo Tratamento e o Controle ,",
-  #          "por meio da ", txt_citacao_tap, ". ",
-  #          "Considerando poder de <b>", input$th2_mean_dep_pwr, "%</b>, ",
-  #          "nível de significância de <b>", input$th2_mean_dep_sig, "%</b>, ",
-  #          "correlação entre as medida do grupo Tratamento de <b>", input$th2_mean_dep_rho, "</b>, ",
-  #          info_texto,
-  #          "desvios padrão de <b>", input$th2_mean_dep_sigma1, "</b> e <b>", input$th2_mean_dep_sigma2, "</b> ",
-  #          "do grupo Tratamento no ínicio e no final do estudo, respectivamente (dados de Fulano (1900)), ",
-  #          "chegou-se ao tamanho total da amostra de <b>", n, "</b> sujeitos, sendo <b>", n/2, "</b> sujeitos em cada grupo. ",
-  #          "Acrescentando <b>", input$th2_mean_dep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas, "</b>.",
-  #
-  #          txt_referencia_tap, print_r_code(code)
-  #   )
-  #
-  #
-  # })
+  output$th2_mean_dep_out <- renderText({
+
+    if(!input$th2_mean_dep_utilizar_medias){
+      validate(
+        need(!is.na(input$th2_mean_dep_diff), "É obrigatório fornecer um valor da diferença a ser detectada."),
+        need(input$th2_mean_dep_diff != 0, "A diferença a ser detectada deve ser diferente de zero.")
+      )
+    } else{
+
+      validate(
+        need(!is.na(input$th2_mean_dep_delta_tratamento), "É obrigatório fornecer um valor da mudança média ao longo do tempo do grupo Tratamento."),
+        need(!is.na(input$th2_mean_dep_delta_controle), "É obrigatório fornecer um valor da mudança média ao longo do tempo do grupo Controle.")
+      )
+    }
+
+
+    validate(
+      need(!is.na(input$th2_mean_dep_pwr), "É obrigatório fornecer um valor do poder."),
+      need(!is.na(input$th2_mean_dep_sig),   "É obrigatório fornecer um valor do nível de significância."),
+      need(!is.na(input$th2_mean_dep_sigma1), "É obrigatório fornecer um valor do desvio padrão do grupo Tratamento no início do estudo."),
+      need(!is.na(input$th2_mean_dep_sigma2), "É obrigatório fornecer um valor do desvio padrão do grupo Tratamento no final do estudo."),
+      need(!is.na(input$th2_mean_dep_rho), "É obrigatório fornecer um valor da correlação das medidas (início e fim) dentro do grupo Tratamento."),
+
+      need(input$th2_mean_dep_pwr < 100, "O poder deve ser menor do que 100%."),
+      need(input$th2_mean_dep_sig < 100,   "O nível de significância deve ser menor do que 100%."),
+      need(input$th2_mean_dep_pwr > 0, "O poder deve ser maior do que zero."),
+      need(input$th2_mean_dep_sig > 0,   "O nível de significância deve ser maior do que zero."),
+      need(input$th2_mean_dep_sigma1 > 0, "O desvio padrão do grupo Tratamento no início do estudo deve ser maior do que zero."),
+      need(input$th2_mean_dep_sigma2 > 0, "O desvio padrão do grupo Tratamento no final do estudo deve ser maior do que zero."),
+      need(input$th2_mean_dep_rho >= -1 & input$th2_mean_dep_rho <= 1,
+           "A correlação das medidas (início e fim) dentro do grupo Tratamento deve ser estar entre -1 e 1.")
+    )
+
+
+
+
+    if(!input$th2_mean_dep_utilizar_medias){
+      delta <- input$th2_mean_dep_diff
+      info_texto <- paste0("diferença esperada/ desejada de <b>", input$th2_mean_dep_diff, " u.m</b>, ")
+    } else {
+      delta <- abs(input$th2_mean_dep_delta_tratamento - input$th2_mean_dep_delta_controle)
+      info_texto <- paste0("uma variação média no intervalo de tempo de <b>",
+                           input$th2_mean_dep_delta_tratamento, " u.m.</b> e <b>",
+                           input$th2_mean_dep_delta_controle, " u.m.</b>",
+                           " para o grupo Tratamento e Controle, respectivamente, ")
+
+    }
+
+
+    code <- paste0(
+      "powerMediation::ssLongFull(",
+      "delta  = ", delta, ", ",
+      "sigma1 = ", input$th2_mean_dep_sigma1, ", ",
+      "sigma2 = ", input$th2_mean_dep_sigma2, ", ",
+      "rho    = ", input$th2_mean_dep_rho, ", ",
+      "alpha  = ", input$th2_mean_dep_sig/100, ", ",
+      "power  = ", input$th2_mean_dep_pwr/100, ")"
+    )
+
+
+    n <- try_n(code)
+    eval(parse(text = validate_n("n")))
+
+    n <- 2 * ceiling(n/2)
+    nperdas <- n_perdas(n, input$th2_mean_dep_perdas_recusa)
+    nperdas <- 2 * ceiling(nperdas/2)
+
+    eval(parse(text = validate_n("n")))
+
+
+    paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n/2, " em cada grupo</i>)",
+           "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
+
+           "Foi calculado o tamanho de amostra para detectar diferenças, na mudança média de <b>Y</b>, em um intervalo de tempo <b>T</b> entre os grupos Tratamento e o Controle, ",
+           "por meio da ", .txt_citacao_tap, ". ",
+           "Considerando poder de <b>", input$th2_mean_dep_pwr, "%</b>, ",
+           "nível de significância de <b>", input$th2_mean_dep_sig, "%</b>, ",
+           info_texto,
+           "correlação entre as medidas no tempo do grupo Tratamento de <b>", input$th2_mean_dep_rho, "</b>, ",
+           "desvios padrão de <b>", input$th2_mean_dep_sigma1, "</b> e <b>", input$th2_mean_dep_sigma2, " u.m.</b> ",
+           "do grupo Tratamento no ínicio e no final do estudo, respectivamente (dados de Fulano (1900)), ",
+           "chegou-se ao tamanho total da amostra de <b>", n, "</b> sujeitos, sendo <b>", n/2, "</b> sujeitos em cada grupo. ",
+           "Acrescentando <b>", input$th2_mean_dep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas, "</b>.",
+
+           .txt_referencia_tap, print_r_code(code)
+    )
+
+
+  })
 
 
 
@@ -4545,18 +5973,19 @@ txt_referencia_pack <-
           textInput(inputId = "rep_nome_desfecho",
                     label   = "Descreva o nome do desfecho",
                     value   = ifelse(input$show_th_rep == 0, "Y", rep_nome_desfecho())),
-
+          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
+          br(), br(),
           textInput(inputId = "rep_grupoTratamento",
                     label   = "Descreva um nome para o grupo Tratamento",
                     value   = ifelse(input$show_th_rep == 0, "Tratamento", rep_grupoTratamento())),
 
-          HTML("Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.<br><br>"),
+          HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
 
           textInput(inputId = "rep_grupoControle",
                     label   = "Descreva um nome para o grupo Controle",
                     value   = ifelse(input$show_th_rep == 0, "Controle", rep_grupoControle())),
 
-          HTML("Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto."),
+          HTML("<i>Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
 
 
         ),
@@ -4593,6 +6022,31 @@ txt_referencia_pack <-
   })
 
 
+  observeEvent(input$rep_n_tempos, {
+      shinyFeedback::hideFeedback("rep_n_tempos")
+
+      if(is.na(input$rep_n_tempos)){
+        shinyFeedback::showFeedbackWarning(
+          inputId = "rep_n_tempos",
+          text = "Deve ser fornecido um valor.",
+          color = "red"
+        )
+      } else if (input$rep_n_tempos < 2) {
+        shinyFeedback::showFeedbackWarning(
+          inputId = "rep_n_tempos",
+          text = "Devem haver pelo menos 2 momentos.",
+          color = "red"
+        )
+      } else if(input$rep_n_tempos%%1 != 0){
+        shinyFeedback::showFeedbackWarning(
+          inputId = "rep_n_tempos",
+          text = "Deve ser um número inteiro positivo.",
+          color = "red"
+        )
+      }
+    })
+
+
 
   eval(parse(text = warning_numero_positivo("rep_sigma1")))
   eval(parse(text = warning_numero_positivo("rep_sigma2")))
@@ -4606,9 +6060,310 @@ txt_referencia_pack <-
   eval(parse(text = warning_perdas("rep_perdas_recusa")))
 
 
+
+
+
+
+
+  # Matriz de correlacao do grupo tratamento
+
+  correlation_R1 <- reactiveValues(mcor = data.frame(a = 1))
+
+  observeEvent(input$rep_n_tempos, {
+
+    req(!is.na(input$rep_n_tempos))
+    req(input$rep_n_tempos%%1 == 0 & input$rep_n_tempos > 1)
+
+    # Cria uma matriz AR1 inicial
+    tempos <- ifelse(is.null(input$rep_n_tempos), 4, input$rep_n_tempos)
+    exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
+    M_correlation <- as.data.frame(0.9^exponent)
+    colnames(M_correlation) <- paste0("Momento ", 1:tempos)
+    rownames(M_correlation) <- paste0("Momento ", 1:tempos)
+    correlation_R1$mcor <- M_correlation
+  })
+
+
+
+
+
+
+
+  output$rep_cor_grupo1 <- DT::renderDT({
+    temp <- input$rep_cor_grupo1_cell_edit
+    DT::datatable(correlation_R1$mcor,
+                  editable = "cell",
+                  extensions = c('FixedColumns'),
+                  rownames   = TRUE,
+                  filter     = "none",
+                  options    = list(autoWidth = FALSE,
+                                    searching = FALSE,
+                                    ordering  = FALSE,
+                                    pageLength = 15,
+                                    dom = 't',
+                                    columnDefs = list(list(className = 'dt-center', targets = "_all"))))
+  })
+
+
+
+
+
+  observeEvent(input$rep_cor_grupo1_cell_edit, {
+    cell <- input$rep_cor_grupo1_cell_edit
+    newdf <- correlation_R1$mcor
+    new_value <- cell$value %>%
+      as.character() %>%
+      str_replace(",", ".") %>%
+      gsub("[^0-9.-]", "", .) %>%
+      as.numeric()
+
+    newdf[cell$row, cell$col] <- new_value
+    newdf[cell$col, cell$row] <- new_value
+
+    correlation_R1$mcor <- newdf
+  })
+
+
+
+
+
+
+
+  rep_problemas_matriz_correlacao1 <- reactive({
+    problemas <- ""
+
+    if(any(is.na(correlation_R1$mcor))){
+      problemas <- paste0('<font color = "red"><b>Todas as células devem ser preenchidas.</b></font><br/>')
+    } else if(any(abs(correlation_R1$mcor) > 1)){
+      problemas <- paste0('<font color = "red"><b>Todas as correlações devem estar entre -1 e 1.</b></font><br/>')
+    } else if(any(abs(correlation_R1$mcor) > 1)){
+      problemas <- paste0('<font color = "red"><b>Os valores da diagonal devem ser igual a 1.</b></font><br/>')
+    }
+    problemas
+  })
+
+
+
+
+
+
+
+
+  # Matriz de correlacao do grupo Controle
+
+  correlation_R2 <- reactiveValues(mcor = data.frame(a = 1))
+
+  observeEvent(input$rep_n_tempos, {
+
+    req(!is.na(input$rep_n_tempos))
+    req(input$rep_n_tempos%%1 == 0 & input$rep_n_tempos > 1)
+    # Cria uma matriz AR1 inicial
+    tempos <- ifelse(is.null(input$rep_n_tempos), 4, input$rep_n_tempos)
+    exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
+    M_correlation <- as.data.frame(0.9^exponent)
+    colnames(M_correlation) <- paste0("Momento ", 1:tempos)
+    rownames(M_correlation) <- paste0("Momento ", 1:tempos)
+    correlation_R2$mcor <- M_correlation
+  })
+
+
+
+
+
+
+
+  output$rep_cor_grupo2 <- DT::renderDT({
+    temp <- input$rep_cor_grupo2_cell_edit
+    DT::datatable(correlation_R2$mcor,
+                  editable = "cell",
+                  extensions = c('FixedColumns'),
+                  rownames   = TRUE,
+                  filter     = "none",
+                  options    = list(autoWidth = FALSE,
+                                    searching = FALSE,
+                                    ordering  = FALSE,
+                                    pageLength = 15,
+                                    dom = 't',
+                                    columnDefs = list(list(className = 'dt-center', targets = "_all"))))
+  })
+
+
+
+
+
+  observeEvent(input$rep_cor_grupo2_cell_edit, {
+    cell <- input$rep_cor_grupo2_cell_edit
+    newdf <- correlation_R2$mcor
+    new_value <- cell$value %>%
+      as.character() %>%
+      str_replace(",", ".") %>%
+      gsub("[^0-9.-]", "", .) %>%
+      as.numeric()
+
+    newdf[cell$row, cell$col] <- new_value
+    newdf[cell$col, cell$row] <- new_value
+
+    correlation_R2$mcor <- newdf
+  })
+
+
+
+
+
+
+
+  rep_problemas_matriz_correlacao2 <- reactive({
+    problemas <- ""
+
+    if(any(is.na(correlation_R2$mcor))){
+      problemas <- paste0('<font color = "red"><b>Todas as células devem ser preenchidas.</b></font><br/>')
+    } else if(any(abs(correlation_R2$mcor) > 1)){
+      problemas <- paste0('<font color = "red"><b>Todas as correlações devem estar entre -1 e 1.</b></font><br/>')
+    } else if(any(abs(correlation_R2$mcor) > 1)){
+      problemas <- paste0('<font color = "red"><b>Os valores da diagonal devem ser igual a 1.</b></font><br/>')
+    }
+    problemas
+  })
+
+
+
+
+  output$rep_print_matriz_cor <- renderUI({
+    fluidPage(fluidRow(wellPanel(
+
+      # Tratamento
+      if(rep_problemas_matriz_correlacao1() != ""){
+        HTML(paste0('<font size = "+0.1"><font color = "red">', "<b>Matriz de correlação do grupo ", rep_grupoTratamento(), ":</b>", '</font></font><br/>'))
+      } else{
+        HTML(paste0("<b>Matriz de correlação do grupo ", rep_grupoTratamento()), ":</b>")
+      },
+
+      DT::dataTableOutput("rep_cor_grupo1"),
+
+      if(rep_problemas_matriz_correlacao1() != ""){
+        HTML(rep_problemas_matriz_correlacao1())
+      },
+
+
+      br(), br(),
+      # Controle
+      if(rep_problemas_matriz_correlacao2() != ""){
+        HTML(paste0('<font size = "+0.1"><font color = "red">', "<b>Matriz de correlação do grupo ", rep_grupoTratamento(), ":</b>", '</font></font><br/>'))
+      } else{
+        HTML(paste0("<b>Matriz de correlação do grupo ", rep_grupoControle()), ":</b>")
+      },
+
+      DT::dataTableOutput("rep_cor_grupo2"),
+
+      if(rep_problemas_matriz_correlacao2() != ""){
+        HTML(rep_problemas_matriz_correlacao2())
+      },
+
+
+
+
+      br(), br()
+    )))
+  })
+
+
+
+  output$rep_retencao1 <- renderUI({
+    len <- as.integer(input$rep_n_tempos)
+    lapply(1:len, function(i) {
+      div(
+        numericInput(
+          inputId = paste0("retencao1_", i),
+          label = paste0("Momento ", i),
+          value = 100 + 1 - i
+        )
+      )
+    })
+  })
+
+
+  output$rep_retencao2 <- renderUI({
+    len <- as.integer(input$rep_n_tempos)
+    lapply(1:len, function(i) {
+      div(
+        numericInput(
+          inputId = paste0("retencao2_", i),
+          label = paste0("Momento ", i),
+          value = 100 + 1 - i
+        )
+      )
+    })
+  })
+
+  observe({
+    req(!is.null(input$rep_n_tempos))
+    req(!is.na(input$rep_n_tempos))
+
+    len <- as.integer(input$rep_n_tempos)
+
+    req(!is.null(input[[paste0("retencao1_", len)]]))
+
+    lapply(1:len, function(i) {
+      shinyFeedback::hideFeedback(paste0("retencao1_", i))
+      if(is.na(input[[paste0("retencao1_", i)]])){
+        shinyFeedback::showFeedbackWarning(
+          inputId = paste0("retencao1_", i),
+          text = "Deve ser fornecido um valor.",
+          color = "red"
+        )
+      } else if(input[[paste0("retencao1_", i)]] > 100){
+        shinyFeedback::showFeedbackWarning(
+          inputId = paste0("retencao1_", i),
+          text = "Deve ser fornecido um valor menor do que 100%",
+          color = "red"
+        )
+      } else if(input[[paste0("retencao1_", i)]] < 0){
+        shinyFeedback::showFeedbackWarning(
+          inputId = paste0("retencao1_", i),
+          text = "Deve ser fornecido um valor maior do que 0%",
+          color = "red"
+        )
+      }
+    })
+  })
+
+
+  observe({
+    req(!is.null(input$rep_n_tempos))
+    req(!is.na(input$rep_n_tempos))
+
+    len <- as.integer(input$rep_n_tempos)
+
+    req(!is.null(input[[paste0("retencao2_", len)]]))
+
+    lapply(1:len, function(i) {
+      shinyFeedback::hideFeedback(paste0("retencao2_", i))
+      if(is.na(input[[paste0("retencao2_", i)]])){
+        shinyFeedback::showFeedbackWarning(
+          inputId = paste0("retencao2_", i),
+          text = "Deve ser fornecido um valor.",
+          color = "red"
+        )
+      } else if(input[[paste0("retencao2_", i)]] > 100){
+        shinyFeedback::showFeedbackWarning(
+          inputId = paste0("retencao2_", i),
+          text = "Deve ser fornecido um valor menor do que 100%",
+          color = "red"
+        )
+      } else if(input[[paste0("retencao2_", i)]] <= 0){
+        shinyFeedback::showFeedbackWarning(
+          inputId = paste0("retencao2_", i),
+          text = "Deve ser fornecido um valor maior do que 0%",
+          color = "red"
+        )
+      }
+    })
+  })
+
+
   output$medidas_repetidas_ui_sided <- renderUI({
 
-    fluidPage(
+    fluidPage(fluidRow(
       sidebarLayout(
         sidebarPanel(
           wellPanel(
@@ -4627,6 +6382,11 @@ txt_referencia_pack <-
                         max = Inf,
                         step = 1
           ),
+          # uiOutput("rep_n_temposUi"),
+
+          # uiOutput("rep_cor_matriz"),
+          #
+          # column(6, uiOutput("selects2")),
 
           numericInput( "rep_dif_medias",
                         paste0("Diferença do ", rep_nome_desfecho(), " a ser detectada no último tempo de avaliação: (Média do ", rep_grupoTratamento(),
@@ -4635,67 +6395,7 @@ txt_referencia_pack <-
                         min = -Inf,
                         max = Inf,
                         step = .5
-          ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico) no último tempo de internação."),
-
-
-          selectInput('rep_tipo_matriz_cor',
-                      "Selecione o tipo de matriz de correlação",
-                      choices = c("AR(1)", "Não estruturada"),
-                      selected = 'Não estruturada'
-          ),
-
-          conditionalPanel("input.rep_tipo_matriz_cor == 'Não estruturada'",
-
-                           textAreaInput(inputId = "rep_Ra",
-                                         label  = paste0("Matriz de correlação do grupo ", rep_grupoTratamento()),
-                                         value   = "
-1.00, 0.25, 0.25, 0.25,
-0.25, 1.00, 0.25, 0.25,
-0.25, 0.25, 1.00, 0.25,
-0.25, 0.25, 0.25, 1.00
-  ",
-                                         rows = 4
-
-                           ) %>% help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_grupoTratamento())),
-
-                           textAreaInput(inputId = "rep_Rb",
-                                         label  = paste0("Matriz de correlação do grupo ", rep_grupoControle()),
-                                         value   = "
-1.00, 0.25, 0.25, 0.25,
-0.25, 1.00, 0.25, 0.25,
-0.25, 0.25, 1.00, 0.25,
-0.25, 0.25, 0.25, 1.00
-  ",
-                                         rows = 4
-
-                           ) %>% help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_grupoControle())),
-
-          ),
-
-          conditionalPanel("input.rep_tipo_matriz_cor == 'AR(1)'",
-
-                           # Parâmetro autoregressivo
-                           HTML(paste0("<b><font size = '2.95'>Parâmetro autoregressivo no grupo</font></b><br>")),
-                           div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                               numericInput( "rep_ar1_rho1",
-                                             rep_grupoTratamento(),
-                                             value = 0.4,
-                                             min = 0,
-                                             max = 1,
-                                             step = .1
-                               )
-                           ),
-                           div(style="display: inline-block;vertical-align:top; width: 49%;",
-                               numericInput( "rep_ar1_rho2",
-                                             rep_grupoControle(),
-                                             value = 0.2,
-                                             min = 0,
-                                             max = 1,
-                                             step = .1
-                               )
-                           )
-          ),
-
+          ) %>% .help_buttom(body = paste0("É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico) no último tempo de internação.", .txt_definido_pesquisador)),
 
           # Desvio padrao
           HTML(paste0("<b><font size = '2.95'>Desvio padrão esperado de ", rep_nome_desfecho(), " no grupo</font></b><br>")),
@@ -4715,38 +6415,117 @@ txt_referencia_pack <-
                             min = 0,
                             max = Inf,
                             step = 1
-              ) %>% help_buttom(body = paste0("Desvio padrão esperado de ", rep_nome_desfecho(), ", geralmente obtido de estudos anteriores."),
-                                title = "Desvio padrão esperado")
+              ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
           ),
+
+          wellPanel(
+
+            selectInput('rep_tipo_matriz_cor',
+                        "Selecione o tipo de matriz de correlação",
+                        choices = c("AR(1)",
+                                    "Componente permutável",
+                                    "Não estruturada"),
+                        selected = 'Não estruturada'
+            ),
+
+            conditionalPanel("input.rep_tipo_matriz_cor == 'Não estruturada'",
+                             HTML("<i><b>ATENÇÃO!</b> Edite as matrizes de correlação no painel principal ao lado. As matrizes são editáveis, basta clicar duas vezes sobre a célula --> </i><br><br>")
+            ),
+
+            conditionalPanel("input.rep_tipo_matriz_cor == 'AR(1)'",
+                             HTML(paste0("<b><font size = '2.95'>Parâmetro autorregressivo no grupo</font></b><br>")),
+                             div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                                 numericInput( "rep_ar1_rho1",
+                                               rep_grupoTratamento(),
+                                               value = 0.4,
+                                               min = 0,
+                                               max = 1,
+                                               step = .1
+                                 )
+                             ),
+                             div(style="display: inline-block;vertical-align:top; width: 49%;",
+                                 numericInput( "rep_ar1_rho2",
+                                               rep_grupoControle(),
+                                               value = 0.2,
+                                               min = 0,
+                                               max = 1,
+                                               step = .1
+                                 )
+                             )
+            ),
+
+            conditionalPanel("input.rep_tipo_matriz_cor == 'Componente permutável'",
+                             HTML(paste0("<b><font size = '2.95'>Valor da correlação entre os diferentes momentos no grupo</font></b><br>")),
+                             div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                                 numericInput( "rep_cs_rho1",
+                                               rep_grupoTratamento(),
+                                               value = 0.7,
+                                               min = -1,
+                                               max = 1,
+                                               step = .1
+                                 )
+                             ),
+                             div(style="display: inline-block;vertical-align:top; width: 49%;",
+                                 numericInput( "rep_cs_rho2",
+                                               rep_grupoControle(),
+                                               value = 0.7,
+                                               min = -1,
+                                               max = 1,
+                                               step = .1
+                                 )
+                             )
+            )
+          ),
+
+
 
 
           # Retencao
-          HTML(paste0("<b><font size = '2.95'>Retenção esperada (%) no grupo</font></b><br>")),
-          div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-              textInput( "rep_retencao1",
-                         rep_grupoTratamento(),
-                         value = "100, 90, 80, 70")
-          ),
-          div(style="display: inline-block;vertical-align:top; width: 49%;",
-              textInput( "rep_retencao2",
-                            rep_grupoControle(),
-                            value = "100, 90, 80, 70") %>%
-                help_buttom(body = "Retenção esperada dos grupos (% de sujeitos que ainda estão no estudo em dado ponto no tempo",
-                            title = "Retenção esperada")
+          # HTML('<hr style="color: black;">'),
+          # br(),
+          wellPanel(
+            HTML(paste0("<b>Retenção esperada (%) no grupo</b><br><br>")),
+            fluidPage(fluidRow(
+              div(style="display: inline-block;vertical-align:top; width: 49%;",
+                  wellPanel(
+                    HTML(paste0("<b>", rep_grupoTratamento(), ":</b>")),
+                    br(), br(),
+                    uiOutput("rep_retencao1")
+                  )),
+              div(style="display: inline-block;vertical-align:top; width: 49%;", wellPanel(
+                HTML(paste0("<b>", rep_grupoControle(), ":</b>")),
+                br(), br(),
+                uiOutput("rep_retencao2")
+              ))
+            ))
           ),
 
-          numericInput( "rep_ratio",
-                        paste0("Balanceamento (", rep_grupoTratamento(), ":", rep_grupoControle(), ")"),
-                        value = 1,
-                        min = 0,
-                        max = Inf,
-                        step = 0.5
-          ) %>% help_buttom(
-            paste0("Nº de ", rep_grupoControle(), " para cada ", rep_grupoTratamento(), ". Se colocar o valor 2, será calculado um tamanho de amostra ",
-                   "tal que será necessário 2 ", rep_grupoControle(), " para cada ", rep_grupoTratamento(), " Se colocar o valor 0.5, ",
-                   "será calculado um tamanho de amostra ",
-                   "tal que será necessário 2 ", rep_grupoTratamento(), " para cada ", rep_grupoControle(), ".")
-          ),
+
+          # HTML('<hr style="color: black;">'),
+          # HTML(paste0("<b><font size = '2.95'>Retenção esperada (%) no grupo</font></b><br>")),
+          # div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+          #     textInput( "rep_retencao1",
+          #                rep_grupoTratamento(),
+          #                value = "100, 90, 80, 70")
+          # ),
+          # div(style="display: inline-block;vertical-align:top; width: 49%;",
+          #     textInput( "rep_retencao2",
+          #                   rep_grupoControle(),
+          #                   value = "100, 90, 80, 70") %>%
+          #       .help_buttom(body = "Retenção esperada dos grupos (% de sujeitos que ainda estão no estudo em dado ponto no tempo",
+          #                   title = "Retenção esperada")
+          # ),
+
+          fluidPage(fluidRow(
+
+            numericInput( "rep_ratio",
+                          paste0("Balanceamento (", rep_grupoTratamento(), ":", rep_grupoControle(), ")"),
+                          value = 1,
+                          min = 0,
+                          max = Inf,
+                          step = 0.5
+            ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento")
+          )),
 
 
           numericInput( "rep_power",
@@ -4755,64 +6534,75 @@ txt_referencia_pack <-
                         min = 0,
                         max = 100,
                         step = 1
-          ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+          ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
           numericInput( "rep_sig",
                         "Nível de significância (%)",
                         value = 5,
                         min = 0,
                         max = 100,
                         step = 1
-          ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+          ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
           numericInput( "rep_perdas_recusa",
                         "Perdas/ Recusa (%)",
                         value = 10,
                         min = 0,
                         max = 100,
                         step = 1
-          ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+          ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
         ),
 
         mainPanel(
+          conditionalPanel("input.rep_tipo_matriz_cor == 'Não estruturada'",
+                           uiOutput("rep_print_matriz_cor") %>%
+                             shinycssloaders::withSpinner(type = 5),
+
+          ),
           shinycssloaders::withSpinner(htmlOutput("rep_outout_text"), type = 5),
           shinycssloaders::withSpinner(uiOutput("rep_corr_matrix_out"), type = 5),
-          shinycssloaders::withSpinner(htmlOutput("rep_out_codigo"), type = 5)
+          shinycssloaders::withSpinner(htmlOutput("rep_out_codigo"), type = 5),
+          uiOutput("cenarios_medidas_rep_thUi")
 
         )
       )
-    )
+    ))
   })
 
 
 
+
+  # Aqui eh definido a matriz que sera utilizada no calculo -----.
+
   correlation_Ra <- reactive({
 
     if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      correlation_Ra_v <- input$rep_Ra %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric() %>%
-        keep(~!is.na(.x))
+      correlation_Ra_v <- unlist(c(correlation_R1$mcor))
 
     } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
       tempos <- input$rep_n_tempos
       exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
       correlation_Ra_v <- c(input$rep_ar1_rho1^exponent)
+    } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
+      tempos <- input$rep_n_tempos
+      exponent <- matrix(1, nrow = tempos, ncol = tempos, byrow = TRUE)
+      diag(exponent) <- 0
+      correlation_Ra_v <- c(input$rep_cs_rho1^exponent)
     }
     correlation_Ra_v
   })
 
   correlation_Rb <- reactive({
     if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      correlation_Rb_v <- input$rep_Rb %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric() %>%
-        keep(~!is.na(.x))
+      correlation_Rb_v <- unlist(c(correlation_R2$mcor))
 
     } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
       tempos <- input$rep_n_tempos
       exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
       correlation_Rb_v <- c(input$rep_ar1_rho2^exponent)
+    } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
+      tempos <- input$rep_n_tempos
+      exponent <- matrix(1, nrow = tempos, ncol = tempos, byrow = TRUE)
+      diag(exponent) <- 0
+      correlation_Rb_v <- c(input$rep_cs_rho2^exponent)
     }
 
     correlation_Rb_v
@@ -4823,90 +6613,27 @@ txt_referencia_pack <-
 
 
   rep_retencao_A <- reactive({
-    input$rep_retencao1 %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric() %>%
-      keep(~!is.na(.x))
+    req(!is.null(input$retencao1_1))
+    lapply(1:input$rep_n_tempos, function(i) {
+      input[[paste0("retencao1_", i)]]
+    }) %>% unlist()
   })
 
   rep_retencao_B <- reactive({
-    input$rep_retencao2 %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric() %>%
-      keep(~!is.na(.x))
+    req(!is.null(input$retencao2_1))
+
+    lapply(1:input$rep_n_tempos, function(i) {
+      input[[paste0("retencao2_", i)]]
+    }) %>% unlist()
   })
 
 
-  observeEvent(c(input$rep_retencao1, input$rep_n_tempos), {
-    if(length(rep_retencao_A()) != input$rep_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_retencao1",
-        text = paste0("Deve ser fornecido ", input$rep_n_tempos, " valores."),
-        color = "red")
-    } else if(!all(diff(rep_retencao_A()) <= 0) ){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_retencao1",
-        text = "A sequência deve ser descendente",
-        color = "red")
-    } else if(!all(rep_retencao_A() > 0) | !all(rep_retencao_A() <= 100)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_retencao1",
-        text = "Todos valores devem estar entre 0% e 100%.",
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_retencao1")
-    }
-  })
-
-  observeEvent(c(input$rep_retencao2, input$rep_n_tempos), {
-    if(length(rep_retencao_B()) != input$rep_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_retencao2",
-        text = paste0("Deve ser fornecido ", input$rep_n_tempos, " valores."),
-        color = "red")
-    } else if(!all(diff(rep_retencao_B()) <= 0)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_retencao2",
-        text = "A sequência deve ser descendente",
-        color = "red")
-    } else if(!all(rep_retencao_B() > 0) | !all(rep_retencao_B() <= 100)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_retencao2",
-        text = "Todos valores devem estar entre 0% e 100%.",
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_retencao2")
-    }
-  })
-
-
-  observeEvent(c(input$rep_Ra, input$rep_n_tempos), {
-    if(sqrt(length(correlation_Ra())) != input$rep_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_Ra",
-        text = paste0("Deve ser fornecido uma matriz ", input$rep_n_tempos, " x ", input$rep_n_tempos, "."),
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_Ra")
-    }
-  })
-
-  observeEvent(c(input$rep_Rb, input$rep_n_tempos), {
-    if(sqrt(length(correlation_Rb())) != input$rep_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_Rb",
-        text = paste0("Deve ser fornecido uma matriz ", input$rep_n_tempos, " x ", input$rep_n_tempos, "."),
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_Rb")
-    }
-  })
 
 
 
   rep_n_calc <- reactive({
+    req(!is.null(input$rep_n_tempos))
+    req(rep_problemas_matriz_correlacao1() == "")
 
     n <- longpower::power.mmrm(
       Ra = matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE),
@@ -4927,6 +6654,7 @@ txt_referencia_pack <-
 
 
   rep_erro_inputs <- reactive({
+    req(!is.null(input$rep_n_tempos))
 
     input$rep_n_tempos != sqrt(length(correlation_Ra())) |
       input$rep_n_tempos != sqrt(length(correlation_Rb())) |
@@ -4937,9 +6665,14 @@ txt_referencia_pack <-
       input$rep_ratio <= 0 |
       input$rep_sig <= 0 | input$rep_sig >= 100 |
       input$rep_power <= 0 | input$rep_power >= 100 |
-      input$rep_ar1_rho2 <= 0 | input$rep_ar1_rho2 >= 1
+      input$rep_ar1_rho2 <= 0 | input$rep_ar1_rho2 >= 1 |
+      rep_problemas_matriz_correlacao1() != "" |
+      input$rep_n_tempos%%1 != 0 | input$rep_n_tempos < 1
 
   })
+
+
+  eval(parse(text = warning_inteiro("rep_n_tempos")))
 
 
   # Render output ----
@@ -4979,7 +6712,7 @@ txt_referencia_pack <-
       "foi calculado o tamanho de amostra para detectar diferenças na resposta média de <b>", rep_nome_desfecho(), "</b> entre esses grupos no tempo final (momento ", input$rep_n_tempos,
       "), tendo uma diferença de <b>", input$rep_dif_medias, " u.m.</b> como relevante para o estudo. ",
 
-      "Para isso foi utilizado a ", txt_citacao_tap, ". ",
+      "Para isso foi utilizado a ", .txt_citacao_tap, ". ",
 
       "Considerando os seguintes valores esperados para o grupo ", rep_grupoControle(), ":",
 
@@ -4988,11 +6721,15 @@ txt_referencia_pack <-
       "<li> retenção de ", retencaoB, " nos momentos ", momentos,", respectivamente,</li>",
 
       if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      "<li> matriz de correlação definida abaixo como Rb,</li>"
+      paste0("<li> matriz de correlação não estruturada (definida abaixo),</li>")
       } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autoregressiva de parâmetro ",
-               input$rep_ar1_rho2, " (matriz de correlação Rb definida abaixo),</li>")
+        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
+               input$rep_ar1_rho2, " (definida abaixo),</li>")
+      } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
+        paste0("<li> matriz de correlação permutável com correlação ",
+               input$rep_cs_rho2, " (definida abaixo),</li>")
       },
+
 
       "</ul>",
 
@@ -5002,10 +6739,13 @@ txt_referencia_pack <-
       "<li> retenção de ", retencaoA, " nos momentos ", momentos,", respectivamente,</li>",
 
       if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      "<li> matriz de correlação definida abaixo como Ra,</li>"
+      "<li> matriz de correlação não estruturada (definida abaixo),</li>"
       } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autoregressiva de parâmetro ",
-               input$rep_ar1_rho1, " (matriz de correlação Ra definida abaixo),</li>")
+        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
+               input$rep_ar1_rho1, " (definida abaixo),</li>")
+      } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
+        paste0("<li> matriz de correlação permutável com correlação ",
+               input$rep_cs_rho1, " (definida abaixo),</li>")
       },
 
 
@@ -5033,31 +6773,32 @@ txt_referencia_pack <-
   })
 
 
+
+
   output$rep_corr_matrix_out <- renderUI({
 
     req(!rep_erro_inputs())
 
     fluidPage(
-      HTML("Matriz de correlação Ra:<br>"),
+      HTML(paste0("Matriz de correlação do grupo ", rep_grupoTratamento(), ":<br>")),
       renderTable({
         df_ <- matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE) %>%
           as.data.frame()
 
-        rownames(df_) <- paste0("T", 1:input$rep_n_tempos)
-        colnames(df_) <- paste0("T", 1:input$rep_n_tempos)
+        rownames(df_) <- paste0("Momento ", 1:input$rep_n_tempos)
+        colnames(df_) <- paste0("Momento ", 1:input$rep_n_tempos)
         df_
       },
       rownames = TRUE,
       colnames = TRUE
       ),
 
-      HTML("<br>Matriz de correlação Rb:<br>"),
-      renderTable({
+      HTML(paste0("Matriz de correlação do grupo ", rep_grupoControle(), ":<br>")),      renderTable({
         df2_ <- matrix(data = correlation_Rb(), nrow = input$rep_n_tempos, byrow = TRUE) %>%
           as.data.frame()
 
-        rownames(df2_) <- paste0("T", 1:input$rep_n_tempos)
-        colnames(df2_) <- paste0("T", 1:input$rep_n_tempos)
+        rownames(df2_) <- paste0("Momento ", 1:input$rep_n_tempos)
+        colnames(df2_) <- paste0("Momento ", 1:input$rep_n_tempos)
         df2_
       },
       rownames = TRUE,
@@ -5087,7 +6828,7 @@ txt_referencia_pack <-
 
 
     paste0(
-      txt_referencia_tap,
+      .txt_referencia_tap,
 
       "</br></br>",
       "<i>Comando R utilizado:</i><br>",
@@ -5107,6 +6848,182 @@ txt_referencia_pack <-
   })
 
 
+  ## Cenarios ----
+
+  output$cenarios_medidas_rep_thUi <- renderUI({
+    req(!rep_erro_inputs())
+
+
+    if(input$rep_dif_medias > 0){
+      dif_start <- input$rep_dif_medias
+      dif_end  <- input$rep_dif_medias + 2
+      dif_by   <- 0.4
+    } else{
+      dif_start <- input$rep_dif_medias - 2
+      dif_end  <- input$rep_dif_medias
+      dif_by   <- 0.4
+    }
+
+    fluidPage(fluidRow(
+
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel(paste0(
+        "Utilize os argumentos abaixo para construir diferentes cenários. ",
+        "Você pode definir um intervalo de diferença a ser detectada no último tempo de avaliação e especificar diferentes valores para o desvio padrão do grupo ", rep_grupoTratamento(), ". ",
+        "Demais informações serão recuperadas do painel lateral.")),
+
+      HTML("<b>Defina a sequência de valores para a diferença a ser detectada no último tempo de avaliação:</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("rep_th_from", "Mínimo", value = dif_start, step = 1)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("rep_th_to", "Máximo", value = dif_end, step = 1)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("rep_th_by", "Intervalo", value = dif_by, min = 0, step = 0.5) %>%
+            .help_buttom(body = "Defina a sequência de margem de erro absoluta. Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                         title = "Sequência da margem de erro absoluta")
+      ),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "rep_sd_plot",
+                         label   = paste0("Digite valores de desvio padrão (DP) do grupo ", rep_grupoTratamento(), " para fazer o gráfico:"),
+                         value   = paste0(c(input$rep_sigma1, input$rep_sigma1 + 0.2, input$rep_sigma1 + 0.5), collapse = ", "),
+                         width   = "100%") %>%
+                 .help_buttom(body = "Defina os valores de desvio padrão.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+      shinycssloaders::withSpinner(plotly::plotlyOutput("rep_th_plot", width = "80%"), type = 5),
+      br(), br(),
+      downloadButton("download_rep_th_tab","Download tabela"),
+      shinycssloaders::withSpinner(DT::dataTableOutput("rep_th_tab", width = "100%"), type = 5)
+
+    ))
+
+  })
+
+
+  eval(parse(text = check_text_input_to_vector("rep_sd_plot")))
+
+  tab_rep_th_cenarios <- reactive({
+
+    desvios_plot <- text_input_to_vector(input$rep_sd_plot)
+
+    req(length(desvios_plot) > 0)
+
+    grid <- expand.grid(`Diferença a ser detectada` = seq(from = input$rep_th_from, to = input$rep_th_to, by = input$rep_th_by),
+                        `Desvio padrão 1` = desvios_plot,
+                        `Desvio padrão 2` = input$rep_sigma2,
+                        `Nível de significância (%)` = input$rep_sig,
+                        `Poder (%)` = input$rep_power,
+                        `Balanceamento` = input$rep_ratio)
+
+    grid_n <- grid %$%
+      purrr::pmap_dfr(
+        .l = list(`Diferença a ser detectada`,
+                  `Desvio padrão 1`,
+                  `Desvio padrão 2`,
+                  `Nível de significância (%)`,
+                  `Poder (%)`,
+                  `Balanceamento`),
+        .f = function(delta, sigmaa, sigmab, sig.level, power, lambda){
+          tryCatch({
+            n <- longpower::power.mmrm(
+              Ra = matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE),
+              ra = rep_retencao_A()/100,
+              sigmaa = sigmaa,
+              Rb = matrix(data = correlation_Rb(), nrow = input$rep_n_tempos, byrow = TRUE),
+              rb = rep_retencao_B()/100,
+              sigmab = sigmab,
+              delta = delta,
+              lambda = lambda,
+              sig.level = sig.level/100,
+              power = power/100
+            )
+
+            tibble(`n Tratamento` = ceiling(n$n1), `n Controle` = ceiling(n$n2))
+          },
+          warning = function(warning_condition) { NA },
+          error = function(error_condition) { NA })
+        })
+
+    bind_cols(grid, grid_n) %>%
+      mutate(`Tamanho da amostra` = `n Tratamento` + `n Controle`,
+             `Matriz correlação Tratamento` = paste0("matrix(data = c(", paste0(correlation_Ra(), collapse = ", "),"), nrow = ", input$rep_n_tempos, ", byrow = TRUE)"),
+             `Matriz correlação Controle` = paste0("matrix(data = c(", paste0(correlation_Rb(), collapse = ", "),"), nrow = ", input$rep_n_tempos, ", byrow = TRUE)")
+             )
+
+  })
+
+
+
+  output$rep_th_plot <- plotly::renderPlotly({
+
+    req(!is.null(tab_rep_th_cenarios()))
+
+    g1 <- tab_rep_th_cenarios() %>%
+      mutate(DP = factor(`Desvio padrão 1`)) %>%
+      ggplot(aes(x = `Diferença a ser detectada`,
+                 y = `Tamanho da amostra`,
+                 color = DP,
+                 `n Tratamento` = `n Tratamento`,
+                 `n Controle` = `n Controle`))+
+      geom_line() +
+      geom_point() +
+      scale_x_continuous(breaks = seq(from = input$rep_th_from, to = input$rep_th_to, by = input$rep_th_by)) +
+      xlab("Diferença a ser detectada") +
+      ylab("Tamanho total da amostra*")
+
+    plotly::ggplotly(g1, tooltip = c("x", "colour", "y", "n Tratamento", "n Controle")) %>%
+      plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
+                                        showarrow = F, xref='paper', yref='paper',
+                                        xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                        font=list(size=10)))
+  })
+
+
+
+  output$rep_th_tab <- DT::renderDataTable({
+
+    req(!is.null(tab_rep_th_cenarios()))
+
+    tab_rep_th_cenarios() %>%
+      DT::datatable(#extensions = c('FixedColumns'),
+                    rownames   = FALSE,
+                    filter     = "none",
+                    class = "display nowrap",
+                    options    = list(pageLength = 10,
+                                      scrollX = TRUE,
+                                      scrollY = TRUE,
+                                      searching = FALSE,
+                                      # fixedColumns = list(leftColumns = 1),
+                                      dom = 'B<"dwnld">frtip'))
+  })
+
+
+  output$download_rep_th_tab <- downloadHandler(
+    filename = function() { "Cenarios_tamanho_amostra_medidas_repetidas.xlsx"},
+    content = function(file) {writexl::write_xlsx(tab_rep_th_cenarios(), path = file)}
+  )
+
+
+
+
+
+
+
+
 
   # Poder ----
 
@@ -5121,18 +7038,19 @@ txt_referencia_pack <-
           textInput(inputId = "rep_poder_nome_desfecho",
                     label   = "Descreva o nome do desfecho",
                     value   = ifelse(input$show_th_rep_poder == 0, "Y", rep_poder_nome_desfecho())),
-
+          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
+          br(), br(),
           textInput(inputId = "rep_poder_grupoTratamento",
                     label   = "Descreva um nome para o grupo Tratamento",
                     value   = ifelse(input$show_th_rep_poder == 0, "Tratamento", rep_poder_grupoTratamento())),
 
-          HTML("Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.<br><br>"),
+          HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
 
           textInput(inputId = "rep_poder_grupoControle",
                     label   = "Descreva um nome para o grupo Controle",
                     value   = ifelse(input$show_th_rep_poder == 0, "Controle", rep_poder_grupoControle())),
 
-          HTML("Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto."),
+          HTML("<i>Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
 
 
         ),
@@ -5231,7 +7149,7 @@ txt_referencia_pack <-
                         min = -Inf,
                         max = Inf,
                         step = .5
-          ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico) no último tempo de internação."),
+          ) %>% .help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico) no último tempo de internação."),
 
 
           selectInput('rep_poder_tipo_matriz_cor',
@@ -5252,7 +7170,7 @@ txt_referencia_pack <-
   ",
                                          rows = 4
 
-                           ) %>% help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_poder_grupoTratamento())),
+                           ) %>% .help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_poder_grupoTratamento())),
 
                            textAreaInput(inputId = "rep_poder_Rb",
                                          label  = paste0("Matriz de correlação do grupo ", rep_poder_grupoControle()),
@@ -5264,14 +7182,14 @@ txt_referencia_pack <-
   ",
                                          rows = 4
 
-                           ) %>% help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_poder_grupoControle())),
+                           ) %>% .help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_poder_grupoControle())),
 
           ),
 
           conditionalPanel("input.rep_poder_tipo_matriz_cor == 'AR(1)'",
 
-                           # Parâmetro autoregressivo
-                           HTML(paste0("<b><font size = '2.95'>Parâmetro autoregressivo no grupo</font></b><br>")),
+                           # Parâmetro autorregressivo
+                           HTML(paste0("<b><font size = '2.95'>Parâmetro autorregressivo no grupo</font></b><br>")),
                            div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
                                numericInput( "rep_poder_ar1_rho1",
                                              rep_poder_grupoTratamento(),
@@ -5311,8 +7229,7 @@ txt_referencia_pack <-
                             min = 0,
                             max = Inf,
                             step = 1
-              ) %>% help_buttom(body = paste0("Desvio padrão esperado de ", rep_poder_nome_desfecho(), ", geralmente obtido de estudos anteriores."),
-                                title = "Desvio padrão esperado")
+              ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
           ),
 
 
@@ -5327,7 +7244,7 @@ txt_referencia_pack <-
               textInput( "rep_poder_retencao2",
                          rep_poder_grupoControle(),
                          value = "100, 90, 80, 70") %>%
-                help_buttom(body = "Retenção esperada dos grupos (% de sujeitos que ainda estão no estudo em dado ponto no tempo",
+                .help_buttom(body = "Retenção esperada dos grupos (% de sujeitos que ainda estão no estudo em dado ponto no tempo",
                             title = "Retenção esperada")
           ),
 
@@ -5337,7 +7254,7 @@ txt_referencia_pack <-
           #               min = 0,
           #               max = Inf,
           #               step = 0.5
-          # ) %>% help_buttom(
+          # ) %>% .help_buttom(
           #   paste0("Nº de ", rep_poder_grupoControle(), " para cada ", rep_poder_grupoTratamento(), ". Se colocar o valor 2, será calculado um tamanho de amostra ",
           #          "tal que será necessário 2 ", rep_poder_grupoControle(), " para cada ", rep_poder_grupoTratamento(), " Se colocar o valor 0.5, ",
           #          "será calculado um tamanho de amostra ",
@@ -5351,21 +7268,21 @@ txt_referencia_pack <-
           #               min = 0,
           #               max = 100,
           #               step = 1
-          # ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+          # ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
           numericInput( "rep_poder_sig",
                         "Nível de significância (%)",
                         value = 5,
                         min = 0,
                         max = 100,
                         step = 1
-          ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)")
+          ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)")
           # numericInput( "rep_poder_perdas_recusa",
           #               "Perdas/ Recusa (%)",
           #               value = 10,
           #               min = 0,
           #               max = 100,
           #               step = 1
-          # ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+          # ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
         ),
 
         mainPanel(
@@ -5383,11 +7300,7 @@ txt_referencia_pack <-
   correlation_rep_power_Ra <- reactive({
 
     if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
-      correlation_rep_power_Ra_v <- input$rep_poder_Ra %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric() %>%
-        keep(~!is.na(.x))
+      correlation_rep_power_Ra_v <- text_input_to_vector(input$rep_poder_Ra)
 
     } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
       tempos <- input$rep_poder_n_tempos
@@ -5399,11 +7312,7 @@ txt_referencia_pack <-
 
   correlation_rep_power_Rb <- reactive({
     if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
-      correlation_rep_power_Rb_v <- input$rep_poder_Rb %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric() %>%
-        keep(~!is.na(.x))
+      correlation_rep_power_Rb_v <- text_input_to_vector(input$rep_poder_Rb)
 
     } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
       tempos <- input$rep_poder_n_tempos
@@ -5419,19 +7328,11 @@ txt_referencia_pack <-
 
 
   rep_poder_retencao_A <- reactive({
-    input$rep_poder_retencao1 %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric() %>%
-      keep(~!is.na(.x))
+    text_input_to_vector(input$rep_poder_retencao1)
   })
 
   rep_poder_retencao_B <- reactive({
-    input$rep_poder_retencao2 %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric() %>%
-      keep(~!is.na(.x))
+    text_input_to_vector(input$rep_poder_retencao2)
   })
 
 
@@ -5573,7 +7474,7 @@ txt_referencia_pack <-
       "foi calculado o poder do teste para detectar diferenças na resposta média de <b>", rep_poder_nome_desfecho(), "</b> entre esses grupos no tempo final (momento ", input$rep_poder_n_tempos,
       "), tendo uma diferença de <b>", input$rep_poder_dif_medias, " u.m.</b> como relevante para o estudo. ",
 
-      "Para isso foi utilizado a ", txt_citacao_tap, ". ",
+      "Para isso foi utilizado a ", .txt_citacao_tap, ". ",
 
       "Considerando os seguintes valores para o grupo ", rep_poder_grupoControle(), ":",
 
@@ -5587,7 +7488,7 @@ txt_referencia_pack <-
       if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
         "<li> matriz de correlação definida abaixo como Rb,</li>"
       } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autoregressiva de parâmetro ",
+        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
                input$rep_poder_ar1_rho2, " (matriz de correlação Rb definida abaixo),</li>")
       },
 
@@ -5601,10 +7502,10 @@ txt_referencia_pack <-
 
 
       if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
-        "<li> matriz de correlação definida abaixo como Ra,</li>"
+        "<li> matriz de correlação definida abaixo,</li>"
       } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autoregressiva de parâmetro ",
-               input$rep_poder_ar1_rho1, " (matriz de correlação Ra definida abaixo),</li>")
+        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
+               input$rep_poder_ar1_rho1, " (matriz de correlação definida abaixo),</li>")
       },
 
 
@@ -5672,7 +7573,7 @@ txt_referencia_pack <-
 
 
     paste0(
-      txt_referencia_tap,
+      .txt_referencia_tap,
 
       "</br></br>",
       "<i>Comando R utilizado:</i><br>",
@@ -5700,21 +7601,21 @@ txt_referencia_pack <-
   # One way ----
 
 
-  observeEvent(input$show_f_anova, {
-    showModal(
-      modalDialog(
-        title = "Medida de efeito (f)",
-        fluidPage(
-          withMathJax(
-            includeMarkdown(file.path("Markdown", "Effect_size_f.Rmd"))
-          )
-        ),
-        easyClose = TRUE,
-        footer    = NULL,
-        size      = "l"
-      )
-    )
-  })
+  # observeEvent(input$show_f_anova, {
+  #   showModal(
+  #     modalDialog(
+  #       title = "Medida de efeito (f)",
+  #       fluidPage(
+  #         withMathJax(
+  #           includeMarkdown(file.path("Markdown", "Effect_size_f.Rmd"))
+  #         )
+  #       ),
+  #       easyClose = TRUE,
+  #       footer    = NULL,
+  #       size      = "l"
+  #     )
+  #   )
+  # })
 
 
   output$anova_formula <- renderUI({
@@ -5723,11 +7624,7 @@ txt_referencia_pack <-
     if(input$anova_mean_f){
       k <- input$k_anova_n
     } else{
-      k <- input$medias_anova_n %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric() %>%
-        na.omit() %>%
+      k <- text_input_to_vector(input$medias_anova_n) %>%
         length()
     }
 
@@ -5764,11 +7661,7 @@ txt_referencia_pack <-
   observeEvent(input$medias_anova_n, {
     shinyFeedback::hideFeedback("medias_anova_n")
 
-    medias_anova <- input$medias_anova_n %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric() %>%
-      na.omit()
+    medias_anova <- text_input_to_vector(input$medias_anova_n)
 
     if(all(is.na(medias_anova))){
       shinyFeedback::showFeedbackWarning(
@@ -5837,24 +7730,21 @@ txt_referencia_pack <-
         "<b><font size = '5'>Tamanho amostral calculado: ", n*k,  " (<i>", n, " em cada grupo</i>)",
         "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-        "Para o cálculo do tamanho de amostra foi utilizado a ", txt_citacao_tap, ". ",
-        "Este projeto prevê o estudo de <b>",  k, "</b> grupos. ",
+        "Foi calculado o tamanho da amostra para detectar diferenças, em termos de médias, no <b>Y</b> entre os grupos ",
+        paste(LETTERS[1:k], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
+        ", utilizando a ", .txt_citacao_tap, ". ",
         "Considerando poder de <b>", input$power_anova_n, "%</b>, nível de significância de <b>", input$sig_anova_n, "%</b> e ",
-        "tamanho de efeito de <b>", input$f_anova_n, "</b> obtido em Fulano (1900), ",
+        "tamanho de efeito f de <b>", input$f_anova_n, "</b> obtido em Fulano (1900) <b>OU</b> escolha do pesquisador, ",
         "chegou-se ao tamanho de amostra total de <b>", n*k, "</b> sujeitos, sendo <b>", n, "</b> em cada grupo. ",
         "Acrescentando <b>", input$one_way_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas*k, "</b>",
         " (<b>", n_perdas, "</b> em cada grupo).",
 
-        txt_referencia_tap, print_r_code(code)
+        .txt_referencia_tap, print_r_code(code)
       )
 
 
     } else{
-      medias_anova <- input$medias_anova_n %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric() %>%
-        na.omit()
+      medias_anova <- text_input_to_vector(input$medias_anova_n)
 
       validate(
         need(!is.na(medias_anova), "É obrigatório fornecer as médias dos grupos."),
@@ -5886,31 +7776,134 @@ txt_referencia_pack <-
         "<b><font size = '5'>Tamanho amostral calculado: ", n*k,  " (<i>", n, " em cada grupo</i>)",
         "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-        "Para o cálculo do tamanho de amostra foi utilizado a ", txt_citacao_tap, ". ",
-        "Este projeto prevê o estudo de <b>",  k, "</b> grupos. ",
+        "Foi calculado o tamanho da amostra para detectar diferenças, em termos de médias, no <b>Y</b> entre os grupos ",
+        paste(LETTERS[1:k], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
+        ", utilizando a ", .txt_citacao_tap, ". ",
         "Considerando poder de <b>", input$power_anova_n, "%</b>, nível de significância de <b>", input$sig_anova_n, "%</b>, ",
-        "desvio padrão de <b>", input$desvio_anova_n, "</b> e ",
+        "desvio padrão esperado de <b>", input$desvio_anova_n, " u.m.</b> e ",
         "médias esperadas de <b>", input$medias_anova_n %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),
-        "</b> para os grupos ", paste(LETTERS[1:k], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),", respectivamente, obtidas em Fulano (1900), ",
+        " u.m.</b> para os grupos ", paste(LETTERS[1:k], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish(),", respectivamente, obtidas em Fulano (1900), ",
         "chegou-se ao tamanho de amostra total de <b>", n*k, "</b> sujeitos, sendo <b>", n, "</b> em cada grupo. ",
         "Acrescentando <b>", input$one_way_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas*k, "</b>",
         " (<b>", n_perdas, "</b> em cada grupo).",
 
-        txt_referencia_tap, print_r_code(code)
+        .txt_referencia_tap, print_r_code(code)
       )
     }
   })
 
 
 
-  # cenarios f
+  ## Cenarios ----
+
+
+  output$cenarios_anova_oneUi <- renderUI({
+    fluidPage(fluidRow(
+
+      conditionalPanel(condition = "input.anova_mean_f == true",
+                       br(),
+                       HTML('<hr style="color: black;">'),
+                       br(),br(),
+
+                       titlePanel("Construção de cenários"),
+                       br(),
+
+                       wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores do poder e uma sequência de valores de magnitude de efeito desejado.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+
+                       HTML("<b>Defina a sequência de valores para a magnitude do efeito f:</b>"),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("anovaOne_from", "Mínimo", value = input$f_anova_n, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("anovaOne_to", "Máximo", value = input$f_anova_n + 0.8, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("anovaOne_by", "Intervalo", value = 0.1, min = 0, step = 0.1) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência")
+                       ),
+                       br(),
+
+                       fluidRow(
+                         column(6,
+                                textInput(inputId = "anovaOne_power_plot",
+                                          label   = "Digite valores de poder para fazer o gráfico",
+                                          value   = "80, 90, 95",
+                                          width   = "400px") %>%
+                                  .help_buttom(body = "Defina os valores de poder desejado.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+                         )
+                       ),
+
+                       br(),
+
+                       plotly::plotlyOutput("anovaOne_plot", width = "80%"),
+                       br(), br(),
+                       downloadButton("download_anovaOne_tab","Download tabela"),
+                       DT::dataTableOutput("anovaOne_tab", width = "100%")
+      ),
+
+      conditionalPanel(condition = "input.anova_mean_f == false",
+                       br(),
+                       HTML('<hr style="color: black;">'),
+                       br(),br(),
+
+                       titlePanel("Construção de cenários"),
+                       br(),
+
+                       wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar uma sequência de valores de desvio padrão esperado e valores de poder desejado.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+                       HTML("<b>Defina a sequência de valores para o desvio padrão:</b>"),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("anovaOne_sd_from", "Mínimo", value = input$desvio_anova_n, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("anovaOne_sd_to", "Máximo", value = input$desvio_anova_n + 1, step = 0.5)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("anovaOne_sd_by", "Intervalo", value = 0.2, min = 0, step = 0.1) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência de valores para o desvio padrão esperado")
+                       ),
+                       br(),
+                       fluidRow(
+                         column(6,
+                                textInput(inputId = "anovaOne_sd_power_plot",
+                                          label   = "Digite valores de poder para fazer o gráfico",
+                                          value   = "80, 90, 95",
+                                          width   = "400px") %>%
+                                  .help_buttom(body = "Defina os valores de poder desejado.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+                         )
+                       ),
+                       br(),
+
+                       plotly::plotlyOutput("anovaOne_sd_plot", width = "80%"),
+                       br(), br(),
+                       downloadButton("download_anovaOne_sd_tab","Download tabela"),
+                       DT::dataTableOutput("anovaOne_sd_tab", width = "100%")
+      )
+
+    ))
+  })
+
+
+  eval(parse(text = check_text_input_to_vector("anovaOne_power_plot")))
 
   tab_anovaOne_cenarios <- reactive({
 
-    power <- input$anovaOne_power_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    power <- text_input_to_vector(input$anovaOne_power_plot)
+    req(length(power) > 0)
+
 
     expand.grid(`Magnitude do efeito` = seq(from = input$anovaOne_from, to = input$anovaOne_to, by = input$anovaOne_by),
                 `Poder (%)` = power,
@@ -5973,12 +7966,13 @@ txt_referencia_pack <-
 
   # cenarios sd
 
+  eval(parse(text = check_text_input_to_vector("anovaOne_sd_power_plot")))
+
+
   tab_anovaOne_sd_cenarios <- reactive({
 
-    power <- input$anovaOne_sd_power_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    power <- text_input_to_vector(input$anovaOne_sd_power_plot)
+    req(length(power) > 0)
 
     expand.grid(`Desvio padrão` = seq(from = input$anovaOne_sd_from, to = input$anovaOne_sd_to, by = input$anovaOne_sd_by),
                 `Médias` = input$medias_anova_n,
@@ -6140,7 +8134,7 @@ txt_referencia_pack <-
     paste0("<b><font size = '5'>Poder calculado: ", round(poder, digits = 1),
            "%</font></b></br></br><i></i></br></br>",
 
-           txt_referencia_tap, print_r_code(code))
+           .txt_referencia_tap, print_r_code(code))
 
   })
 
@@ -6150,85 +8144,160 @@ txt_referencia_pack <-
 
   # Two way -----
 
-  output$k_anova_n_A_ui <- renderUI({
-    numericInput( "k_anova_n_A",
-                  paste("Número de grupos de", input$two_nome_desfechoA),
-                  value = 3,
-                  min = 2,
-                  max = Inf,
-                  step = 1
-    ) %>% help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoA, "para comparar"))
+
+  observeEvent(input$show_th_anova2way, {
+    showModal(
+      modalDialog(
+        title = "Ajustes",
+        fluidPage(
+
+          HTML("<b>Preencha os campos abaixo de acordo com seu estudo para que sirvam de guia no preenchimento dos demais campos</b>."),
+          br(), br(),
+          textInput(inputId = "two_nome_desfechoA",
+                    label   = "Descreva o nome do fator A",
+                    value   = ifelse(input$show_th_anova2way == 0, "Fator A", nome_fatorA())),
+          textInput(inputId = "two_nome_desfechoB",
+                    label   = "Descreva o nome do fator B",
+                    value   = ifelse(input$show_th_anova2way == 0, "Fator B", nome_fatorB())),
+        ),
+        easyClose = TRUE,
+        footer    = NULL
+      )
+    )
   })
 
-  output$k_anova_n_B_ui <- renderUI({
-    numericInput( "k_anova_n_B",
-                  paste("Número de grupos de", input$two_nome_desfechoB),
-                  value = 2,
-                  min = 2,
-                  max = Inf,
-                  step = 1
-    ) %>% help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoB, "para comparar"))
+
+
+
+
+  nome_fatorA <- reactive({
+    ifelse(is.null(input$two_nome_desfechoA), "Fator A", input$two_nome_desfechoA)
   })
 
-  output$f_anova_n_A_ui <- renderUI({
-    numericInput( "f_anova_n_A",
-                  paste("Magnitude do efeito de", input$two_nome_desfechoA),
-                  value = .4,
-                  min = 0,
-                  max = Inf,
-                  step = .01
-    ) %>% help_buttom(body = paste("Magnitude do efeito f de", input$two_nome_desfechoA, "(0.1 é considerado pequeno)"))
+  nome_fatorB <- reactive({
+    ifelse(is.null(input$two_nome_desfechoB), "Fator B", input$two_nome_desfechoB)
   })
 
-  output$f_anova_n_B_ui <- renderUI({
-    numericInput( "f_anova_n_B",
-                  paste("Magnitude do efeito de", input$two_nome_desfechoB),
-                  value = .2,
-                  min = 0,
-                  max = Inf,
-                  step = .01
-    ) %>% help_buttom(body = paste("Magnitude do efeito f de", input$two_nome_desfechoB, "(0.1 é considerado pequeno)"))
+
+  output$k_anova_n_ui <- renderUI({
+
+    fluidPage(fluidRow(
+
+      HTML("<b>Número de grupos para comparar do </b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+          numericInput( "k_anova_n_A",
+                        paste(nome_fatorA()),
+                        value = 3,
+                        min = 2,
+                        max = Inf,
+                        step = 1
+          )
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 49%;",
+          numericInput( "k_anova_n_B",
+                        paste(nome_fatorB()),
+                        value = 2,
+                        min = 2,
+                        max = Inf,
+                        step = 1
+          )
+      )
+    ))
   })
 
-  output$delta_anova_n_A_ui <- renderUI({
-    numericInput( "delta_anova_n_A",
-                  paste("A menor diferença entre os grupos de", input$two_nome_desfechoA),
-                  value = 1.2,
-                  min = 0,
-                  max = Inf,
-                  step = .01
-    ) %>% help_buttom(body = paste("A menor diferença entre os grupos de", input$two_nome_desfechoA))
+
+
+  output$f_anova_n_ui <- renderUI({
+
+    fluidPage(fluidRow(
+
+      HTML("<b>Magnitude do efeito do</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+          numericInput( "f_anova_n_A",
+                        paste(nome_fatorA()),
+                        value = .4,
+                        min = 0,
+                        max = Inf,
+                        step = .01
+          )
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 49%;",
+          numericInput( "f_anova_n_B",
+                        paste(nome_fatorB()),
+                        value = .2,
+                        min = 0,
+                        max = Inf,
+                        step = .01
+          )
+      )
+    ))
+
+
   })
 
-  output$delta_anova_n_B_ui <- renderUI({
-    numericInput( "delta_anova_n_B",
-                  paste("A menor diferença entre os grupos de", input$two_nome_desfechoB),
-                  value = 2.1,
-                  min = 0,
-                  max = Inf,
-                  step = .01
-    ) %>% help_buttom(body = paste("A menor diferença entre os grupos de", input$two_nome_desfechoB))
+
+  output$delta_anova_n_ui <- renderUI({
+
+
+
+    fluidPage(fluidRow(
+
+      HTML("<b>A menor diferença entre os níveis de</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+          numericInput( "delta_anova_n_A",
+                        paste(nome_fatorA()),
+                        value = 1.2,
+                        min = 0,
+                        max = Inf,
+                        step = .01
+          )
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 49%;",
+          numericInput( "delta_anova_n_B",
+                        paste(nome_fatorB()),
+                        value = 2.1,
+                        min = 0,
+                        max = Inf,
+                        step = .01
+          )
+      )
+    ))
+
   })
 
-  output$sigma_anova_n_A_ui <- renderUI({
-    numericInput( "sigma_anova_n_A",
-                  paste("Desvio padrão de", input$two_nome_desfechoA),
-                  value = 1.2,
-                  min = 0,
-                  max = Inf,
-                  step = .01
-    ) %>% help_buttom(body = paste("Desvio padrão de", input$two_nome_desfechoA))
+
+
+  output$sigma_anova_n_ui <- renderUI({
+
+    fluidPage(fluidRow(
+
+      HTML("<b>Desvio padrão esperado do</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+          numericInput( "sigma_anova_n_A",
+                        paste(nome_fatorA()),
+                        value = 1.2,
+                        min = 0,
+                        max = Inf,
+                        step = .01
+          )
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 49%;",
+          numericInput( "sigma_anova_n_B",
+                        paste(nome_fatorB()),
+                        value = 1.2,
+                        min = 0,
+                        max = Inf,
+                        step = .01
+          )
+      )
+    ))
+
   })
 
-  output$sigma_anova_n_B_ui <- renderUI({
-    numericInput( "sigma_anova_n_B",
-                  paste("Desvio padrão de", input$two_nome_desfechoB),
-                  value = 1.2,
-                  min = 0,
-                  max = Inf,
-                  step = .01
-    ) %>% help_buttom(body = paste("Desvio padrão de", input$two_nome_desfechoB))
-  })
 
 
 
@@ -6281,16 +8350,16 @@ txt_referencia_pack <-
              "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
 
-             "Foi calculado o tamanho de amostra, utilizado a ", txt_citacao_tap, ", ",
-             "para testar os efeitos principais de <b>", input$two_nome_desfechoA, "</b> (com <b>", a, "</b> níveis) ",
-             " e de <b>", input$two_nome_desfechoB, "</b> (com <b>", b, "</b> níveis). ",
-             "Considerando poder de <b>", input$power_anova_n_two, "%</b>, nível de significância de <b>", input$sig_anova_n_two, "% </b>",
-             "e fixando o tamanho de efeito de <b>", f_a, "</b> e <b>", f_b, "</b> para o ", input$two_nome_desfechoA, " e ", input$two_nome_desfechoB, ", respectivamente (dados de Fulano (1900)). ",
-             "Chegou-se ao tamanho de amostra total de <b>", n*a*b, "</b> sujeitos, sendo <b>", n, "</b> em cada combinação. ",
+             "Foi calculado o tamanho de amostra, utilizado a ", .txt_citacao_tap, ", ",
+             "para testar os efeitos principais de <b>", nome_fatorA(), "</b> (com <b>", a, "</b> níveis) ",
+             " e de <b>", nome_fatorB(), "</b> (com <b>", b, "</b> níveis). ",
+             "Considerando poder de <b>", input$power_anova_n_two, "%</b>, nível de significância de <b>", input$sig_anova_n_two, "%, </b>",
+             "e fixando o tamanho de efeito f de <b>", f_a, "</b> e <b>", f_b, "</b> para o ", nome_fatorA(), " e ", nome_fatorB(), ", respectivamente (dados de Fulano (1900) <b>OU</b> escolha do pesquisador), ",
+             "chegou-se ao tamanho de amostra total de <b>", n*a*b, "</b> sujeitos, sendo <b>", n, "</b> em cada combinação. ",
              "Acrescentando <b>", input$two_way_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas*a*b,
              "</b> (", n_perdas, " em cada grupo de combinação).",
 
-             txt_referencia_tap, print_r_code(code)
+             .txt_referencia_tap, print_r_code(code)
       )
 
 
@@ -6320,17 +8389,17 @@ txt_referencia_pack <-
              " (<b>", n, "</b> por grupo de combinação).",
              "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-             "Foi calculado o tamanho de amostra, utilizado a ", txt_citacao_tap, ", ",
-             "para testar os efeitos principais de <b>", input$two_nome_desfechoA, "</b> (com <b>", a, "</b> níveis) ",
-             " e de <b>", input$two_nome_desfechoB, "</b> (com <b>", b, "</b> níveis). ",
-             "Considerando poder de <b>", input$power_anova_n_two, "%</b>, nível de significância de <b>", input$sig_anova_n_two, "% </b>",
-             "a menor diferença a ser detectada de <b>", d_a, "</b> e <b>", d_b,
-             "</b> e desvio padrão de <b>", s_a, "</b> e <b>", s_b, "</b> para o ", input$two_nome_desfechoA, " e ", input$two_nome_desfechoB, ", respectivamente (dados de Fulano (1900)). ",
-             "Chegou-se ao tamanho de amostra total de <b>", n*a*b, "</b> sujeitos, sendo <b>", n, "</b> em cada combinação ",
+             "Foi calculado o tamanho de amostra, utilizado a ", .txt_citacao_tap, ", ",
+             "para testar os efeitos principais de <b>", nome_fatorA(), "</b> (com <b>", a, "</b> níveis) ",
+             " e de <b>", nome_fatorB(), "</b> (com <b>", b, "</b> níveis). ",
+             "Considerando poder de <b>", input$power_anova_n_two, "%</b>, nível de significância de <b>", input$sig_anova_n_two, "%, </b>",
+             "a menor diferença a ser detectada de <b>", d_a, " u.m.</b> e <b>", d_b,
+             " u.m.</b> e desvio padrão de <b>", s_a,  " u.m.</b> e <b>", s_b, " u.m.</b> para o ", nome_fatorA(), " e ", nome_fatorB(), ", respectivamente (dados de Fulano (1900)), ",
+             "chegou-se ao tamanho de amostra total de <b>", n*a*b, "</b> sujeitos, sendo <b>", n, "</b> em cada combinação. ",
              "Acrescentando <b>", input$two_way_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas*a*b,
              "</b> (", n_perdas, " em cada grupo de combinação).",
 
-             txt_referencia_tap, print_r_code(code)
+             .txt_referencia_tap, print_r_code(code)
       )
     }
 
@@ -6352,7 +8421,7 @@ txt_referencia_pack <-
                   min = 2,
                   max = Inf,
                   step = 1
-    ) %>% help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoA2, "para comparar"))
+    ) %>% .help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoA2, "para comparar"))
   })
 
   output$k_anova_n_B_ui2 <- renderUI({
@@ -6362,7 +8431,7 @@ txt_referencia_pack <-
                   min = 2,
                   max = Inf,
                   step = 1
-    ) %>% help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoB2, "para comparar"))
+    ) %>% .help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoB2, "para comparar"))
   })
 
   output$f_anova_n_A_ui2 <- renderUI({
@@ -6372,7 +8441,7 @@ txt_referencia_pack <-
                   min = 0,
                   max = Inf,
                   step = .5
-    ) %>% help_buttom(body = paste("Magnitude do efeito f da interação (0.1 é considerado pequeno)"))
+    ) %>% .help_buttom(body = paste("Magnitude do efeito f da interação (0.1 é considerado pequeno)"))
   })
 
 
@@ -6490,7 +8559,7 @@ txt_referencia_pack <-
              " (<b>", n, "</b> por grupo de combinação).",
              "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-             "Foi calculado o tamanho de amostra, utilizado a ", txt_citacao_tap, ", ",
+             "Foi calculado o tamanho de amostra, utilizado a ", .txt_citacao_tap, ", ",
              "para testar o efeito de interação entre <b>", input$two_nome_desfechoA2, "</b> (com <b>", a, "</b> níveis) ",
              " e de <b>", input$two_nome_desfechoB2, "</b> (com <b>", b, "</b> níveis). ",
 
@@ -6500,7 +8569,7 @@ txt_referencia_pack <-
              "Acrescentando <b>", input$two_way_perdas_recusa2, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas*a*b,
              "</b> (", n_perdas, " em cada grupo de combinação).",
 
-             txt_referencia_tap, print_r_code(code)
+             .txt_referencia_tap, print_r_code(code)
       )
     }
 
@@ -6574,7 +8643,7 @@ title 'Tabela Y: Médias esperadas dos níveis dos Fatores A e B (dados de Fulan
 *ods text= 'Adicione esta tabela com estes valores das médias utilizadas no cálculo após o parágrafo.';<br>
 footnote1 \"&teste\";<br>
 run;<br>
-ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
+ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade-bioestatistica.shinyapps.io/PSS_Health/';<br>
 <br><br><br>
       "
     )
@@ -6608,28 +8677,204 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   # Chisq ----
   #-----------.
 
-  # library("rcompanion")
-  #
-  # data(Anderson)
-  # fisher.test(Anderson)
-  # cohenW(Anderson)
-
-  # pwr::ES.w2()
 
 
   eval(parse(text = warning_prop("sig_chisq_n")))
   eval(parse(text = warning_prop("power_chisq_n")))
   eval(parse(text = warning_numero_positivo("w_chisq_n")))
   eval(parse(text = warning_inteiro("df_chisq_n")))
+  eval(parse(text = warning_inteiro("chisq_ncol")))
+  eval(parse(text = warning_inteiro("chisq_nrow")))
   eval(parse(text = warning_perdas("chisq_perdas_recusa")))
+
+
+
+
+
+
+  output$chis_tabela_cont_valoresUi <- renderUI({
+    req(input$chisq_input != 1)
+
+    fluidPage(fluidRow(wellPanel(
+
+      numericInput(inputId = "chisq_nrow",
+                   label   = "Número de linhas da tabela de contingência",
+                   value   = 2,
+                   min     = 2,
+                   step    = 1
+
+      ),
+      numericInput(inputId = "chisq_ncol",
+                   label   = "Número de colunas da tabela de contingência",
+                   value   = 2,
+                   min     = 2,
+                   step    = 1
+
+      ),
+
+      HTML("<i><b>ATENÇÃO!</b> Edite a tabela de contingência no painel principal ao lado. As tabelas são editáveis, basta clicar duas vezes sobre a célula --> </i><br><br>")
+
+    )))
+  })
+
+
+
+
+  #  Tabela de contingência
+
+  tabela_chisq <- reactiveValues(tab = data.frame(a = 1))
+
+  observeEvent(c(input$chisq_input, input$chisq_nrow, input$chisq_ncol), {
+
+    req(!is.na(input$chisq_nrow) & !is.na(input$chisq_ncol))
+    req(input$chisq_ncol%%1 == 0 & input$chisq_ncol >= 2)
+    req(input$chisq_nrow%%1 == 0 & input$chisq_nrow >= 2)
+
+    # Cria uma tabela inicial
+    tab_vetor <- round(runif(input$chisq_nrow*input$chisq_ncol, 10, 50), 0)
+
+    if(input$chisq_input == 2){
+      tab_vetor <- round(tab_vetor/sum(tab_vetor)*100, 1)
+      tab_vetor[1] <- 100 - (sum(tab_vetor) - tab_vetor[1])
+      tab_vetor <- round(tab_vetor, 1)
+    }
+
+
+    tab <- matrix(tab_vetor,
+                  nrow = input$chisq_nrow,
+                  ncol = input$chisq_ncol) %>% as.data.frame()
+
+    colnames(tab) <- paste0("Cat Y", 1:input$chisq_ncol)
+    rownames(tab) <- paste0("Cat X", 1:input$chisq_nrow)
+
+    tabela_chisq$tab <- tab
+  })
+
+
+
+  output$chisq_tab_cont <- DT::renderDT({
+    # req(input$chisq_input != 1)
+    temp <- input$chisq_tab_cont_cell_edit
+
+    DT::datatable(tabela_chisq$tab,
+                  editable = "cell",
+                  extensions = c('FixedColumns'),
+                  rownames   = TRUE,
+                  filter     = "none",
+                  options    = list(autoWidth = FALSE,
+                                    searching = FALSE,
+                                    ordering  = FALSE,
+                                    pageLength = 15,
+                                    dom = 't',
+                                    columnDefs = list(list(className = 'dt-center', targets = "_all"))))
+  })
+
+
+
+
+
+  observeEvent(input$chisq_tab_cont_cell_edit, {
+    cell <- input$chisq_tab_cont_cell_edit
+    newdf <- tabela_chisq$tab
+    new_value <- cell$value %>%
+      as.character() %>%
+      str_replace(",", ".") %>%
+      gsub("[^0-9.-]", "", .) %>%
+      as.numeric()
+
+    newdf[cell$row, cell$col] <- new_value
+
+    tabela_chisq$tab <- newdf
+  })
+
+
+
+
+  chisq_problema_tab_cont <- reactive({
+    problemas <- ""
+
+    if(any(is.na(tabela_chisq$tab))){
+      problemas <- paste0('<font color = "red"><b>Todas as células devem ser preenchidas.</b></font><br/>')
+    } else if(input$chisq_input == 3 & any(tabela_chisq$tab%%1 != 0)){
+      problemas <- paste0('<font color = "red"><b>Todos os valores devem ser inteiros não negativos.</b></font><br/>')
+    } else if(input$chisq_input == 2 & sum(tabela_chisq$tab) != 100){
+      soma <- round(sum(tabela_chisq$tab), 2)
+
+      if(soma > 100){
+        problemas <- paste0('<font color = "red"><b>A soma das proporções deve fechar 100%. Atualmente está somando ', soma, '%, precisa remover ', round(soma - 100, 2), '%.</b></font><br/>')
+      } else{
+        problemas <- paste0('<font color = "red"><b>A soma das proporções deve fechar 100%. Atualmente está somando ', soma, '%, precisa adicionar ', round(100 - soma, 2), '%.</b></font><br/>')
+      }
+
+    }
+    problemas
+  })
+
+
+
+
+  output$chisq_tab_contUi <- renderUI({
+    fluidPage(fluidRow(wellPanel(
+
+      if(chisq_problema_tab_cont() != ""){
+        HTML(paste0('<font size = "+0.1"><font color = "red">', "<b>Tabela de contingência editável (",
+                    ifelse(input$chisq_input == 2, "% do total", "valores absolutos"),
+                    "):</b>", '</font></font><br/>'))
+      } else{
+        HTML(paste0('<font size = "+0.1">', "<b>Tabela de contingência editável (",
+                    ifelse(input$chisq_input == 2, "% do total", "valores absolutos"),
+                    "):</b>", '</font><br/>'))
+      },
+
+      DT::dataTableOutput("chisq_tab_cont"),
+
+      if(chisq_problema_tab_cont() != ""){
+        HTML(chisq_problema_tab_cont())
+      },
+      br(), br()
+    )))
+  })
+
+
+
+
+  chisq_w <- reactive({
+
+    if(input$chisq_input == 1){
+      list(w = input$w_chisq_n, gl = input$df_chisq_n)
+    } else {
+
+      validate(need(chisq_problema_tab_cont() == "", "Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br."))
+
+      matriz_prop <- as.matrix(tabela_chisq$tab)
+
+      if(input$chisq_input == 2){
+        w <- pwr::ES.w2(matriz_prop/100)
+      } else{
+        w <- pwr::ES.w2(prop.table(as.matrix(tabela_chisq$tab)))
+      }
+      list(w = round(w, 3),
+           gl = (nrow(matriz_prop) - 1) * (ncol(matriz_prop) - 1),
+           tabela = matriz_prop
+           )
+
+
+
+    }
+  })
+
+
+
+
+  ## Render output ----
 
 
   output$chisq_n <- renderText({
 
     code <- paste0("pwr::pwr.chisq.test(",
       "N = NULL, ",
-      "w = ", input$w_chisq_n, ", ",
-      "df = ", input$df_chisq_n, ", ",
+      "w = ", chisq_w()$w, ", ",
+      "df = ", chisq_w()$gl, ", ",
       "sig.level = ", input$sig_chisq_n, "/100, ",
       "power = ", input$power_chisq_n, "/100)"
     )
@@ -6645,39 +8890,167 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
       "<b><font size = '5'>Tamanho amostral calculado: ", n,
       "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-      "Foi calculado o tamanho de amostra para associar ", input$chisq_desfecho, ", por meio da ", txt_citacao_tap, ". ",
+      "Foi calculado o tamanho de amostra para associar ", input$chisq_desfecho, ", por meio da ", .txt_citacao_tap, ". ",
       "Considerando poder de <b>", input$power_chisq_n, "%</b>, nível de significância de <b>", input$sig_chisq_n, "%</b> e ",
-      "tamanho de efeito de <b>", input$w_chisq_n, "</b> obtido em Fulano (1900), ",
+      "tamanho de efeito w de <b>", chisq_w()$w, "</b> e <b>", chisq_w()$gl,
+      ifelse(chisq_w()$gl == 1, "</b> grau ", "</b> graus "),
+      "de liberdade conforme obtido em Fulano (1900) <b>OU</b> escolha do pesquisador, ",
       "chegou-se ao tamanho de amostra total de <b>", n, "</b> sujeitos. ",
       "Acrescentando <b>", input$chisq_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
       n_perdas(n, input$chisq_perdas_recusa), "</b>.",
 
-      txt_referencia_tap, print_r_code(code)
+      .txt_referencia_tap, print_r_code(code)
     )
   })
 
 
 
+  ## Cenarios ----
 
-  output$chisq_power <- renderText({
 
-    n <- pwr::pwr.chisq.test(
-      N = input$n_chisq_power,
-      w = input$w_chisq_power,
-      df = input$df_chisq_power,
-      sig.level = input$sig_chisq_power,
-      power = NULL
-    )
+  output$cenarios_chisq_Ui <- renderUI({
+    fluidPage(fluidRow(
 
-    paste0("<b><font size = '5'>Poder calculado: ", round(100*n$power, digits = 3),
-           "%</font></b></br></br><i>Sugestão de texto:</i></br></br>
-            O poder calculado para o Teste de Associação é igual a ", round(100*n$power, digits = 3), "%,",
-           " considerando a magnitude do efeito igual a ", input$w_chisq_n,
-           ", o número de graus de liberdade igual a ", input$w_chisq_n,
-           ", o nível de significância igual a ", input$sig_chisq_n,
-           " e o tamanho amostral igual a ", input$n_chisq_n, ".")
 
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores do poder e uma sequência de valores de magnitude de efeito w desejado.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+
+      HTML("<b>Defina a sequência de valores para a magnitude do efeito w:</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("chisq_from", "Mínimo", value = chisq_w()$w, step = 0.5)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("chisq_to", "Máximo", value = chisq_w()$w + 0.8, step = 0.5)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("chisq_by", "Intervalo", value = 0.1, min = 0, step = 0.1) %>%
+            .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                         title = "Sequência")
+      ),
+      br(),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "chisq_power_plot",
+                         label   = "Digite valores de poder para fazer o gráfico",
+                         value   = "80, 90, 95",
+                         width   = "400px") %>%
+                 .help_buttom(body = "Defina os valores de poder desejado.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+      br(),
+
+      plotly::plotlyOutput("chisq_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_chisq_tab","Download tabela"),
+      DT::dataTableOutput("chisq_tab", width = "100%")
+
+    ))
   })
+
+
+  eval(parse(text = check_text_input_to_vector("chisq_power_plot")))
+
+  tab_chisq_cenarios <- reactive({
+
+    power <- text_input_to_vector(input$chisq_power_plot)
+    req(length(power) > 0)
+
+
+    expand.grid(`Magnitude do efeito w` = seq(from = input$chisq_from, to = input$chisq_to, by = input$chisq_by),
+                `Poder (%)` = power,
+                `Nível de significância (%)` =  input$sig_chisq_n,
+                gl = chisq_w()$gl) %>%
+      mutate(`Tamanho da amostra` =
+               mapply(function(w, df, sig.level, power){
+                 tryCatch({
+                   n <- pwr::pwr.chisq.test(N = NULL, w = w, df = df, sig.level = sig.level/100, power = power/100)
+                   ceiling(n$N)
+                 },
+                 warning = function(warning_condition) { NA },
+                 error = function(error_condition) { NA })},
+                 `Magnitude do efeito w`, gl, `Nível de significância (%)`, `Poder (%)`),
+             `n + perdas/ recusas` = n_perdas(`Tamanho da amostra`, input$chisq_perdas_recusa),
+             `% de perdas/ recusas` = input$chisq_perdas_recusa)
+  })
+
+
+
+  output$chisq_plot <- plotly::renderPlotly({
+
+    g1 <- tab_chisq_cenarios() %>%
+      mutate(`Poder (%)` = factor(`Poder (%)`)) %>%
+      ggplot(aes(x = `Magnitude do efeito w`, y = `Tamanho da amostra`, color = `Poder (%)`))+
+      geom_point() +
+      geom_line() +
+      scale_x_continuous(breaks = seq(from = input$chisq_from, to = input$chisq_to, by = input$chisq_by)) +
+      xlab("Magnitude do efeito w") +
+      ylab("Tamanho da amostra*")
+
+    plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
+      plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
+                                        showarrow = F, xref='paper', yref='paper',
+                                        xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                        font=list(size=10)))
+  })
+
+
+
+  output$chisq_tab <- DT::renderDataTable({
+    tab_chisq_cenarios() %>%
+      DT::datatable(extensions = c('FixedColumns'),
+                    rownames   = FALSE,
+                    filter     = "none",
+                    ##callback   = DT::JS("$('div.dwnld').append($('#download_anovaOne_tab'));"),
+                    options    = list(pageLength = 10,
+                                      scrollX = TRUE,
+                                      scrollY = TRUE,
+                                      searching = FALSE,
+                                      fixedColumns = list(leftColumns = 1),
+                                      dom = 'B<"dwnld">frtip'))
+  })
+
+
+  output$download_chisq_tab <- downloadHandler(
+    filename = function() { "Cenarios_tamanho_amostra_associacao.xlsx"},
+    content = function(file) {writexl::write_xlsx(tab_chisq_cenarios(), path = file)}
+  )
+
+
+
+
+  # output$chisq_power <- renderText({
+  #
+  #   n <- pwr::pwr.chisq.test(
+  #     N = input$n_chisq_power,
+  #     w = input$w_chisq_power,
+  #     df = input$df_chisq_power,
+  #     sig.level = input$sig_chisq_power,
+  #     power = NULL
+  #   )
+  #
+  #   paste0("<b><font size = '5'>Poder calculado: ", round(100*n$power, digits = 3),
+  #          "%</font></b></br></br><i>Sugestão de texto:</i></br></br>
+  #           O poder calculado para o Teste de Associação é igual a ", round(100*n$power, digits = 3), "%,",
+  #          " considerando a magnitude do efeito igual a ", input$w_chisq_n,
+  #          ", o número de graus de liberdade igual a ", input$w_chisq_n,
+  #          ", o nível de significância igual a ", input$sig_chisq_n,
+  #          " e o tamanho amostral igual a ", input$n_chisq_n, ".")
+  #
+  # })
 
 
 
@@ -6752,13 +9125,13 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                      input$r_r_coeficiente == "spearman" ~ "de postos de Spearman ",
                      TRUE ~ "de Kendal "),
 
-           "entre <b>X1 e X2</b> foi utilizada a ", txt_citacao_tap, ". ",
-           "Considerando um nível de confiança de <b>", input$conf_r_n_est, "%</b>, amplitude para o intervalo de confiança de <b>", input$precisao_rho,
-           "</b> e correlação esperada de <b>", input$r_r_n_est, "</b> conforme referência de Fulano (1900),",
+           "entre <b>", input$corr_est_desfecho, "</b> foi utilizada a ", .txt_citacao_tap, ". ",
+           "Considerando nível de confiança de <b>", input$conf_r_n_est, "%</b>, amplitude para o intervalo de confiança de <b>", input$precisao_rho,
+           "</b> e correlação esperada de <b>", input$r_r_n_est, "</b> conforme referência de Fulano (1900) <b>OU</b> escolha do pesquisador,",
            " chegou-se ao tamanho de amostra total de <b>", n, "</b> sujeitos. Acrescentando <b>", input$corr_TH_perdas_recusa_est,
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$corr_TH_perdas_recusa_est), "</b>.",
 
-           txt_referencia_tap, print_r_code(code),
+           .txt_referencia_tap, print_r_code(code),
 
            if(input$r_r_coeficiente == "pearson"){
              paste0(
@@ -6770,13 +9143,59 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   })
 
 
+  ## Cenarios ----
+
+  output$cenarios_est_correlacaoUi <- renderUI({
+    req(!is.na(input$precisao_rho))
+
+    fluidPage(fluidRow(
+
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),br(),
+      wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode definir valores da amplitude do intervalo de confiança e definir o intervalo de valores esperados da correlação.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "corr_precisoes_plot",
+                         label   = "Digite valores da amplitude do intervalo de confiança para fazer o gráfico:",
+                         value   = paste0(c(input$precisao_rho, input$precisao_rho + .1, input$precisao_rho + .2), collapse = ", "),
+                         width   = "500px") %>%
+                 .help_buttom(body = "Esses valores serão utilizados para compor diferentes linhas do gráfico.
+                                        Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+      fluidRow(
+        column(6,
+               sliderInput("range_cor_cenarios",
+                           "Intervalo de correlação:",
+                           min = 0,
+                           max = 1,
+                           value = c(0.1, 0.9),
+                           step  = 0.05,
+                           width = "500px") %>%
+                 .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico")
+        )
+      ),
+      plotly::plotlyOutput("cor_est_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_cor_est_tab", "Download tabela"),
+      DT::dataTableOutput("cor_est_tab", width = "100%")
+    ))
+  })
+
+
+  eval(parse(text = check_text_input_to_vector("corr_precisoes_plot")))
 
   tab_cor_cenarios <- reactive({
 
-    amplitude <- input$corr_precisoes_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    amplitude <- text_input_to_vector(input$corr_precisoes_plot)
+    req(length(amplitude) > 0)
 
     expand.grid(precisao     = amplitude,
                 `Correlação` = seq(input$range_cor_cenarios[1], input$range_cor_cenarios[2], 0.05),
@@ -6815,8 +9234,9 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   })
 
 
+  tab_cor_cenarios_print <- reactive({
+    req(!is.null(tab_cor_cenarios()))
 
-  output$cor_est_tab <- DT::renderDataTable({
     tab_cor_cenarios() %>%
       dplyr::select(Coeficiente,
                     `Nível de confiança (%)`,
@@ -6825,6 +9245,12 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                     `Tamanho da amostra`,
                     `% de perdas/ recusas`,
                     `n + perdas/ recusas`) %>%
+      dplyr::rename("Nome do coeficiente" = "Coeficiente")
+  })
+
+
+  output$cor_est_tab <- DT::renderDataTable({
+    tab_cor_cenarios_print() %>%
       DT::datatable(extensions = c('FixedColumns'),
                 rownames   = FALSE,
                 filter     = "none",
@@ -6840,15 +9266,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
   output$download_cor_est_tab <- downloadHandler(
     filename = function() { "Cenarios_estimacao_correlacao.xlsx"},
-    content = function(file) {writexl::write_xlsx(tab_cor_cenarios() %>%
-                                                    dplyr::select(Coeficiente,
-                                                                  `Nível de confiança (%)`,
-                                                           `Correlação`,
-                                                           `Amplitude do intervalo`,
-                                                           `Tamanho da amostra`,
-                                                           `% de perdas/ recusas`,
-                                                           `n + perdas/ recusas`),
-                                                  path = file)}
+    content = function(file) {writexl::write_xlsx(tab_cor_cenarios_print(), path = file)}
   )
 
 
@@ -6858,24 +9276,6 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   # Testar ----
 
 
-  # output$ui_cor_range <- renderUI({
-  #   min <- if(input$alternative_r_n == "less") -1 else 0
-  #   max <- if(input$alternative_r_n == "less")  0 else 1
-  #   value <- if(input$alternative_r_n == "less") c(-0.8, -0.3) else c(0.3, 0.8)
-  #   step  <- if(input$alternative_r_n == "less") -0.05 else 0.05
-  #
-  #   sliderInput("range_cor_cenarios_th",
-  #               "Intervalo de correlação:",
-  #               min   = min,
-  #               max   = max,
-  #               value = value,
-  #               step  = step,
-  #               width = "500px") %>%
-  #     help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico")
-  # })
-
-
-
   output$alternative_r_nUi <- renderUI({
     selectInput('alternative_r_n',
                 'Tipo de teste de acordo com hipótese alternativa:',
@@ -6883,7 +9283,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                             paste0('A correlação é MAIOR do que ', input$r_r_h0_n),
                             paste0('A correlação é MENOR do que ', input$r_r_h0_n)),
                 selected = 'two.sided'
-    ) %>% help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+    ) %>% .help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
 
   })
 
@@ -6967,6 +9367,88 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
 
 
+  # https://cran.r-project.org/web/packages/WebPower/WebPower.pdf
+  # Versao 0.5.2
+  #   O WebPower eh um pacote muito pesado e eh usando somente uma unicad funcao dele,
+  # sendo assim optou por copiar a funcao e fazer somente a citacao, removendo assim
+  # uma dependencia do PSS.
+
+  wp.correlation <- function (n = NULL, r = NULL, power = NULL, p = 0, rho0 = 0, alpha = 0.05, alternative = c("two.sided", "less", "greater")){
+
+    alternative <- match.arg(alternative)
+    tside <- switch(alternative, less = 1, two.sided = 2, greater = 3)
+    if (tside == 2 && !is.null(r))
+      r <- abs(r)
+    if (tside == 3) {
+      p.body <- quote({
+        delta <- sqrt(n - 3 - p) * (log((1 + r)/(1 - r))/2 +
+                                      r/(n - 1 - p)/2 * (1 + (5 + r^2)/(n - 1 - p)/4 +
+                                                           (11 + 2 * r^2 + 3 * r^4)/(n - 1 - p)^2/8) -
+                                      log((1 + rho0)/(1 - rho0))/2 - rho0/(n - 1 -
+                                                                             p)/2)
+        v <- (n - 3 - p)/(n - 1 - p) * (1 + (4 - r^2)/(n -
+                                                         1 - p)/2 + (22 - 6 * r^2 - 3 * r^4)/(n - 1 -
+                                                                                                p)^2/6)
+        zalpha <- qnorm(1 - alpha)
+        pnorm((delta - zalpha)/sqrt(v))
+      })
+    }
+    if (tside == 1) {
+      p.body <- quote({
+        delta <- sqrt(n - 3 - p) * (log((1 + r)/(1 - r))/2 +
+                                      r/(n - 1 - p)/2 * (1 + (5 + r^2)/(n - 1 - p)/4 +
+                                                           (11 + 2 * r^2 + 3 * r^4)/(n - 1 - p)^2/8) -
+                                      log((1 + rho0)/(1 - rho0))/2 - rho0/(n - 1 -
+                                                                             p)/2)
+        v <- (n - 3 - p)/(n - 1 - p) * (1 + (4 - r^2)/(n -
+                                                         1 - p)/2 + (22 - 6 * r^2 - 3 * r^4)/(n - 1 -
+                                                                                                p)^2/6)
+        zalpha <- qnorm(1 - alpha)
+        pnorm((-delta - zalpha)/sqrt(v))
+      })
+    }
+    if (tside == 2) {
+      p.body <- quote({
+        delta <- sqrt(n - 3 - p) * (log((1 + r)/(1 - r))/2 +
+                                      r/(n - 1 - p)/2 * (1 + (5 + r^2)/(n - 1 - p)/4 +
+                                                           (11 + 2 * r^2 + 3 * r^4)/(n - 1 - p)^2/8) -
+                                      log((1 + rho0)/(1 - rho0))/2 - rho0/(n - 1 -
+                                                                             p)/2)
+        v <- (n - 3 - p)/(n - 1 - p) * (1 + (4 - r^2)/(n -
+                                                         1 - p)/2 + (22 - 6 * r^2 - 3 * r^4)/(n - 1 -
+                                                                                                p)^2/6)
+        zalpha <- qnorm(1 - alpha/2)
+        pnorm((delta - zalpha)/sqrt(v)) + pnorm((-delta -
+                                                   zalpha)/sqrt(v))
+      })
+    }
+    if (is.null(power))
+      power <- eval(p.body)
+    else if (is.null(n))
+      n <- uniroot(function(n) eval(p.body) - power, c(4 +
+                                                         p + 1e-10, 1e+07))$root
+    else if (is.null(r)) {
+      if (tside == 2) {
+        r <- uniroot(function(r) eval(p.body) - power, c(1e-10,
+                                                         1 - 1e-10))$root
+      }
+      else {
+        r <- uniroot(function(r) eval(p.body) - power, c(-1 +
+                                                           1e-10, 1 - 1e-10))$root
+      }
+    }
+    else if (is.null(alpha))
+      alpha <- uniroot(function(alpha) eval(p.body) - power,
+                       c(1e-10, 1 - 1e-10))$root
+    else stop("internal error")
+
+    list(n = n, r = r, alpha = alpha, power = power,
+         alternative = alternative)
+  }
+
+
+
+
   output$r_n <- renderText({
 
     req(!is.null(alternative()))
@@ -6974,11 +9456,11 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
 
     code <- paste0(
-      "WebPower::wp.correlation(",
+      "wp.correlation(",
       "n = NULL, ",
       "r = ", input$r_r_n, ", ",
       "power = ", input$power_r_n/100, ", ",
-      "p = ", 0, ", ",
+      "p = ", input$r_n_parcial, ", ",
       "rho0 = ", input$r_r_h0_n, ", ",
       "alpha = ", input$sig_r_n/100,  ", ",
       "alternative = '", alternative(), "')"
@@ -6989,16 +9471,29 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     n <- ceiling(n$n)
     eval(parse(text = validate_n_inf("n")))
 
-    fisher_transf <- log((1+input$r_r_n)/ (1-input$r_r_n))/2
-    ic_rho_aprox  <- c(fisher_transf - qnorm(1-(input$sig_r_n/100)/2)*sqrt(1/(n-3)),
-                       fisher_transf + qnorm(1-(input$sig_r_n/100)/2)*sqrt(1/(n-3)))
+    # fisher_transf <- log((1+input$r_r_n)/ (1-input$r_r_n))/2
+    # ic_rho_aprox  <- c(fisher_transf - qnorm(1-(input$sig_r_n/100)/2)*sqrt(1/(n-3)),
+    #                    fisher_transf + qnorm(1-(input$sig_r_n/100)/2)*sqrt(1/(n-3)))
+    #
+    # ic_rho_aprox_rev <- (exp(2*ic_rho_aprox) - 1)/ (exp(2*ic_rho_aprox) + 1)
 
-    ic_rho_aprox_rev <- (exp(2*ic_rho_aprox) - 1)/ (exp(2*ic_rho_aprox) + 1)
+    ic_rho <- presize::prec_cor(r = input$r_r_n, n = n, conf.level = 1-input$sig_r_n/100, method = 'pearson')
+
 
     paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
            "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "Foi calculado o tamanho de amostra para testar se o coeficiente de correlação linear de Pearson entre <b>X1 e X2",
+           "Foi calculado o tamanho de amostra para testar se o coeficiente de correlação ",
+           if(input$r_n_parcial > 0){
+             "parcial "
+           },
+
+           "linear de Pearson entre <b>", input$corr_testar_desfecho, "</b>",
+
+           if(input$r_n_parcial > 0){
+             paste0(", quando controlado pela(s) variável(eis) ", (paste(LETTERS[1:input$r_n_parcial], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish()), ",")
+           },
+
 
            if(alternative() == "two.sided"){
              " é diferente de "
@@ -7009,24 +9504,85 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
            },
 
            input$r_r_h0_n,
-           "</b>, por meio da ", txt_citacao_tap, ". ",
-           "Considerando um nível de significância de <b>", input$sig_r_n, "%</b>, um poder de <b>", input$power_r_n,
-           "%</b> e uma correlação esperada de <b>", input$r_r_n, "</b> conforme referência de Fulano (1900),",
+           "</b>",
+
+           ", por meio da ", .txt_citacao_tap, ". ",
+           "Considerando nível de significância de <b>", input$sig_r_n, "%</b>, poder de <b>", input$power_r_n,
+           "%</b> e correlação esperada de <b>", input$r_r_n, "</b> conforme referência de Fulano (1900) <b>OU</b> escolha do pesquisador,",
            " chegou-se ao tamanho de amostra total de <b>", n, "</b> sujeitos. Acrescentando <b>", input$corr_TH_perdas_recusas,
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$corr_TH_perdas_recusas), "</b>.",
 
-           "<br><br><br><br><br>",
-           "<i>Observação.: </i>Com esse tamanho de amostra o intervalo de confiança será aproximadamente  <b>[", round(ic_rho_aprox_rev[1], 2), " ; ", round(ic_rho_aprox_rev[2], 2), "]</b>.",
+           "<br><br><br><br>",
+           "<i>Observação.: </i>Com esse tamanho de amostra o intervalo de confiança do coeficiente de correlação será aproximadamente  <b>[", round(ic_rho$lwr, 2), " ; ", round(ic_rho$upr, 2), "]</b>.",
 
 
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap,
+
+           print_r_code(
+             paste0(
+               "WebPower::wp.correlation(",
+               "n = NULL, ",
+               "r = ", input$r_r_n, ", ",
+               "power = ", input$power_r_n/100, ", ",
+               "p = ", input$r_n_parcial, ", ",
+               "rho0 = ", input$r_r_h0_n, ", ",
+               "alpha = ", input$sig_r_n/100,  ", ",
+               "alternative = '", alternative(), "')"
+             )
+           )
     )
   })
 
 
+  ## Cenarios ----
+
+  output$cenarios_th_correlacaoUi <- renderUI({
+    fluidPage(fluidRow(
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),br(),
+      wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode definir valores do poder (%) e definir o intervalo de valores esperados da correlação.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "corr_power_th_plot",
+                         label   = "Digite valores de poder (%) para fazer o gráfico",
+                         value   = "80, 85, 90",
+                         width   = "500px") %>%
+                 .help_buttom(body = "Esses valores serão utilizados para compor diferentes linhas do gráfico.
+                                        Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+      fluidRow(
+        column(6,
+               sliderInput("range_cor_cenarios_th",
+                           "Intervalo de correlação:",
+                           min   = 0,
+                           max   = 1,
+                           value = c(0.1, 0.9),
+                           step  = 0.05,
+                           width = "500px") %>%
+                 .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico")
+        )
+      ),
+      plotly::plotlyOutput("cor_th_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_cor_th_tab", "Download tabela"),
+      DT::dataTableOutput("cor_th_tab", width = "100%")
+
+
+    ))
+  })
 
 
 
+  eval(parse(text = check_text_input_to_vector("corr_power_th_plot")))
 
   tab_cor_th_cenarios <- reactive({
 
@@ -7037,23 +9593,37 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     # req(!(is.null(input$input$range_cor_cenarios_th)))
     # req(!(is.na(input$input$range_cor_cenarios_th) | is.null(input$e_mean) | is.null(input$conf_mean)))
 
-    poder <- input$corr_power_th_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    poder <- text_input_to_vector(input$corr_power_th_plot)
+    req(length(poder) > 0)
+
 
     expand.grid(`Poder (%)`                  = poder,
-                `Correlação`                 = seq(input$range_cor_cenarios_th[1], input$range_cor_cenarios_th[2], 0.05),
+                `Correlação esperada`        = seq(input$range_cor_cenarios_th[1], input$range_cor_cenarios_th[2], 0.05),
                 `Nível de significância (%)` = input$sig_r_n,
                 `Hipótese alternativa`       = alternative(),
-                rho0                         = input$r_r_h0_n,
+                `Correlação sob H0`          = input$r_r_h0_n,
+                `Variáveis parciais`         = input$r_n_parcial,
                 stringsAsFactors = FALSE) %>%
 
-      mutate(`Tamanho da amostra` = n_corV(r = `Correlação`,
-                                           rho0 = rho0,
-                                           sig.level = `Nível de significância (%)`,
-                                           power = `Poder (%)`,
-                                           alternative = `Hipótese alternativa`)) %>%
+      mutate(`Tamanho da amostra` = purrr::pmap_dbl(
+        .l = list(`Correlação esperada`,
+                  `Correlação sob H0`,
+                  `Nível de significância (%)`,
+                  `Poder (%)`,
+                  `Hipótese alternativa`,
+                  `Variáveis parciais`),
+        .f = function(r, rho0, sig.level, power, alternative, p){
+          tryCatch({
+            wp.correlation(n = NULL,
+                           r = r,
+                           power = power/100,
+                           p = p,  # Number of variables to partial out.
+                           rho0 = rho0,
+                           alpha = sig.level/100,
+                           alternative = alternative)$n %>% ceiling() },
+            warning = function(warning_condition) { NA },
+            error = function(error_condition) { NA })
+        })) %>%
 
       mutate(`n + perdas/ recusas` = n_perdas(`Tamanho da amostra`, input$corr_TH_perdas_recusas),
              `Poder (%) ` = factor(`Poder (%)`),
@@ -7064,7 +9634,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
   output$cor_th_plot <- plotly::renderPlotly({
 
-    g21 <- ggplot(tab_cor_th_cenarios(), aes(x = `Correlação`, y = `Tamanho da amostra`, color = `Poder (%) `))+
+    g21 <- ggplot(tab_cor_th_cenarios(), aes(x = `Correlação esperada`, y = `Tamanho da amostra`, color = `Poder (%) `))+
       geom_point() +
       geom_line() +
       xlab("Correlação esperada") +
@@ -7083,15 +9653,16 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   output$cor_th_tab <- DT::renderDataTable({
     tab_cor_th_cenarios() %>%
       dplyr::select(`Nível de significância (%)`,
-             rho0,
-             `Hipótese alternativa`,
-             `Correlação`,
-             `Poder (%)`,
-             `Tamanho da amostra`,
-             `% de perdas/ recusas`,
-             `n + perdas/ recusas`) %>%
+                    `Correlação sob H0`,
+                    `Hipótese alternativa`,
+                    `Correlação esperada`,
+                    `Poder (%)`,
+                    `Variáveis parciais`,
+                    `Tamanho da amostra`,
+                    `% de perdas/ recusas`,
+                    `n + perdas/ recusas`) %>%
       DT::datatable(extensions = c('FixedColumns'),
-                rownames   = FALSE,
+                    rownames   = FALSE,
                 filter     = "none",
                 #callback   = DT::JS("$('div.dwnld').append($('#download_cor_th_tab'));"),
                 options    = list(pageLength = 10,
@@ -7107,10 +9678,11 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     filename = function() { "Cenarios_teste_correlacao.xlsx"},
     content = function(file) {writexl::write_xlsx(tab_cor_th_cenarios() %>%
                                                     dplyr::select(`Nível de significância (%)`,
-                                                           rho0,
+                                                                  `Correlação sob H0`,
                                                            `Hipótese alternativa`,
-                                                           `Correlação`,
+                                                           `Correlação esperada`,
                                                            `Poder (%)`,
+                                                           `Variáveis parciais`,
                                                            `Tamanho da amostra`,
                                                            `% de perdas/ recusas`,
                                                            `n + perdas/ recusas`),
@@ -7174,7 +9746,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
            ", tamanho amostral igual a <b>", input$n_r_power,
            "</b>, o poder calculado é igual a <b>", poder, "%</b>.",
 
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
   })
 
@@ -7183,8 +9755,70 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   #____________----
   # Inclinacao regressao ----
 
+  observeEvent(input$inclinacao_nomes, {
+    showModal(
+      modalDialog(
+        title = "Ajustes",
+        fluidPage(
+
+          HTML("<b>Preencha os campos abaixo de acordo com seu estudo para que sirvam de guia no preenchimento dos demais campos</b>."),
+          br(), br(),
+          textInput(inputId = "inclinacao_nomeY",
+                    label   = "Descreva o nome do desfecho",
+                    value   = ifelse(input$inclinacao_nomes == 0, "Y", inclinacao_nomeY())),
+          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
+          br(), br(),
+          textInput(inputId = "inclinacao_nomeX",
+                    label   = "Descreva o nome da variável preditora",
+                    value   = ifelse(input$inclinacao_nomes == 0, "X", inclinacao_nomeX()))
+
+        ),
+        easyClose = TRUE,
+        footer    = NULL
+      )
+    )
+  })
+
+  inclinacao_nomeY <- reactive({
+    ifelse(is.null(input$inclinacao_nomeY), "Y", input$inclinacao_nomeY)
+  })
+
+  inclinacao_nomeX <- reactive({
+    ifelse(is.null(input$inclinacao_nomeX), "X", input$inclinacao_nomeX)
+  })
+
+
+  output$inclinacao_inclinacaoUi <- renderUI({
+    req(!input$inclinacao_usar_r2)
+
+    fluidPage(fluidRow(
+      numericInput( "inclinacao_reg",
+                    "Coeficiente de correlação esperado",
+                    value = .8,
+                    step = 1
+      ) %>% .help_buttom(body = paste0("Coeficiente de correlação esperado (beta) representa o impacto em Y a cada aumento de uma unidade em X. ",
+                                       .txt_definido_pesquisador_OU_literatura),
+                         title = "Coeficiente de correlação esperado"),
+      numericInput( "sd_dependente_Y",
+                    "Desvio padrão da variável resposta",
+                    value = 0.5,
+                    min = 0,
+                    max = Inf,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
+      numericInput( "sd_preditor_X",
+                    "Desvio padrão do preditor",
+                    value = 0.2,
+                    min = 0,
+                    max = Inf,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
+    ))
+  })
+
+
   output$inclinacao_reg_formula <- renderUI({
-    withMathJax(paste0("$$H_0: \\beta_1 = 0", " \\text{  vs  } H_1: \\beta_1 \\neq 0$$"))
+    withMathJax(paste0("$$H_0: \\beta_{", inclinacao_nomeX(), "} = 0", " \\text{  vs  } H_1: \\beta_", inclinacao_nomeX(), " \\neq 0$$"))
   })
 
 
@@ -7211,9 +9845,9 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
 
     if(!input$inclinacao_usar_r2){
-      info_input <- paste0("coeficiente de inclinação esperado de <b>", input$inclinacao_reg, "</b>, ",
-                           " desvio padrão de X de <b>", input$sd_preditor_X, "</b>",
-                           " e desvio padrão de Y de <b>", input$sd_dependente_Y, "</b>")
+      info_input <- paste0("coeficiente de regressão de ", inclinacao_nomeX(), " esperado de <b>", input$inclinacao_reg, "</b>, ",
+                           " desvio padrão de ", inclinacao_nomeX(), " esperado de <b>", input$sd_preditor_X, "</b>",
+                           " e desvio padrão de ", inclinacao_nomeY(), " esperado de <b>", input$sd_dependente_Y, "</b>")
 
       code <- paste0(
         "powerMediation::ss.SLR(",
@@ -7248,15 +9882,17 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     paste0("<b><font size = '5'>Tamanho amostral calculado: ", n,
            "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
-           "Foi calculado o tamanho de amostra para testar se a inclinação  é diferente de zero, ",
+           "Foi calculado o tamanho de amostra para testar se o coeficiente de regressão de ", inclinacao_nomeX(),
+           " ao regredir ", inclinacao_nomeY(),
+           " é diferente de zero, ",
 
-           " por meio da ", txt_citacao_tap, ". ",
+           " por meio da ", .txt_citacao_tap, ". ",
            "Considerando nível de significância de <b>", input$conf_inclinacao_reg, "%</b>, poder de <b>", input$power_inclinacao_reg, "%</b>, ",
            info_input, ", conforme referência de Fulano (1900),",
            " chegou-se ao tamanho de amostra total de <b>", n, "</b> sujeitos. Acrescentando <b>", input$inclinacao_reg_perdas_recusa_est,
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$inclinacao_reg_perdas_recusa_est), "</b>.",
 
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
   })
 
@@ -7314,13 +9950,13 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
              "Foi calculado o tamanho de amostra para testar se a razão de chances entre <b>X</b> e <b>Y</b> é diferente de 1 (um), ",
 
-             " por meio da ", txt_citacao_tap, ". ",
+             " por meio da ", .txt_citacao_tap, ". ",
              "Considerando nível de significância de <b>", input$sig_logistic, "%</b>, poder de <b>", input$power_logistic,
              "%</b> e uma razão de chances esperada de <b>", input$logistic_or_continuous, "</b>, conforme referência de Fulano (1900),",
              " chegou-se ao tamanho de amostra total de <b>", n, "</b> sujeitos. Acrescentando <b>", input$logistic_perdas_recusa_est,
              "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$logistic_perdas_recusa_est), "</b>.",
 
-             txt_referencia_tap, print_r_code(code)
+             .txt_referencia_tap, print_r_code(code)
       )
 
 
@@ -7376,7 +10012,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                           "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
                           "Foi calculado o tamanho de amostra para testar se a razão de chances para desenvolver <b>Y</b> entre os grupos Expostos e Não expostos é diferente de 1 (um), ",
-                          " por meio da ", txt_citacao_tap, ". ",
+                          " por meio da ", .txt_citacao_tap, ". ",
                           "Considerando poder de <b>", input$power_logistic, "%</b>, nível de significância de <b>", input$sig_logistic, "% </b>",
                           text_just)
 
@@ -7395,7 +10031,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
       paste0(cabecalho,
              texto_grupos,
-             txt_referencia_tap, print_r_code(code))
+             .txt_referencia_tap, print_r_code(code))
 
     }
 })
@@ -7461,7 +10097,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                         "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
                         "Foi calculado o tamanho de amostra para estimar a razão de chances de desenvolver <b>Y</b> entre os grupos Expostos e Não expostos, ",
-                        " por meio da ", txt_citacao_tap, ". ",
+                        " por meio da ", .txt_citacao_tap, ". ",
                         "Considerando nível de confiança de <b>", input$logistic_est_confiança, "%</b>, ",
                         "amplitude desejada para o intervalo de confiança de <b>", input$logistic_est_amplitude, "</b> ",
                         " utilizando o método ",
@@ -7489,7 +10125,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
     paste0(cabecalho,
            texto_grupos,
-           txt_referencia_tap, print_r_code(code))
+           .txt_referencia_tap, print_r_code(code))
 
   })
 
@@ -7528,8 +10164,8 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     if(input$cox_tipo_variavel == 0){
       code <- paste0("powerSurvEpi::ssizeCT.default(",
                      "k  = ", input$cox_balanceamento, ", ",
-                     "pE = ", input$cox_failure_trat/100, ", ",
-                     "pC = ", input$cox_failure_control/100, ", ",
+                     "pE = ", 1 - input$cox_failure_trat/100, ", ",
+                     "pC = ", 1 - input$cox_failure_control/100, ", ",
                      "RR = ", input$cox_hr_esperado,  ", ",
                      "alpha = ", input$cox_significancia/100, ", ",
                      "power = ", input$cox_power/100, ")")
@@ -7551,12 +10187,17 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
         "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
         "Foi calculado o tamanho de amostra para testar o <i>hazard ratio</i> entre os grupos Tratamento e Controle para a <b>variável dependente</b>, ",
-        "por meio da ", txt_citacao_tap, ". ",
+        "por meio da ", .txt_citacao_tap, ". ",
         "Considerando poder de <b>", input$cox_power, "%</b>, ",
         "nível de significância de <b>", input$cox_significancia, "%</b>, ",
-        "probabilidade de falhar durante o seguimento de <b>", input$cox_failure_trat, "%</b> para o grupo Tratamento e <b>",
-        input$cox_failure_control, "%</b> para o grupo Controle ",
-        "e um <i>hazard ratio</i> esperado de <b>", input$cox_hr_esperado, "</b> (dados de Fulano (1900)),",
+        "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
+        if(input$cox_failure_control == input$cox_failure_trat){
+          "em ambos grupos "
+        } else {
+          paste0("para o grupo Tratamento e <b>",
+                 input$cox_failure_control, "%</b> para o grupo Controle ")
+        },
+        "e um <i>hazard ratio</i> esperado de <b>", input$cox_hr_esperado, "</b> (dados de Fulano (1900) <b>OU</b> escolha do pesquisador), ",
 
         ifelse(input$cox_balanceamento == 1,
                paste0(
@@ -7571,7 +10212,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                )
         ),
 
-        txt_referencia_tap, print_r_code(code)
+        .txt_referencia_tap, print_r_code(code)
       )
 
 
@@ -7582,7 +10223,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                      "power = ", input$cox_power/100, ", ",
                      "theta = ", input$cox_hr_esperado,  ", ",
                      "sigma2 = ",  input$cox_desvio_padrao, "^2, ",
-                     "psi = ", input$cox_failure_continua/100, ", ",
+                     "psi = ", 1 - input$cox_failure_continua/100, ", ",
                      "rho2 = (", input$cox_r2, ")^2, ",
                      "alpha = ", input$cox_significancia/100, ")")
 
@@ -7599,21 +10240,21 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
         "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
 
         "Foi calculado o tamanho de amostra para testar o <i>hazard ratio</i> da <b>variável independente contínua</b> sobre a <b>variável dependente</b>, ",
-        "por meio da ", txt_citacao_tap, ". ",
+        "por meio da ", .txt_citacao_tap, ". ",
         "Considerando poder de <b>", input$cox_power, "%</b>, ",
         "nível de significância de <b>", input$cox_significancia, "%</b>, ",
-        "probabilidade de falhar durante o seguimento de <b>", input$cox_failure_continua, "%</b>, ",
-        "desvio padrão de <b>", input$cox_desvio_padrao, "</b> ",
+        "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_continua, "%</b>, ",
+        "desvio padrão de <b>", input$cox_desvio_padrao, " u.m.</b> ",
 
         if(input$cox_r2 != 0){
           paste0("coeficiente de correlação múltipla com as demais covariáveis de <b>", input$cox_r2, "</b> ")
         },
 
-        "e um <i>hazard ratio</i> esperado de <b>", input$cox_hr_esperado, "</b> (dados de Fulano (1900)),",
+        "e um <i>hazard ratio</i> esperado de <b>", input$cox_hr_esperado, "</b> (dados de Fulano (1900) <b>OU</b> escolha do pesquisador), ",
         "chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos.",
         " Acrescentando <b>", input$cox_perdas_recusa_est, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
         "deverá ser <b>", nperdas, "</b>.",
-        txt_referencia_tap, print_r_code(code)
+        .txt_referencia_tap, print_r_code(code)
       )
     }
 
@@ -7622,14 +10263,78 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
 
 
+  ## Cenarios ----
 
+
+  output$cenarios_testar_cox <- renderUI({
+
+    if(input$cox_hr_esperado > 1){
+      ratio_start <- input$cox_hr_esperado
+      ratio_end  <- input$cox_hr_esperado + 1
+      ratio_by   <- 0.1
+    } else{
+      ratio_start <- max(0, input$cox_hr_esperado - 0.3)
+      ratio_end  <- input$cox_hr_esperado
+      ratio_by   <- 0.05
+    }
+
+
+    fluidPage(fluidRow(
+      conditionalPanel("input.cox_tipo_variavel == 0",
+                       br(),
+                       HTML('<hr style="color: black;">'),
+                       br(),br(),
+
+                       titlePanel("Construção de cenários"),
+                       br(),
+
+                       wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de poder e uma sequência de HR desejados.
+                                        Demais informações serão recuperadas do painel lateral."
+                       ),
+
+                       fluidRow(
+                         column(6,
+                                textInput(inputId = "cox_power_plot",
+                                          label   = "Digite valores de poder (%) para fazer o gráfico",
+                                          value   = "80, 90, 95",
+                                          width   = "400px") %>%
+                                  .help_buttom(body = "Defina os valores de poder desejado.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+                         )
+                       ),
+
+                       HTML("<b>Defina a sequência de valores para o <i>hazard ratio</i>:</b>"),
+                       br(),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                           numericInput("cox_from", "Mínimo", value = ratio_start, step = 0.05)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("cox_to", "Máximo", value = ratio_end, step = 0.05)
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 80px;",
+                           numericInput("cox_by", "Intervalo", value = ratio_by, min = 0, step = 0.05) %>%
+                             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                                         title = "Sequência")
+                       ),
+                       br(),
+
+                       plotly::plotlyOutput("cox_plot", width = "80%"),
+                       br(), br(),
+                       downloadButton("download_cox_tab","Download tabela"),
+                       DT::dataTableOutput("cox_tab", width = "100%")
+      )
+
+    ))
+  })
+
+  eval(parse(text = check_text_input_to_vector("cox_power_plot")))
 
   tab_cox_th_cenarios <- reactive({
 
-    poder <- input$cox_power_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    poder <- text_input_to_vector(input$cox_power_plot)
+    req(length(poder) > 0)
 
     df_grid <- expand.grid(`Nível de significância (%)` = input$cox_significancia,
                            `Poder (%)`                  = poder,
@@ -7662,7 +10367,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                            Controle = n_control))+
       geom_point() +
       geom_line() +
-      xlab("HR esperado") +
+      xlab("Hazard ratio esperado") +
       ylab("Tamanho da amostra*")
 
 
@@ -7936,9 +10641,9 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     s_pooled <- sqrt(numerador/denominador)
 
     paste0("<b><font size = '5'>",
-           "<i>s<sub>pooled</sub></i> = ", round(s_pooled, input$pooled_decimals),
+           "<i>Desvio padrão<sub>combinado</sub></i> = ", round(s_pooled, input$pooled_decimals),
            "<br><br>",
-           "<i>s<sup>2</sup><sub>pooled</sub></i> = ", round(s_pooled^2, input$pooled_decimals),
+           "<i>Variância<sub>combinada</sub></i> = ", round(s_pooled^2, input$pooled_decimals),
            "</b>")
 
   })
@@ -7983,7 +10688,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     }
   })
 
-  eval(parse(text = warning_numero_positivo("auc_k")))
+  eval(parse(text = warning_prop("auc_k")))
   eval(parse(text = warning_prop("auc_poder")))
   eval(parse(text = warning_prop("auc_significancia")))
   eval(parse(text = warning_perdas("auc_perdas_recusa")))
@@ -7992,11 +10697,14 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   output$auc_output <- renderText({
     # Da pra fazer unilateral!
 
+    prob <- 1 - input$auc_k/100
+    kappa <- prob/(1 - prob)
+
     code <- paste0(
       "pROC::power.roc.test(auc = ", input$auc_auc, ", ",
       "sig.level = ", input$auc_significancia/100,  ", ",
       "power = ", input$auc_poder/100, ", ",
-      "kappa = ", input$auc_k, ")")
+      "kappa = ", kappa, ")")
 
     n <- try_n(code)
     eval(parse(text = validate_n("n")))
@@ -8012,21 +10720,26 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     nperdas <- nperdas_casos + nperdas_controle
     eval(parse(text = validate_n_inf("n")))
 
+    precisao <- presize::prec_auc(n = n,
+                                  auc = input$auc_auc,
+                                  prev = input$auc_k/100,
+                                  conf.level = 1 - input$auc_significancia/100)
 
 
     cabecalho <- paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n_casos, " Casos e ", n_control, " Controles</i>)",
                         "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
-    texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar se a área sobre a curva é diferente de 0.5, ",
+    texto_comparacao <- paste0("Foi calculado o tamanho de amostra para testar se a área sob a curva é diferente de 0.5, ",
                                "utilizando <b><i>uma variável contínua preditora</i></b> para diagnosticar <b><i>uma variável binária resposta</b></i>,",
-                               " por meio da ", txt_citacao_tap, ". ",
+                               " por meio da ", .txt_citacao_tap, ". ",
                                "Considerando nível de significância de <b>", input$auc_significancia, "%</b>, ",
-                               "poder de <b>", input$auc_poder, "% </b>",
-                               "e uma área sobre a curva esperada de <b>", input$auc_auc, "</b>, ",
+                               "poder de <b>", input$auc_poder, "%</b>, ",
+                               "prevalência de casos de <b>", input$auc_k, "% </b>",
+                               "e uma área sob a curva esperada de <b>", input$auc_auc, "</b>, ",
                                "como referida por Fulano (1900), ")
 
 
-    if(input$auc_k == 1){
+    if(kappa == 1){
 
       texto_grupos <- paste0("chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n_casos, "</b> em cada grupo.",
                              " Acrescentando <b>", input$auc_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
@@ -8041,20 +10754,76 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     paste0(cabecalho,
            texto_comparacao,
            texto_grupos,
-           txt_referencia_tap, print_r_code(code)
+
+           "</br></br></br><i>Obs.: </i>Com esse tamanho de amostra o intervalo de confiança da área sob a curva será aproximadamente <b>[", round(precisao$lwr, 2), " ; ", round(precisao$upr, 2), "]</b>.",
+
+           .txt_referencia_tap, print_r_code(code)
     )
   })
 
 
 
+  ## Cenarios ----
 
+  output$cenarios_roc_th_Ui <- renderUI({
+
+    fluidPage(fluidRow(
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de poder e uma sequência de valores para a área sob a curva.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "auc_power_plot",
+                         label   = "Digite valores de poder (%) para fazer o gráfico",
+                         value   = "80, 90, 95",
+                         width   = "400px") %>%
+                 .help_buttom(body = "Defina os valores de poder desejado.
+                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
+
+      HTML("<b>Defina a sequência de valores para a área sob a curva:</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("auc_from", "Mínimo", value = input$auc_auc, step = 0.05)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("auc_to", "Máximo", value = min(1, input$auc_auc + 0.4), step = 0.05)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("auc_by", "Intervalo", value = 0.05, min = 0, step = 0.05) %>%
+            .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                         title = "Sequência")
+      ),
+      br(),
+
+      plotly::plotlyOutput("auc_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_auc_tab","Download tabela"),
+      DT::dataTableOutput("auc_tab", width = "100%")
+    ))
+
+  })
+
+
+
+
+  eval(parse(text = check_text_input_to_vector("auc_power_plot")))
 
   tab_auc_th_cenarios <- reactive({
 
-    poder <- input$auc_power_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    poder <- text_input_to_vector(input$auc_power_plot)
+    req(length(poder) > 0)
+
 
     df_grid <- expand.grid(`Poder (%)`                  = poder,
                 AUC                          = seq(input$auc_from, input$auc_to, input$auc_by),
@@ -8158,17 +10927,23 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     nperdas <- nperdas_casos + nperdas_controle
     eval(parse(text = validate_n_inf("n")))
 
+    poder_teste <- pROC::power.roc.test(auc = input$auc_est_auc,
+                                        sig.level = 1 - input$auc_est_confiança/100,
+                                        power = NULL,
+                                        kappa = (input$auc_est_k/100)/(1-input$auc_est_k/100),
+                                        ncontrols = n_control,
+                                        ncases    = n_casos)$power
 
 
     cabecalho <- paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n_casos, " Casos e ", n_control, " Controles</i>)",
                         "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
-    texto_comparacao <- paste0("Foi calculado o tamanho de amostra para estimar a área sobre a curva com uma amplitude de <b>", input$auc_est_amplitude, "</b> pontos, ",
+    texto_comparacao <- paste0("Foi calculado o tamanho de amostra para estimar a área sob a curva com uma amplitude de <b>", input$auc_est_amplitude, "</b> pontos, ",
                                "utilizando <b><i>uma variável contínua preditora</i></b> para diagnosticar <b><i>uma variável binária resposta</b></i>,",
-                               " por meio da ", txt_citacao_tap, ". ",
+                               " por meio da ", .txt_citacao_tap, ". ",
                                "Considerando nível de confiança de <b>", input$auc_est_confiança, "%</b>, ",
                                "prevalência de casos de <b>", input$auc_est_k, "% </b>",
-                               "e uma área sobre a curva esperada de <b>", input$auc_est_auc, "</b>, ",
+                               "e uma área sob a curva esperada de <b>", input$auc_est_auc, "</b>, ",
                                "como referida por Fulano (1900), ")
 
 
@@ -8187,7 +10962,9 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     paste0(cabecalho,
            texto_comparacao,
            texto_grupos,
-           txt_referencia_tap, print_r_code(code)
+           "</br></br><i>Obs.:</i> Com esse tamanho de amostra o poder do teste, para testar se a área sob a curva é diferente de 0,5, será aproximadamente <b>",
+           round(poder_teste*100, 1), "</b>%.",
+           .txt_referencia_tap, print_r_code(code)
     )
   })
 
@@ -8248,10 +11025,6 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
 
   output$sensibil_output <- renderText({
-
-
-
-    # https://www.ncbi.nlm.nih.gov/pubmed/8870764/
 
     especificidade     = input$especif_especificidade/100
     sensibilidade      = input$sensibil_sensibilidade/100
@@ -8318,11 +11091,11 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
            },
 
            "do <b><i>teste tal</i></b> para diagnosticar <b><i>tal desfecho</b></i>, ",
-           "utilizando a ", txt_citacao_tap, ". ",
+           "utilizando a ", .txt_citacao_tap, ". ",
            "Considerando nível de confiança de <b>", input$sensibil_confianca, "%</b>, ",
            "amplitude para o intervalo de confiança desejada de <b>", input$sensibil_amplitude,
            "%</b> utilizando o método de ", str_to_title(input$sensibil_metodo),
-           ", prevalência do desfecho de <b>", input$sensibil_prevalencia,
+           ", prevalência do <b><i>tal desfecho</b></i> de <b>", input$sensibil_prevalencia,
 
            if(n_sens != 0 & n_espe != 0){
              paste0(
@@ -8339,9 +11112,11 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
              )
            },
 
-           "conforme referida em Fulano (1900),",
+           "conforme referida em Fulano (1900) <b>OU</b> escolha do pesquisador,",
            " chegou-se ao tamanho de amostra total de <b>", n, "</b> sujeitos. Acrescentando <b>", input$sensibil_perdas_recusa,
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$sensibil_perdas_recusa), "</b>.",
+
+           .txt_referencia_tap,
 
            if(n_sens != 0 & n_espe != 0){
              paste0("</br><br><i>Obs.:</i> n<sub>sens</sub> = ", n_sens, ", n<sub>esp</sub> = ", n_espe)
@@ -8350,7 +11125,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
            if(n_sens != 0 & n_espe != 0){
              paste0("</br></br>",
                     "<i>Comando R utilizado:</i><br>",
-                    "<p style=\"font-family:'Courier New';font-size:100% \">", code(paste0("n_sens <- ", code_sens)), "</p><br>",
+                    "<p style=\"font-family:'Courier New';font-size:100% \">", code(paste0("n_sens <- ", code_sens)), "</p>",
                     "<p style=\"font-family:'Courier New';font-size:100% \">", code(paste0("n_esp <- ", code_esp)), "</p><br>")
            } else if(n_sens != 0){
              print_r_code(code_sens)
@@ -8363,6 +11138,61 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   })
 
 
+
+
+
+  ## Cenarios ----
+
+  output$cenarios_sensi_espUi <- renderUI({
+
+    fluidPage(fluidRow(
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de prevalência esperada e uma sequência de sensibilidade e especificidade desejados.
+                                        Demais informações serão recuperadas do painel lateral."),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "sensibil_prev_plot",
+                         label   = "Digite valores de prevalência (%) para fazer o gráfico",
+                         value   = paste0(c(input$sensibil_prevalencia, input$sensibil_prevalencia + 2.5, input$sensibil_prevalencia + 5), collapse = ", "),
+                         width   = "400px") %>%
+                 .help_buttom(body = paste0("Defina os valores de prevalência desejado. ",
+                                           "Esses valores serão utilizados para criar diferentes linhas no gráfico. Separe os valores por vírgula ',' e utilize ponto '.' como decimal."))
+        )
+      ),
+
+      HTML("<b>Defina a sequência de valores para a sensibilidade/ especificidade (%):</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("sensibil_from", "Mínimo", value = 5, step = 5)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("sensibil_to", "Máximo", value = 95, step = 5)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("sensibil_by", "Intervalo", value = 10, min = 0, step = 1) %>%
+            .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                        title = "Sequência")
+      ),
+      br(),
+
+      plotly::plotlyOutput("sensibil_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_sensibil_tab","Download tabela"),
+      DT::dataTableOutput("sensibil_tab", width = "100%")
+
+
+    ))
+  })
+
+
+  eval(parse(text = check_text_input_to_vector("sensibil_prev_plot")))
 
 
   tab_sensibil_th_cenarios <- reactive({
@@ -8399,10 +11229,8 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
 
 
-    prevalencias <- input$sensibil_prev_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    prevalencias <- text_input_to_vector(input$sensibil_prev_plot)
+    req(length(prevalencias) > 0)
 
     df_grid <- expand.grid(
       `Método` = input$sensibil_metodo,
@@ -8571,7 +11399,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     textInput( "kappa_prevk",
                paste0("Probabilidade de ocorrência de cada uma das ", input$kappa_k_categorias, " categorias (%)"),
                value = prob_start) %>%
-      help_buttom(body = paste0("Probabilidade de ocorrência de cada uma das ", input$kappa_k_categorias, " categorias (%)"))
+      .help_buttom(body = paste0("Probabilidade de ocorrência de cada uma das ", input$kappa_k_categorias, " categorias (%)"))
 
   })
 
@@ -8604,10 +11432,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   observeEvent(input$kappa_prevk, {
     req(!is.null(input$kappa_prevk))
 
-    probs <- input$kappa_prevk %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    probs <- text_input_to_vector(input$kappa_prevk)
 
     shinyFeedback::hideFeedback("kappa_prevk")
 
@@ -8646,10 +11471,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     } else{
       req(!is.null(input$kappa_prevk))
 
-      probs <- input$kappa_prevk %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric()
+      probs <- text_input_to_vector(input$kappa_prevk)
 
       categorias <- paste(letters[1:length(probs)], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish()
       probs_categorias <- input$kappa_prevk %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish()
@@ -8705,7 +11527,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
            #   paste0("é maior do que <b>", input$kappa_h0, "</b>")
            # },
 
-           "</b>, por meio da ", txt_citacao_tap, ". ",
+           "</b>, por meio da ", .txt_citacao_tap, ". ",
            "Considerando nível de significância de <b>", input$kappa_significancia, "%</b>, poder de <b>", input$kappa_power,
            "%</b>, kappa esperado de <b>", input$kappa_kappa_esperado, "</b> ",
            # "e probabilidades de diagnóstico positivo de <b>", input$kappa_prev1, "%</b> e <b>", input$kappa_prev2, "%</b> ",
@@ -8720,7 +11542,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$kappa_perdas_recusa), "</b>.",
 
 
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
 
 
@@ -8740,7 +11562,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     textInput( "kappa_est_prevk",
                paste0("Probabilidade de ocorrência de cada uma das ", input$kappa_est_k_categorias, " categorias (%)"),
                value = prob_start
-    ) %>% help_buttom(body = paste0("Probabilidade de ocorrência de cada uma das ", input$kappa_est_k_categorias, " categorias (%)"))
+    ) %>% .help_buttom(body = paste0("Probabilidade de ocorrência de cada uma das ", input$kappa_est_k_categorias, " categorias (%)"))
 
   })
 
@@ -8771,10 +11593,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   observeEvent(input$kappa_est_prevk, {
     req(!is.null(input$kappa_est_prevk))
 
-    probs <- input$kappa_est_prevk %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    probs <- text_input_to_vector(input$kappa_est_prevk)
 
     shinyFeedback::hideFeedback("kappa_est_prevk")
 
@@ -8811,10 +11630,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
     } else{
       req(!is.null(input$kappa_est_prevk))
 
-      probs <- input$kappa_est_prevk %>%
-        strsplit(",") %>%
-        unlist() %>%
-        as.numeric()
+      probs <- text_input_to_vector(input$kappa_est_prevk)
 
       categorias <- paste(letters[1:length(probs)], collapse = ", ") %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish()
       probs_categorias <- input$kappa_est_prevk %>% stringi::stri_replace_last_fixed(",", " e ") %>% stringr::str_trim() %>% stringr::str_squish()
@@ -8853,7 +11669,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
            "Foi calculado o tamanho de amostra para estimar o kappa de Cohen, que avaliará o nível de ",
            "concordância entre os <b>métodos/ avaliadores ", metodos, "</b>, ",
-           "por meio da ", txt_citacao_tap, ". ",
+           "por meio da ", .txt_citacao_tap, ". ",
            "Considerando nível de confiança de <b>", input$kappa_est_confianca, "%</b>, ",
            "kappa esperado de <b>", input$kappa_est_kappa_esperado, "</b> ",
 
@@ -8868,7 +11684,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$kappa_est_perdas_recusa), "</b>.",
 
 
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
 
 
@@ -8890,7 +11706,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
                 'Tipo de teste de acordo com hipótese alternativa:',
                 choices = c(paste0('O ICC é DIFERENTE de ', input$icc_h0),
                             paste0('O ICC é MAIOR do que ', input$icc_h0))
-    ) %>% help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+    ) %>% .help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
   })
 
 
@@ -8979,28 +11795,82 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
              paste0("é maior do que <b>", input$icc_h0, "</b>")
            },
 
-           "</b>, por meio da ", txt_citacao_tap, ". ",
+           "</b>, por meio da ", .txt_citacao_tap, ". ",
            "Considerando nível de significância de <b>", input$icc_significancia, "%</b>, poder de <b>", input$icc_power,
            "%</b> e coeficiente de correlação intraclasse esperado de <b>", input$icc_icc_esperado, "</b>, ",
            "conforme referência de Fulano (1900),",
            " chegou-se ao tamanho de amostra total de <b>", n, "</b> unidades amostrais. Acrescentando <b>", input$icc_perdas_recusa,
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$icc_perdas_recusa), "</b>.",
 
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
 
   })
 
 
 
+  ## Cenarios ----
+
+  output$cenarios_icc_thUi <- renderUI({
+
+    fluidPage(fluidRow(
+      br(),
+      HTML('<hr style="color: black;">'),
+      br(),br(),
+      titlePanel("Construção de cenários"),
+      br(),
+
+      wellPanel(
+        paste0("Utilize os argumentos abaixo para construir diferentes cenários.
+                                        Você pode especificar valores de ICC desejados.
+                                        Serão utilizados o nível de significância, ICC sob Ho e o número de avaliadores
+                                             definidos no painel lateral."
+        )
+      ),
+
+      fluidRow(
+        column(6,
+               textInput(inputId = "icc_power_plot",
+                         label   = "Digite valores de poder (%) para fazer o gráfico",
+                         value   = "80, 90, 95",
+                         width   = "400px") %>%
+                 .help_buttom(body = paste0("Defina os valores de poder desejado. ",
+                                           "Esses valores serão utilizados para criar diferentes linhas no gráfico. Separe os valores por vírgula ',' e utilize ponto '.' como decimal."))
+        )
+      ),
+
+      HTML("<b>Defina a sequência de valores para o ICC:</b>"),
+      br(),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("icc_from", "Mínimo", value = input$icc_icc_esperado, step = 0.05)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("icc_to", "Máximo", value = min(1, input$icc_icc_esperado + 0.2), step = 0.05)
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("icc_by", "Intervalo", value = 0.05, min = 0, step = 0.05) %>%
+            .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                        title = "Sequência")
+      ),
+      br(),
+
+      plotly::plotlyOutput("icc_plot", width = "80%"),
+      br(), br(),
+      downloadButton("download_icc_tab","Download tabela"),
+      DT::dataTableOutput("icc_tab", width = "100%")
+
+
+    ))
+  })
+
+  eval(parse(text = check_text_input_to_vector("icc_power_plot")))
+
+
   tab_icc_th_cenarios <- reactive({
+    poder <- text_input_to_vector(input$icc_power_plot)
+    req(length(poder) > 0)
 
     sided   <- ifelse(input$icc_sided == paste0('O ICC é DIFERENTE de ', input$icc_h0), 2, 1)
-
-    poder <- input$icc_power_plot %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
 
     df_grid <- expand.grid(`Nível de significância (%)` = input$icc_significancia,
                            `Poder (%)` = poder,
@@ -9110,14 +11980,14 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
            "Foi calculado o tamanho de amostra para estimar o coeficiente de correlação intraclasse, ",
            "que avaliará o nível de concordância entre os <b>métodos/ avaliadores ", methods, "</b>, ",
-           "</b> por meio da ", txt_citacao_tap, ". ",
+           "</b> por meio da ", .txt_citacao_tap, ". ",
            "Considerando nível de confiança de <b>", input$icc_est_confiança, "%</b>, amplitude desejada de <b>", input$icc_est_amplitude,
            "</b> e coeficiente de correlação intraclasse esperado de <b>", input$icc_est_icc_esperado, "</b>, ",
            "conforme referência de Fulano (1900),",
            " chegou-se ao tamanho de amostra total de <b>", n, "</b> unidades amostrais. Acrescentando <b>", input$icc_est_perdas_recusa,
            "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", n_perdas(n, input$icc_est_perdas_recusa), "</b>.",
 
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
     )
 
   })
@@ -9157,12 +12027,12 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
 
            "Foi calculado o tamanho de amostra para estimar os limites de concordância do gráfico de Bland-Altman, entre os métodos <b>X</b> e <b>Y</b>, ",
            "com uma amplitude do intervalo de confiança desejada de <b>", input$bland_amplitude, "</b>, ",
-           "por meio da ", txt_citacao_tap, ". ",
+           "por meio da ", .txt_citacao_tap, ". ",
            "Considerando um nível de confiança de <b>", input$bland_confianca, "%</b>, ",
            "chegou-se ao tamanho de amostra de <b>", n, "</b> sujeitos. ",
            "Acrescentando <b>", input$bland_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>",
            n_perdas(n, input$bland_perdas_recusa), "</b>.",
-           txt_referencia_tap, print_r_code(code)
+           .txt_referencia_tap, print_r_code(code)
 
 
     )
@@ -9170,14 +12040,17 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health';<br>
   })
 
 
-  # Constroi a tabela com os cenarios
+  ## Cenarios ----
+
+
+  eval(parse(text = check_text_input_to_vector("bland_cenarios_confianca")))
+
 
   tab_bland_cenarios <- reactive({
 
-    cenarios_confianca <- input$bland_cenarios_confianca %>%
-      strsplit(",") %>%
-      unlist() %>%
-      as.numeric()
+    cenarios_confianca <- text_input_to_vector(input$bland_cenarios_confianca)
+    req(length(cenarios_confianca) > 0)
+
 
     expand.grid(Amplitude = seq(from = input$bland_from, to = input$bland_to, by = input$bland_by),
                 `Nível de confiança (%)` = cenarios_confianca) %>%

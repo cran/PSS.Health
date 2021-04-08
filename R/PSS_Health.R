@@ -3,11 +3,11 @@
 #' @description Run locally an interactive Shiny application for Power and Sample Size determination.
 #' @importFrom DT dataTableOutput  renderDataTable datatable JS
 #' @importFrom easypower n.multiway
+#' @import epiR
 #' @importFrom EnvStats aovN aovPower ciNormN ciBinomN propTestPower propTestN
 #' @importFrom ICC.Sample.Size calculateIccSampleSize
 #' @importFrom kappaSize PowerBinary Power3Cats Power4Cats Power5Cats
 #' @importFrom longpower power.mmrm
-#' @importFrom MESS power_t_test
 #' @import plotly
 #' @importFrom powerMediation ssLongFull ss.SLR ss.SLR.rho SSizeLogisticCon SSizeLogisticBin
 #' @importFrom powerSurvEpi ssizeCT.default ssizeEpiCont.default
@@ -18,12 +18,8 @@
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom shiny actionButton	br	checkboxInput	code	column	conditionalPanel	div	downloadButton	downloadHandler	fluidPage	fluidRow	h3	hr	HTML	includeMarkdown	mainPanel	navbarMenu	navbarPage	numericInput	observeEvent	p	plotOutput	radioButtons	reactive	renderPlot	renderText	renderUI	req	selectInput	sidebarLayout	sidebarPanel	sliderInput	tabPanel	tabsetPanel	textAreaInput	textInput	titlePanel	uiOutput	validate	wellPanel	withMathJax
 #' @import shinyFeedback
-#' @importFrom  shinythemes shinytheme
 #' @importFrom  shinyhelper helper observe_helpers
 #' @import tidyverse
-#' @importFrom TrialSize OneSampleMean.Equality OneSampleProportion.Equality OneSampleMean.Equivalence OneSampleMean.NIS OneSampleProportion.Equivalence OneSampleProportion.NIS
-#' TwoSampleMean.Equivalence TwoSampleMean.NIS TwoSampleProportion.Equivalence TwoSampleProportion.NIS
-#' @importFrom WebPower wp.correlation
 #' @importFrom  writexl write_xlsx
 #' @export
 #' @author Unidade de Bioestatística, Grupo de Pesquisa em Pós Graduação, Hospital de Clínicas de Porto Alegre.

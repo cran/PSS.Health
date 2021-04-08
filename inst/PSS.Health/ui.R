@@ -11,99 +11,52 @@ aba_estimacao_uma_media <- tabPanel(
   titlePanel("Uma média"),
   wellPanel(
     # includeMarkdown(file.path("Markdown", "Caput_estimar_uma_media.Rmd")),
-    "Um estudo pode ter como objetivo estimar ou testar o valor médio de uma variável quantitativa referente à população de interesse. Ao calcular o tamanho da amostra para este objetivo, estaremos supondo que a variável de interesse segue uma distribuição normal, com uma determinada média  e uma determinada variância."),
+    "Um estudo pode ter como objetivo estimar ou testar o valor médio de uma variável quantitativa referente à população de interesse."),
   tabsetPanel(
     tabPanel("Estimar",
              sidebarLayout(
                sidebarPanel(
+                 selectInput(inputId = "mean_delineamento",
+                             label   = "Processo de amostragem aleatória",
+                             choices = c("Aleatória simples" = "aas",
+                                         "Conglomerados em um único estágio" = "ac1",
+                                         "Estratificada proporcional ao tamanho" = "aae"
+                             ),
+                             selected = "aas"),
+
+
                  textInput(inputId = "mean_nome_desfecho",
                            label   = "Descreva o nome do desfecho",
                            value   = "Y") %>%
-                   help_buttom(body = "Descreva o nome do desfecho para que sirva de guia no preenchimento dos demais valores.",
-                               title = "Nome do desfecho"),
+                   .help_buttom(body = .txt_desfecho, title = "Nome do desfecho"),
                  uiOutput("mean_um"),
-                 # checkboxInput("n_size_mean", "Tamanho populacional finito", value = FALSE
-                 # ) %>% help_buttom(body = "Caso considere o tamanho da população finito, clique aqui para especificar o tamanho da população."),
-                 # conditionalPanel(condition = "input.n_size_mean == true",
-                 #                  numericInput( "N_pop_mean",
-                 #                                "Tamanho populacional",
-                 #                                value = 120,
-                 #                                min   = 0,
-                 #                                max   = Inf,
-                 #                                step  = 1
-                 #                  ) %>% help_buttom(body = "Especifique o tamanho da população.",
-                 #                                    title = "Tamanho da população")
-                 # ),
                  uiOutput("e_meanUi"),
                  uiOutput("mean_sd"),
+                 uiOutput("mean_aae_ui"),
+                 uiOutput("mean_ac1Ui"),
                  numericInput( "conf_mean",
                                "Nível de confiança (%)",
                                value = 95,
                                min   = 0,
                                max   = 100,
                                step  = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  numericInput( "mean_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
                  shinycssloaders::withSpinner(htmlOutput("mean"), type = 5),
 
                  ###  CENARIOS  ####.
+                 uiOutput("cenarios_uma_media_estUi")
 
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),
-
-                 wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode definir um intervalo de precisão e especificar diferentes valores para o desvio padrão.
-                                        Serão utilizados o nível de confiança, o percentual de perdas/ recusas e o tamanho populacional definidos
-                                        no painel lateral.
-                                                  "),
-
-                 HTML("<b>Defina a sequência de valores para a precisão:</b>"),
-                 # bsplus::shiny_iconlink(name = "question-circle") %>%
-                 #   bsplus::bs_embed_popover(title = ,
-                 #                            placement = "left"),
-                 br(),
-                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("mean_from", "Mínimo:", value = 1, step = 1)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("mean_to", "Máximo:", value = 5, step = 1)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("mean_by", "Intervalo:", value = 0.5, min = 0, step = 0.5) %>%
-                       help_buttom(body = "Defina a sequência de precisão. Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                   title = "Sequência da precisão")
-                 ),
-                 # div(style="display: inline-block;vertical-align:top; width: 50px;",HTML("<br>")),
-
-
-
-                 textInput(inputId = "mean_sd_plot",
-                           label   = "Digite valores de desvio padrão para fazer o gráfico:",
-                           value   = "20, 24.5, 26",
-                           width   = "600px") %>%
-                   help_buttom(body = "Defina os valores de desvio padrão.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                   ),
-
-                 shinycssloaders::withSpinner(plotly::plotlyOutput("mean_plot", width = "80%"), type = 5),
-                 br(), br(),
-                 downloadButton("download_mean_tab","Download tabela"),
-                 shinycssloaders::withSpinner(DT::dataTableOutput("mean_tab", width = "100%"), type = 5)
-               )
+               ) # Fecha main panel
              ),
 
              HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
@@ -127,35 +80,40 @@ aba_estimacao_uma_media <- tabPanel(
                                min = -Inf,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "\\bar{X}"),
+                 ) %>% .help_buttom(body = paste0("Valor da média que se espera observar na amostra.", .txt_definido_literatura)),
                  numericInput( "margin_TH_mean",
                                "Valor de referência sob a hipótese nula",
                                value = 0,
                                min = -Inf,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "\\mu_0"),
+                 ) %>% .help_buttom(body = paste0(
+                   "Valor da média sob a hipótese nula ($\\mu_0$) ",
+                   "Maiores informações em ",
+                   '<a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Hirakata et al. 2019</a>.',
+                   .txt_definido_pesquisador
+                 )),
                  numericInput( "sigma_TH_mean",
-                               "Desvio padrão",
+                               "Desvio padrão esperado",
                                value = 10,
                                min = 0,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "Desvio padrão."),
+                 ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
                  numericInput( "alpha_TH_mean",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "beta_TH_mean",
                                "Poder (%)",
                                value = 80,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
 
                  numericInput( "mean_TH_recusa",
                                "Perdas/ Recusa (%)",
@@ -163,7 +121,7 @@ aba_estimacao_uma_media <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
 
                ),
 
@@ -182,28 +140,28 @@ aba_estimacao_uma_media <- tabPanel(
                                min = -Inf,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
+                 ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada"),
                  numericInput( "mean1_power_sigma",
-                               "Desvio padrão",
+                               "Desvio padrão esperado",
                                value = 15,
                                min = 0,
                                max = Inf,
                                step = 5
-                 ) %>% help_buttom(body = "É o desvio padrão da variável de interesse."),
+                 ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
                  numericInput( "mean1_power_n",
                                "Tamanho amostral",
                                value = 20,
                                min = 1,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "Qual o n de cada grupo. Assume grupos de mesmo tamanho."),
+                 ) %>% .help_buttom(body = "Qual o n de cada grupo. Assume grupos de mesmo tamanho."),
                  numericInput( "mean1_power_sig",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)")
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)")
 
                ),
 
@@ -235,10 +193,10 @@ aba_estimacao_uma_prop <- tabPanel(
                sidebarPanel(
                  textInput(inputId = "prop_nome_desfecho",
                            label   = "Descreva o nome do desfecho",
-                           value   = "Y") %>% help_buttom(body = "Descreva o nome do desfecho para que sirvam de guia no preenchimento dos valores."),
+                           value   = "Y") %>% .help_buttom(body = .txt_desfecho),
 
                  # checkboxInput("n_size_prop", "Tamanho de amostra finito", value = FALSE
-                 # ) %>% help_buttom(body = "Caso considere o tamanho da população finito, clique aqui para especificar o tamanho da população."),
+                 # ) %>% .help_buttom(body = "Caso considere o tamanho da população finito, clique aqui para especificar o tamanho da população."),
                  # conditionalPanel(condition = "input.n_size_prop == true",
                  #                  numericInput( "N_pop_prop",
                  #                                "Tamanho populacional",
@@ -246,7 +204,7 @@ aba_estimacao_uma_prop <- tabPanel(
                  #                                min = 0,
                  #                                max = Inf,
                  #                                step = 1
-                 #                  ) %>% help_buttom(body = "Especifique o tamanho da população.")
+                 #                  ) %>% .help_buttom(body = "Especifique o tamanho da população.")
                  # ),
                  # numericInput( "e_prop",
                  #               "Margem de erro (%)",
@@ -254,40 +212,40 @@ aba_estimacao_uma_prop <- tabPanel(
                  #               min = 0,
                  #               max = 100,
                  #               step = 1
-                 # ) %>% help_buttom(body = "É a metade da amplitude do intervalo de confiança."),
+                 # ) %>% .help_buttom(body = "É a metade da amplitude do intervalo de confiança."),
                  numericInput( "e_prop",
                                "Amplitude do intervalo (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 5
-                 ) %>% help_buttom(body = "É a amplitude do intervalo de confiança (limite superior menos limite inferior)."),
+                 ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                  numericInput( "p_prop",
                                "Percentual esperado (%)",
                                value = 50,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O percentual esperado de eventos/ Prevalência/ Incidência."),
+                 ) %>% .help_buttom(body = paste0(.txt_perc_esperado, .txt_definido_literatura), title = "Percentual esperado (%)"),
                  selectInput("p1_metodo",
-                             "Método utilizado para calcular a precisão",
+                             "Método utilizado para calcular o intervalo de confiança",
                              choices = c("wilson", "agresti-coull", "exact", "wald"),
-                             selected = "wilson"
-                 ),
+                             selected = "wald"
+                 ) %>% .help_buttom(body = .txt_per_method),
                  numericInput( "conf_prop",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  numericInput( "prop_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)"),
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)"),
                ),
 
                mainPanel(
@@ -295,51 +253,7 @@ aba_estimacao_uma_prop <- tabPanel(
 
 
                  ###  CENARIOS  ####.
-
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),
-
-                 wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar valores de precisão desejada.
-                                        Serão utilizados o nível de confiança, o percentual de perdas/ recusas e o tamanho populacional definidos
-                                        no painel lateral.
-                                                  "),
-
-                 HTML("<b>Defina a sequência de valores para a proporção:</b>"),
-                 # bsplus::shiny_iconlink(name = "question-circle") %>%
-                 # bsplus::bs_embed_popover(title = "Defina a sequência de proporção Essa sequência será utilizada para compor o eixo x do gráfico",
-                 #                          placement = "left"),
-                 br(),
-                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("prop_from", "Mínimo:", value = 0, step = 5, min = 0, max = 100)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("prop_to", "Máximo:", value = 100, step = 5, min = 0, max = 100)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("prop_by", "Intervalo:", value = 5, min = 0, step = 1, max = 99) %>%
-                       help_buttom(body = "Defina a sequência de proporção esperada. Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                   title = "Sequência da precisão")
-                 ),
-
-                 textInput(inputId = "prop_precisoes_plot",
-                           label   = "Digite valores de amplitude (%) para fazer o gráfico",
-                           value   = "5, 10, 12.5",
-                           width   = "600px") %>%
-                   help_buttom(body = "Defina os valores de amplitude desejada.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                   ),
-
-                 shinycssloaders::withSpinner(plotly::plotlyOutput("prop_plot", width = "80%"), type = 5),
-                 br(), br(),
-                 downloadButton("download_prop_tab","Download tabela"),
-                 DT::dataTableOutput("prop_tab", width = "100%")
-
+                 uiOutput("prop_precisao_cenarioUi")
                )
              )
     ),
@@ -359,7 +273,7 @@ aba_estimacao_uma_prop <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ),
+                 ) %>% .help_buttom(body = .txt_perc_esperado, title = "Percentual esperado (%)"),
                  numericInput( "p_TH_h0",
                                "Percentual sob a hipótese nula (%)",
                                value = 10,
@@ -388,16 +302,18 @@ aba_estimacao_uma_prop <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)"),
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)"),
 
 
                  checkboxInput("prop_1th_approx", "Calcular utilizando a aproximação pela normal", value = FALSE
-                 ) %>% help_buttom(body = "Calcular utilizando a aproximação pela normal?
-                                   Se esta opção estiver desmarcada será utilizado o método exato."),
+                 ) %>% .help_buttom(body = paste0("Calcular utilizando a aproximação pela normal?
+                                   Se esta opção estiver desmarcada será utilizado o método exato.",
+                                                  .txt_definido_pesquisador)
+                 ),
 
                  conditionalPanel("input.prop_1th_approx == true",
                                   checkboxInput("prop_1th_correction", "Aplicar correção de continuidade", value = TRUE
-                                  ) %>% help_buttom(body = "Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade")
+                                  ) %>% .help_buttom(body = paste0("Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade", .txt_definido_pesquisador))
                  )
 
                ),
@@ -422,7 +338,7 @@ aba_estimacao_uma_prop <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ),
+                 ) %>% .help_buttom(body = .txt_perc_esperado, title = "Percentual esperado (%)"),
                  numericInput( "p_power_h0",
                                "Percentual sob a hipótese nula (%)",
                                value = 20,
@@ -446,12 +362,13 @@ aba_estimacao_uma_prop <- tabPanel(
                  ),
 
                  checkboxInput("p_power_approx", "Calcular utilizando a aproximação pela normal", value = FALSE
-                 ) %>% help_buttom(body = "Calcular utilizando a aproximação pela normal?
-                                   Se esta opção estiver desmarcada será utilizado o método exato."),
+                 ) %>% .help_buttom(body = paste0("Calcular utilizando a aproximação pela normal?
+                                   Se esta opção estiver desmarcada será utilizado o método exato.", .txt_definido_pesquisador )
+                 ),
 
                  conditionalPanel("input.p_power_approx == true",
                                   checkboxInput("p_power_correction", "Aplicar correção de continuidade", value = TRUE
-                                  ) %>% help_buttom(body = "Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade")
+                                  ) %>% .help_buttom(body = paste0("Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade", .txt_definido_pesquisador))
                  )
 
                ),
@@ -485,40 +402,41 @@ aba_estimacao_Cronbach <- tabPanel("Cronbach",
                                                      min = 2,
                                                      max = Inf,
                                                      step = 1
-                                       ) %>% help_buttom(body = "Nº de itens do instrumento."),
+                                       ) %>% .help_buttom(body = paste0("Número de itens do instrumento.", .txt_definido_pesquisador)),
                                        numericInput( "Cronbach_espected",
                                                      "Cronbach esperado",
                                                      value = 0.7,
                                                      min = 0,
                                                      max = 1,
                                                      step = .1
-                                       ) %>% help_buttom(body = "Valor esperado com base na literatura."),
+                                       ) %>% .help_buttom(body = paste0("Cronbach esperado.", .txt_definido_pesquisador_OU_literatura)),
                                        numericInput( "Cronbach_precisao",
                                                      "Amplitude do intervalo",
                                                      value = 0.2,
                                                      min = 0,
                                                      max = 1,
                                                      step = .1
-                                       ) %>% help_buttom(body = "É a amplitude do intervalo de confiança (limite superior menos limite inferior)."),
+                                       ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                                        numericInput( "conf_Cronbach",
                                                      "Nível de confiança (%)",
                                                      value = 95,
                                                      min = 0,
                                                      max = 100,
                                                      step = 1
-                                       ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                                       ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                                        numericInput( "Cronbach_perdas_recusa",
                                                      "Perdas/ Recusa (%)",
                                                      value = 10,
                                                      min = 0,
                                                      max = 100,
                                                      step = 1
-                                       ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)"),
+                                       ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)"),
                                      ),
 
                                      mainPanel(
                                        shinycssloaders::withSpinner(htmlOutput("Cronbach_est"), type = 5),
 
+                                       htmlOutput("cronbach_code")
 
                                        ###  CENARIOS  ####.
 
@@ -552,349 +470,6 @@ aba_estimacao_Cronbach <- tabPanel("Cronbach",
 
 
 
-#### Proporcao
-# Ver aqui...... -----
-# aba_TH_uma_prop <- tabPanel("Proporção",
-#                             titlePanel("Teste de Hipótese para proporção em uma amostra"),
-#                             wellPanel('Essa técnica é utilizada quando se deseja comparar a proporção obtida de uma
-#                     amostra contra um valor já estabelecido, podendo ser, por exemplo, um valor de
-#                     referência, um valor histórico ou a prevalência de uma doença.'),
-#                             tabsetPanel(
-#
-#                               tabPanel("Testar",
-#                                        sidebarLayout(
-#                                          sidebarPanel(
-#                                            numericInput( "alpha_TH_prop",
-#                                                          "Nível de significância",
-#                                                          value = .05,
-#                                                          min = 0,
-#                                                          max = 1,
-#                                                          step = .01
-#                                            ),
-#                                            numericInput( "beta_TH_prop",
-#                                                          "Poder",
-#                                                          value = 0.8,
-#                                                          min = 0,
-#                                                          max = 1,
-#                                                          step = .01
-#                                            ),
-#                                            numericInput( "p_TH_prop",
-#                                                          "Proporção verdadeira (ou valor de referência)",
-#                                                          value = .7,
-#                                                          min = 0,
-#                                                          max = 1,
-#                                                          step = .01
-#                                            ),
-#                                            numericInput( "margin_TH_prop",
-#                                                          "Diferença",
-#                                                          value = .075,
-#                                                          min = 0,
-#                                                          max = Inf,
-#                                                          step = .01
-#                                            ),
-#
-#
-#                                            actionButton("help_th1_prop_trialsize", "Ajuda")
-#                                          ),
-#
-#                                          #                    numericInput( "prop1_TH1_prop_pwr",
-#                                          #                                  "Proporção de referência",
-#                                          #                                  value = .5,
-#                                          #                                  min = 0,
-#                                          #                                  max = 1,
-#                                          #                                  step = .01
-#                                          #                    ),
-#                                          #                    numericInput( "prop2_TH1_prop_pwr",
-#                                          #                                  "Proporção de referência acrescida da diferença mínima a ser detectada",
-#                                          #                                  value = .6,
-#                                          #                                  min = 0,
-#                                          #                                  max = 1,
-#                                          #                                  step = .01
-#                                          #                    ),
-#                                          #                    numericInput( "power_TH1_prop_pwr",
-#                                          #                                  "Poder",
-#                                          #                                  value = .8,
-#                                          #                                  min = 0,
-#                                          #                                  max = 1,
-#                                          #                                  step = 1
-#                                          #                    ),
-#                                          #                    numericInput( "sig_TH1_prop_pwr",
-#                                          #                                  "Nível de significância",
-#                                          #                                  value = .05,
-#                                          #                                  min = 0,
-#                                          #                                  max = 1,
-#                                          #                                  step = .01
-#                                          #                    ),
-#                                          #                    selectInput('alternative_TH1_prop_pwr',
-#                                          #                                'Tipo de teste de acordo com hipótese alternativa:',
-#                                          #                                choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less'),
-#                                          #                                selected = 'two.sided'),
-#                                          #                    actionButton("help_th1_prop_pwr", "Ajuda"))
-#                                          # ),
-#
-#                                          mainPanel(
-#                                            shinycssloaders::withSpinner(htmlOutput("THprop"), type = 5)
-#                                          )
-#                                        )
-#                               ),
-#                               tabPanel("Poder",
-#                                        sidebarLayout(
-#                                          sidebarPanel(
-#                                            numericInput( "prop1_TH1_prop_pwr_power",
-#                                                          "Proporção 1",
-#                                                          value = .5,
-#                                                          min = 0,
-#                                                          max = 1,
-#                                                          step = .01
-#                                            ),
-#                                            numericInput( "prop2_TH1_prop_pwr_power",
-#                                                          "Proporção 2",
-#                                                          value = .5,
-#                                                          min = 0,
-#                                                          max = 1,
-#                                                          step = .01
-#                                            ),
-#                                            numericInput( "n_TH1_prop_pwr_power",
-#                                                          "Tamanho de amostra",
-#                                                          value = 20,
-#                                                          min = 0,
-#                                                          max = Inf,
-#                                                          step = 1
-#                                            ),
-#                                            numericInput( "sig_TH1_prop_pwr_power",
-#                                                          "Nível de significância",
-#                                                          value = .05,
-#                                                          min = 0,
-#                                                          max = 1,
-#                                                          step = .01
-#                                            ),
-#                                            selectInput('alternative_TH1_prop_pwr_power',
-#                                                        'Tipo de teste de acordo com hipótese alternativa:',
-#                                                        choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less')
-#                                            ),
-#                                            actionButton("help_th1_prop_pwr_power", "Ajuda")),
-#                                          mainPanel(
-#                                            shinycssloaders::withSpinner(htmlOutput("poder_TH1_prop"), type = 5)
-#                                          )
-#                                        ))
-#                             ),
-#
-#                             HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
-# )
-
-
-#### Equiv. uma media ####
-aba_TH_uma_media_equivalencia <- tabPanel("Equivalência para uma média",
-                                          titlePanel("Equivalência para uma média"),
-                                          wellPanel('Essa técnica é utilizada quando se deseja avaliar se a média de uma variável na
-                     população está suficientemente próxima de um valor-alvo (ou um valor de referência)
-                     a ponto de ser considerada equivalente.'),
-                                          tabsetPanel(
-                                            tabPanel("Equivalência",
-                                                     sidebarLayout(
-                                                       sidebarPanel(
-                                                         numericInput( "alpha_eq_mean",
-                                                                       "Nível de significância",
-                                                                       value = .05,
-                                                                       min = 0,
-                                                                       max = 1,
-                                                                       step = .01
-                                                         ),
-                                                         numericInput( "beta_eq_mean",
-                                                                       "Poder",
-                                                                       value = 0.8,
-                                                                       min = 0,
-                                                                       max = 1,
-                                                                       step = .01
-                                                         ),
-                                                         numericInput( "sigma_eq_mean",
-                                                                       "Desvio padrão da variável de interesse",
-                                                                       value = .3,
-                                                                       min = 0,
-                                                                       max = Inf,
-                                                                       step = .01
-                                                         ),
-                                                         numericInput( "margin_eq_mean",
-                                                                       "Diferença mínima a detectar",
-                                                                       value = .1,
-                                                                       min = 0,
-                                                                       max = Inf,
-                                                                       step = .01
-                                                         ),
-                                                         numericInput( "delta_eq_mean",
-                                                                       "Margem de não inferioridade ou superioridade",
-                                                                       value = .2,
-                                                                       min = 0,
-                                                                       max = Inf,
-                                                                       step = .01
-                                                         ),
-                                                         actionButton("help_mean_eq", "Ajuda")
-                                                       ),
-
-                                                       mainPanel(
-                                                         shinycssloaders::withSpinner(htmlOutput("mean_eq"), type = 5)
-                                                       )
-                                                     )),
-                                            tabPanel("Não-inferioridade ou superioridade",
-                                                     sidebarLayout(
-                                                       sidebarPanel(
-                                                         numericInput( "alpha_eq_mean2",
-                                                                       "Nível de significância",
-                                                                       value = .05,
-                                                                       min = 0,
-                                                                       max = 1,
-                                                                       step = .01
-                                                         ),
-                                                         numericInput( "beta_eq_mean2",
-                                                                       "Poder",
-                                                                       value = 0.8,
-                                                                       min = 0,
-                                                                       max = 1,
-                                                                       step = .05
-                                                         ),
-                                                         numericInput( "sigma_eq_mean2",
-                                                                       "Desvio padrão da variável de interesse",
-                                                                       value = .3,
-                                                                       min = 0,
-                                                                       max = Inf,
-                                                                       step = .01
-                                                         ),
-                                                         numericInput( "margin_eq_mean2",
-                                                                       "Diferença mínima a detectar",
-                                                                       value = .1,
-                                                                       min = 0,
-                                                                       max = Inf,
-                                                                       step = .01
-                                                         ),
-                                                         numericInput( "delta_eq_mean2",
-                                                                       "Margem de não inferioridade ou superioridade",
-                                                                       value = .2,
-                                                                       min = 0,
-                                                                       max = Inf,
-                                                                       step = .01
-                                                         ),
-                                                         actionButton("help_mean_eq2", "Ajuda")
-                                                       ),
-
-                                                       mainPanel(
-                                                         shinycssloaders::withSpinner(htmlOutput("mean_eq2"), type = 5)
-                                                       )
-                                                     )
-                                            )
-                                          ),
-
-                                          HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
-)
-
-
-#### Equiv. uma prop ####
-aba_TH_uma_prop_equivalencia <- tabPanel("Equivalência para uma proporção",
-                                         titlePanel("Equivalência para uma proporção"),
-                                         wellPanel('Essa técnica é utilizada quando se deseja avaliar se a proporção de uma variável na
-                     população está suficientemente próxima de um valor-alvo (ou um valor de referência)
-                     a ponto de ser considerada equivalente.'),
-                                         tabsetPanel(
-                                           tabPanel("Equivalência",
-                                                    sidebarLayout(
-                                                      sidebarPanel(
-                                                        numericInput( "alpha_eq_prop",
-                                                                      "Nível de significância",
-                                                                      value = .05,
-                                                                      min = 0,
-                                                                      max = 1,
-                                                                      step = .01
-                                                        ),
-                                                        numericInput( "beta_eq_prop",
-                                                                      "Poder",
-                                                                      value = 0.8,
-                                                                      min = 0,
-                                                                      max = 1,
-                                                                      step = .05
-                                                        ),
-                                                        numericInput( "p_eq_prop",
-                                                                      "Proporção verdadeira da variável na população",
-                                                                      value = .6,
-                                                                      min = 0,
-                                                                      max = Inf,
-                                                                      step = .01
-                                                        ),
-                                                        numericInput( "delta_eq_prop",
-                                                                      "Diferença mínima a detectar",
-                                                                      value = .05,
-                                                                      min = 0,
-                                                                      max = Inf,
-                                                                      step = .01
-                                                        ),
-                                                        numericInput( "margin_eq_prop",
-                                                                      "Margem de não inferioridade ou superioridade",
-                                                                      value = .2,
-                                                                      min = 0,
-                                                                      max = Inf,
-                                                                      step = .01
-                                                        ),
-                                                        actionButton("help_prop_eq", "Ajuda")
-                                                      ),
-
-                                                      mainPanel(
-                                                        shinycssloaders::withSpinner(htmlOutput("prop_eq"), type = 5)
-                                                      )
-                                                    )),
-                                           ## NIS Proporcao ###
-                                           tabPanel("Não-inferioridade ou superioridade",
-                                                    sidebarLayout(
-                                                      sidebarPanel(
-                                                        numericInput( "alpha_eq_prop2",
-                                                                      "Nível de significância",
-                                                                      value = .05,
-                                                                      min = 0,
-                                                                      max = 1,
-                                                                      step = .01
-                                                        ),
-                                                        numericInput( "beta_eq_prop2",
-                                                                      "Poder",
-                                                                      value = 0.8,
-                                                                      min = 0,
-                                                                      max = 1,
-                                                                      step = .01
-                                                        ),
-                                                        numericInput( "p_eq_prop2",
-                                                                      "Proporção verdadeira da variável na população",
-                                                                      value = .6,
-                                                                      min = 0,
-                                                                      max = Inf,
-                                                                      step = .01
-                                                        ),
-                                                        numericInput( "delta_eq_prop2",
-                                                                      "Diferença mínima a detectar",
-                                                                      value = .05,
-                                                                      min = 0,
-                                                                      max = Inf,
-                                                                      step = .01
-                                                        ),
-                                                        numericInput( "margin_eq_prop2",
-                                                                      "Margem de não inferioridade ou superioridade",
-                                                                      value = .2,
-                                                                      min = 0,
-                                                                      max = Inf,
-                                                                      step = .01
-                                                        ),
-                                                        actionButton("help_prop_eq2", "Ajuda")
-                                                      ),
-
-                                                      mainPanel(
-                                                        shinycssloaders::withSpinner(htmlOutput("prop_eq2"), type = 5)
-                                                      )
-                                                    ))
-                                         ),
-
-                                         HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
-)
-
-
-
-
-
-
 
 #__________________--------
 # TH para 2 amostra  ----
@@ -908,10 +483,10 @@ aba_TH_duas_amostra_media <- tabPanel(
   titlePanel("Comparação entre duas médias de grupos independentes"),
   wellPanel("Nesta técnica deseja-se calcular o tamanho amostral de um estudo cujo objetivo é ",
             "comparar se a média de dois grupos independentes diferem ou não em relação à ",
-            "variável interesse. \n\n",
-            "Ao calcular o tamanho da amostra para este objetivo, ",
-            "estaremos supondo que a variável de interesse, em cada um dos grupos, segue uma distribuição normal, ",
-            "e que será utilizado o teste t independente para comparação de médias."
+            "variável interesse."
+            # "\n\nAo calcular o tamanho da amostra para este objetivo, ",
+            # "estaremos supondo que a variável de interesse, em cada um dos grupos, segue uma distribuição normal, ",
+            # "e que será utilizado o teste t independente para comparação de médias."
   ),
   tabsetPanel(
     tabPanel("Testar",
@@ -927,19 +502,26 @@ aba_TH_duas_amostra_media <- tabPanel(
                  br(), br(),
 
                  checkboxInput("th2_mean_cohen", "Calcular usando o d de Cohen", value = FALSE),
-                 # %>% help_buttom(body = "Clique aqui para usar d de Cohen ao invés das diferenças e desvio padrão."),
+                 # %>% .help_buttom(body = "Clique aqui para usar d de Cohen ao invés das diferenças e desvio padrão."),
                  conditionalPanel(condition = "input.th2_mean_cohen == true",
 
-                                  HTML("<i>Você também pode calcular o d de Cohen na aba 'Outras ferramentas' --> 'd de Cohen'</i><br>"),
-                                  br(),
+                                  # HTML("<i>Você também pode calcular o d de Cohen na aba 'Outras ferramentas' --> 'd de Cohen'</i><br>"),
+                                  # br(),
                                   numericInput( "cohen_TH2_mean_pwr",
                                                 "Tamanho do efeito (d de Cohen)",
                                                 value = 0.4,
                                                 min = 0,
                                                 max = Inf,
-                                                step = 0.1),
-                                  actionLink("show_d_cohen", "O que é o d de Cohen?"),
-                                  br(), br(),
+                                                step = 0.1) %>%
+                                    shinyhelper::helper(type = "markdown",
+                                                        title = "Tamanho de efeito d",
+                                                        content = "Effect_size_d_Cohen",
+                                                        buttonLabel = "Fechar",
+                                                        fade = TRUE,
+                                                        colour = "#006338",
+                                                        size = "l"),
+                                  # actionLink("show_d_cohen", "O que é o d de Cohen?"),
+                                  # br(), br(),
                                   # ) %>% shinyhelper::helper(
                                   #   type = "markdown",
                                   #   title = "D de Cohen",
@@ -964,22 +546,28 @@ aba_TH_duas_amostra_media <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "sig_TH2_mean_pwr",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
-                 uiOutput("alternative_TH2_mean_pwrUi"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+
+                 selectInput('alternative_TH2_mean_pwr',
+                             'Tipo de teste de acordo com hipótese alternativa:',
+                             choices = c("Bilateral" = "two.sided", "Unilateral" = "one.sided"),
+                             selected = 'two.sided'
+                 ) %>% .help_buttom(body = .txt_h1),
+
                  numericInput( "TH_mean_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -987,74 +575,7 @@ aba_TH_duas_amostra_media <- tabPanel(
 
                  ###  CENARIOS  ####.
 
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),
-
-                 conditionalPanel(condition = "input.th2_mean_cohen == true",
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar valores de magnitude de efeito desejado.
-                                        Serão utilizados o nível de confiança, o tipo de teste de acordo com a hipótese alternativa e
-                                        o percentual de perdas/ recusas definidos no painel lateral.")
-                 ),
-
-                 conditionalPanel(condition = "input.th2_mean_cohen == false",
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar valores da diferença a ser detectada.
-                                        Serão utilizados o nível de confiança, desvio padrão, balanceamento, o tipo de teste de acordo com a hipótese alternativa e
-                                        o percentual de perdas/ recusas definidos no painel lateral.")
-                 ),
-
-                 textInput(inputId = "th2mean_power_plot",
-                           label   = "Digite valores de poder para fazer o gráfico",
-                           value   = "80, 90, 95",
-                           width   = "400px") %>%
-                   help_buttom(body = "Defina os valores de poder desejado.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                   ),
-
-                 conditionalPanel(condition = "input.th2_mean_cohen == true",
-                                  HTML("<b>Defina a sequência de valores para a magnitude do efeito:</b>"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("th2_mean_from", "Mínimo:", value = 0.2, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_to", "Máximo:", value = 1, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_by", "Intervalo:", value = 0.2, min = 0, step = 0.1) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência da precisão"))
-                 ),
-
-                 conditionalPanel(condition = "input.th2_mean_cohen == false",
-                                  HTML("<b>Defina a sequência de valores para a diferença a ser detectada:</b>"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("th2_mean_from_diff", "Mínimo:", value = 0.5, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_to_diff", "Máximo:", value = 5, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("th2_mean_by_diff", "Intervalo:", value = 0.5, min = 0, step = 0.1) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência da precisão"))
-                 ),
-
-
-
-                 br(),
-
-                 plotly::plotlyOutput("th2mean_plot", width = "80%"),
-                 br(), br(),
-                 downloadButton("download_th2mean_tab","Download tabela"),
-                 DT::dataTableOutput("th2mean_tab", width = "100%")
+                 uiOutput("cenarios_duas_medias_thUi")
                )
              )
     ),
@@ -1064,36 +585,36 @@ aba_TH_duas_amostra_media <- tabPanel(
                sidebarPanel(
                  textInput(inputId = "mean2TH_nome_desfecho",
                            label   = "Descreva o nome do desfecho",
-                           value   = "Y") %>% help_buttom(body = "Descreva o nome do desfecho para que sirvam de guia no preenchimento dos valores."),
+                           value   = "Y") %>% .help_buttom(body = .txt_desfecho),
                  uiOutput("mean2TH_um"),
                  numericInput( "TH2_mean_precisao",
-                               "Precisão",
+                               "Margem de erro ou semi-amplitude",
                                value = 1,
                                min = 0,
                                max = Inf,
                                step = .5
-                 ) %>% help_buttom(body = "É a metade da amplitude do intervalo de confiança."),
+                 ) %>% .help_buttom(body = .txt_precisao, title = "Margem de erro ou semi-amplitude"),
                  numericInput( "sigma_TH2_mean_est",
                                "Desvio padrão esperado",
                                value = 1.2,
                                min = 0,
                                max = Inf,
                                step = .01
-                 ) %>% help_buttom(body = "O desvio padrão esperado da variável de interesse."),
+                 ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
                  numericInput( "conf_TH2_mean_pwr",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  numericInput( "TH_mean_perdas_recusa_est",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
                mainPanel(
                  shinycssloaders::withSpinner(htmlOutput("THmean2_est"), type = 5)
@@ -1106,49 +627,89 @@ aba_TH_duas_amostra_media <- tabPanel(
              sidebarLayout(
                sidebarPanel(
 
-                 checkboxInput("th2_pwr_mean_cohen", "Usar d de Cohen", value = FALSE
-                 ) %>% help_buttom(body = "Clique aqui para usar d de Cohen ao invés das diferenças e desvio padrão."),
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   uiOutput("poder_th2_mean_formula1"),
+                   uiOutput("poder_th2_mean_formula2")
+                 ),
+
+                 checkboxInput("th2_pwr_mean_cohen", "Usar d de Cohen", value = FALSE),
                  conditionalPanel(condition = "input.th2_pwr_mean_cohen == true",
+
                                   numericInput( "cohen_TH2_mean_pwr_poder",
                                                 "Tamanho do efeito (d de Cohen)",
                                                 value = 0.4,
                                                 min = 0,
                                                 max = Inf,
-                                                step = 0.1
-                                  ) %>% help_buttom(body = "É a magnitude da diferença entre as médias dos grupos. Cohen (1988) define 0.1, 0.2 e 0.4 como tamanhos de efeito pequeno, médio e grande, respectivamente.")
+                                                step = 0.1) %>%
+                                    shinyhelper::helper(type = "markdown",
+                                                        title = "Tamanho de efeito d",
+                                                        content = "Effect_size_d_Cohen",
+                                                        buttonLabel = "Fechar",
+                                                        fade = TRUE,
+                                                        colour = "#006338",
+                                                        size = "l")
                  ),
 
                  conditionalPanel(condition = "input.th2_pwr_mean_cohen == false",
                                   numericInput( "poder_TH2_mean_margin",
-                                                "Diferença a ser detectada",
+                                                "Diferença a ser detectada (Grupo A - Grupo B)",
                                                 value = 1,
                                                 min = -Inf,
                                                 max = Inf,
                                                 step = .5
-                                  ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
-                                  numericInput( "poder_sigma1_TH2_mean_pwr",
-                                                "Desvio padrão do grupo A",
-                                                value = 1.2,
-                                                min = 0,
-                                                max = Inf,
-                                                step = .01
-                                  ) %>% help_buttom(body = "Desvio padrão esperado para o grupo A, geralmente obtido de estudos anteriores."),
-                                  numericInput( "poder_sigma2_TH2_mean_pwr",
-                                                "Desvio padrão do grupo B",
-                                                value = 1.4,
-                                                min = 0,
-                                                max = Inf,
-                                                step = .01
-                                  ) %>% help_buttom(body = "Desvio padrão esperado para o grupo B, geralmente obtido de estudos anteriores.")
+                                  ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada"),
+
+                                  HTML(paste0("<b><font size = '2.95'>Desvio padrão do</font></b><br>")),
+                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                                      numericInput( "poder_sigma1_TH2_mean_pwr",
+                                                    "Grupo A",
+                                                    value = 1.2,
+                                                    min = 0,
+                                                    max = Inf,
+                                                    step = 1
+                                      )
+                                  ),
+                                  div(style="display: inline-block;vertical-align:top; width: 49%;",
+                                      numericInput( "poder_sigma2_TH2_mean_pwr",
+                                                    "Grupo B",
+                                                    value = 1.5,
+                                                    min = 0,
+                                                    max = Inf,
+                                                    step = 1
+                                      ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
+                                  )
+
                  ),
 
-                 numericInput( "poder_n2_TH2_mean_pwr",
-                               "Qual o n de cada grupo?",
-                               value = 25,
-                               min = 1,
-                               max = Inf,
-                               step = 1
-                 ) %>% help_buttom(body = "Qual o n de cada grupo. É assumido grupos de mesmo tamanho"),
+
+                 HTML(paste0("<b><font size = '2.95'>Tamanho amostral do </font></b><br>")),
+                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                     numericInput( "poder_n1_TH2_mean_pwr",
+                                   "Grupo A",
+                                   value = 30,
+                                   min = 2,
+                                   max = Inf,
+                                   step = 1
+                     )
+                 ),
+                 div(style="display: inline-block;vertical-align:top; width: 49%;",
+                     numericInput( "poder_n2_TH2_mean_pwr",
+                                   "Grupo B",
+                                   value = 45,
+                                   min = 2,
+                                   max = Inf,
+                                   step = 1
+                     ) %>% .help_buttom(body = "Tamanho amostral", title = "Tamanho amostral")
+                 ),
+
+                 # numericInput( "poder_n2_TH2_mean_pwr",
+                 #               "Qual o n de cada grupo?",
+                 #               value = 25,
+                 #               min = 1,
+                 #               max = Inf,
+                 #               step = 1
+                 # ) %>% .help_buttom(body = "Qual o n de cada grupo. É assumido grupos de mesmo tamanho"),
 
                  numericInput( "poder_sig_TH2_mean_pwr",
                                "Nível de significância (%)",
@@ -1156,12 +717,17 @@ aba_TH_duas_amostra_media <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  selectInput('poder_alternative_TH2_mean_pwr',
-                             'Tipo de teste de acordo com hipótese alternativa*',
-                             choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less'),
+                             'Tipo de teste de acordo com hipótese alternativa:',
+                             choices = c("Bilateral" = "two.sided", "Unilateral" = "one.sided"),
                              selected = 'two.sided'
-                 ) %>% help_buttom(body = "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+                 ) %>% .help_buttom(body = .txt_h1),
+                 # selectInput('poder_alternative_TH2_mean_pwr',
+                 #             'Tipo de teste de acordo com hipótese alternativa',
+                 #             choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less'),
+                 #             selected = 'two.sided'
+                 # ) %>% .help_buttom(body = .txt_h1)
                )
                ,
 
@@ -1186,8 +752,8 @@ aba_TH_duas_amostra_prop <- tabPanel(
   titlePanel("Comparação entre duas proporções de grupos independentes"),
   wellPanel(p("Nesta técnica deseja-se calcular o tamanho amostral de um estudo cujo objetivo é ",
               "comparar se as proporções em dois grupos distintos diferem ou não em relação à ",
-              "variável de interesse, com um certo nível de significância e poder, ou calcular o poder do teste quando o tamanho amostral é conhecido."),
-            p("Os cálculos do teste e do poder são realizados utilizando a aproximação pela distribuição normal, ",
+              "variável de interesse, com um certo nível de significância e poder, ou calcular o poder do teste quando o tamanho amostral é conhecido.",
+              "Os cálculos do teste e do poder são realizados utilizando a aproximação pela distribuição normal, ",
               "por isso tenha cautela no uso dos resultados para amostras muito pequenas.")
   ),
   tabsetPanel(
@@ -1211,12 +777,12 @@ aba_TH_duas_amostra_prop <- tabPanel(
                  ),
                  conditionalPanel(condition = 'input.prop2_estatistica_B == "ratio"',
                                   numericInput( "p2_TH_ratio",
-                                                "Risco relativo",
+                                                "Risco relativo/ Razão de prevalências",
                                                 value = 2,
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.1
-                                  )  %>% help_buttom(body = "Risco relativo ou razão de prevalências esperado, geralmente é utilizado algum valor com base na literatura.")
+                                  )  %>% .help_buttom(body = .txt_risco_relativo, title = "Risco relativo/ Razão de prevalências")
                  ),
                  conditionalPanel(condition = 'input.prop2_estatistica_B == "odds"',
                                   numericInput( "p2_TH_odds",
@@ -1225,7 +791,7 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.1
-                                  ) %>% help_buttom(body = "Razão de chances esperada, geralmente é utilizado algum valor com base na literatura.")
+                                  ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance")
                  ),
                  uiOutput("k_TH_prop2Ui"),
                  numericInput( "beta_TH_prop2",
@@ -1234,15 +800,21 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "alpha_TH_prop2",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
-                 uiOutput("alternative_TH2_prop_pwr2Ui"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+                 # uiOutput("alternative_TH2_prop_pwr2Ui"),
+
+                 selectInput('alternative_TH2_prop_pwr2',
+                             'Tipo de teste de acordo com hipótese alternativa:',
+                             choices = c("Unilateral", "Bilateral"),
+                             selected = 'Bilateral'
+                 ) %>% .help_buttom(body = .txt_h1),
 
                  numericInput( "TH_prop_perdas_recusa",
                                "Perdas/ Recusa (%)",
@@ -1250,136 +822,19 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)"),
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)"),
 
                  checkboxInput("prop_correction", "Aplicar correção de continuidade", value = TRUE
-                 ) %>% help_buttom(body = "Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade"),
+                 ) %>% .help_buttom(body = paste0("Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade", .txt_definido_pesquisador)),
                  # actionButton("help_TH2_prop_trialsize", "Ajuda")
                ),
 
                mainPanel(
+                 # verbatimTextOutput("lala"),
                  shinycssloaders::withSpinner(htmlOutput("THprop2"), type = 5),
 
                  ###  CENARIOS  ####.
-
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),
-
-
-
-                 ###
-                 conditionalPanel(condition = "input.prop2_estatistica_B == 'percent'",
-
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode definir um intervalo de % para o grupo Tratamento e especificar valores do poder (%).
-                                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
-                                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
-                                  ),
-                                  HTML("<b>Defina a sequência de valores (%) para o grupo Tratamento:</b>"),
-                                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #   bsplus::bs_embed_popover(title = "Defina a sequência (%) para o grupo Tratamento. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                            placement = "left"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("p2_TH_from", "Mínimo:", value = 0, step = 1, min = 0, max = 99)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_TH_to", "Máximo:", value = 100, step = 1, min = 1, max = 100)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_TH_by", "Intervalo:", value = 5, min = 0, step = 1, max = 99) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência")
-                                  )
-                 ),
-
-
-                 # ratio
-                 conditionalPanel(condition = "input.prop2_estatistica_B == 'ratio'",
-
-
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode definir um intervalo para o Risco relativo (Tratamento/Controle) e especificar valores do poder (%).
-                                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
-                                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
-                                  ),
-                                  HTML("<b>Defina a sequência do risco relativo:</b>"),
-                                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #   bsplus::bs_embed_popover(title = "Defina a sequência do risco relativo. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                            placement = "left"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("rr_p2_TH_from", "Mínimo:", value = 1.5, step = .1, min = 0, max = Inf)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rr_p2_TH_to", "Máximo:", value = 3, step = .1, min = 0, max = Inf)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rr_p2_TH_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência")
-                                  )
-
-                 ),
-
-                 # odds
-                 conditionalPanel(condition = "input.prop2_estatistica_B == 'odds'",
-
-
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode definir um intervalo para a Razão de chances (Tratamento/Controle) e especificar valores do poder (%).
-                                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
-                                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
-                                  ),
-                                  HTML("<b>Defina a sequência do risco relativo:</b>"),
-                                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #   bsplus::bs_embed_popover(title = "Defina a sequência da razão de chances. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                            placement = "left"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("rc_p2_TH_from", "Mínimo:", value = 1.5, step = .1, min = 0, max = Inf)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rc_p2_TH_to", "Máximo:", value = 3, step = .1, min = 0, max = Inf)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("rc_p2_TH_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência")
-                                  )
-
-                 ),
-
-                 textInput(inputId = "power_p2_th_plot",
-                           label   = "Digite valores de poder (%) para fazer o gráfico:",
-                           value   = "80, 90, 95",
-                           width   = "400px") %>%
-                   help_buttom(body = "Defina os valores de poder (%).
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                   ),
-
-
-
-
-                 shinycssloaders::withSpinner(plotly::plotlyOutput("p2_TH_plot", width = "80%"), type = 5),
-                 conditionalPanel(condition = "input.prop2_estatistica_B == 'percent'",
-                                  p("Obs.: a linha tracejada representa a % no grupo controle definida no painel lateral.")
-                 ),
-                 conditionalPanel(condition = "input.prop2_estatistica_B == 'ratio'",
-                                  p("Obs.: a linha tracejada representa o risco relativo definido no painel lateral.")
-                 ),
-                 conditionalPanel(condition = "input.prop2_estatistica_B == 'odds'",
-                                  p("Obs.: a linha tracejada representa a razão de chances definida no painel lateral.")
-                 ),
-
-                 br(), br(),
-                 downloadButton("download_p2_TH_tab","Download tabela"),
-                 shinycssloaders::withSpinner(DT::dataTableOutput("p2_TH_tab", width = "100%"), type = 5)
+                 uiOutput("cenarios_duas_prop_thUi")
                )
              )
     ),
@@ -1389,7 +844,7 @@ aba_TH_duas_amostra_prop <- tabPanel(
 
                  textInput(inputId = "prop2_nome_desfecho_est",
                            label   = "Descreva o nome do desfecho",
-                           value   = "Y") %>% help_buttom(body = "Descreva o nome do desfecho para que sirvam de guia no preenchimento dos valores."),
+                           value   = "Y") %>% .help_buttom(body = .txt_desfecho),
                  uiOutput("perc_controle_estimar"),
                  radioButtons('prop2_estatistica_B_est',
                               'Medida do grupo tratamento:',
@@ -1397,7 +852,7 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                           "Risco relativo (Tratamento/Controle)" = "ratio",
                                           "% esperado no grupo Tratamento" = "percent"),
                               selected = 'percent'
-                 ), #%>% help_buttom(body = "Escolha a maneira de entrar com os dados do grupo Tratamento."),
+                 ), #%>% .help_buttom(body = "Escolha a maneira de entrar com os dados do grupo Tratamento."),
 
 
                  conditionalPanel(condition = 'input.prop2_estatistica_B_est == "percent"',
@@ -1410,7 +865,7 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.1
-                                  ) %>% help_buttom(body = "Risco relativo ou razão de prevalências esperado entre Tratamento e Controle, geralmente é utilizado algum valor com base na literatura.")
+                                  ) %>% .help_buttom(body = .txt_risco_relativo, title = "Risco relativo/ Razão de prevalências")
                  ),
                  conditionalPanel(condition = 'input.prop2_estatistica_B_est == "odds"',
                                   numericInput( "p2_TH_odds_est",
@@ -1419,48 +874,45 @@ aba_TH_duas_amostra_prop <- tabPanel(
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.1
-                                  ) %>% help_buttom(body = "Razão de chances esperada entre Tratamento e Controle, geralmente é utilizado algum valor com base na literatura.")
+                                  ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance")
                  ),
                  numericInput( "prop2_TH_precisao",
-                               "Precisão (%)",
+                               "Margem de erro ou semi-amplitude (%)",
                                value = 15,
                                min = 0,
                                max = 100,
                                step = 0.1
-                 ) %>% help_buttom(body = "É a metade da amplitude do intervalo de confiança."),
+                 ) %>% .help_buttom(body = .txt_precisao, title = "Margem de erro ou semi-amplitude"),
                  numericInput( "k_TH_prop2_est",
-                               "Balanço da amostra (Controle:Tratamento)",
+                               "Balanceamento (Controle:Tratamento)",
                                value = 1,
                                min = 0,
                                max = Inf,
                                step = .5
-                 ) %>% help_buttom("Nº de controles para cada tratamento. Se colocar o valor 2, será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 controles para cada tratamento. Se colocar o valor 0.5,
-                                                                      será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 tratamentos para cada controle."),
+                 ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
                  numericInput( "conf_TH_prop2",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  numericInput( "TH_prop_perdas_recusa_est",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)"),
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)"),
                  selectInput('prop_TH_est_method',
                              'Método utilizado na construção do intervalo de confiança',
                              choices = c("score", "adjusted Wald"),
                              selected = 'score'
-                 ) %>% help_buttom(body = "Método utilizado na construção do intervalo de confiança."),
+                 ) %>% .help_buttom(body = paste0("Método utilizado na construção do intervalo de confiança.", .txt_definido_pesquisador)),
 
 
                  checkboxInput("prop_correction_est", "Aplicar correção de continuidade", value = TRUE
-                 ) %>% help_buttom(body = "Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade"),
+                 ) %>% .help_buttom(body = paste0("Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade", .txt_definido_pesquisador)),
                  # actionButton("help_TH2_prop_trialsize_est", "Ajuda")
                ),
 
@@ -1473,118 +925,120 @@ aba_TH_duas_amostra_prop <- tabPanel(
 
                  ###  CENARIOS  ####.
 
-                 conditionalPanel(condition = "input.prop2_estatistica_B_est == 'percent'",
-
-                                  br(),
-                                  HTML('<hr style="color: black;">'),
-                                  br(),br(),
-
-                                  titlePanel("Construção de cenários"),
-                                  br(),
-
-
-
-                                  ###
-                                  # conditionalPanel(condition = "input.prop2_estatistica_B_est == 'percent'",
-
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode definir um intervalo de % para o grupo Tratamento e especificar valores do poder (%).
-                                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
-                                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
-                                  ),
-                                  HTML("<b>Defina a sequência de valores (%) para o grupo Tratamento:</b>"),
-                                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #   bsplus::bs_embed_popover(title = "Defina a sequência (%) para o grupo Tratamento. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                            placement = "left"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("p2_EST_from", "Mínimo:", value = 5, step = 1, min = 0, max = 99)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_EST_to", "Máximo:", value = 95, step = 1, min = 1, max = 100)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("p2_EST_by", "Intervalo:", value = 5, min = 0, step = 1, max = 99) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência")
-                                  ),
-                                  # ),
-
-
-                                  # ratio
-                                  # conditionalPanel(condition = "input.prop2_estatistica_B_est == 'ratio'",
-                                  #
-                                  #
-                                  #                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                  #                        Você pode definir um intervalo para o Risco relativo (Tratamento/Controle) e especificar valores do poder (%).
-                                  #                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
-                                  #                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
-                                  #                  ),
-                                  #                  HTML("<b>Defina a sequência do risco relativo:</b>"),
-                                  #                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #                  #   bsplus::bs_embed_popover(title = "Defina a sequência do risco relativo. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                  #                            placement = "left"),
-                                  #                  br(),
-                                  #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                  #                      numericInput("rr_p2_EST_from", "Mínimo:", value = 1.2, step = .1, min = 0, max = Inf)
-                                  #                  ),
-                                  #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("rr_p2_EST_to", "Máximo:", value = 1.7, step = .1, min = 0, max = Inf)
-                                  #                  ),
-                                  #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("rr_p2_EST_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
-                                  #                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                  #                                    title = "Sequência")
-                                  #                  )
-                                  #
-                                  # ),
-                                  #
-                                  # # odds
-                                  # conditionalPanel(condition = "input.prop2_estatistica_B_est == 'odds'",
-                                  #
-                                  #
-                                  #                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                  #                        Você pode definir um intervalo para a Razão de chances (Tratamento/Controle) e especificar valores do poder (%).
-                                  #                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
-                                  #                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
-                                  #                  ),
-                                  #                  HTML("<b>Defina a sequência do risco relativo:</b>"),
-                                  #                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #                  #   bsplus::bs_embed_popover(title = "Defina a sequência da razão de chances. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                  #                            placement = "left"),
-                                  #                  br(),
-                                  #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                  #                      numericInput("ods_p2_EST_from", "Mínimo:", value = 1.2, step = .1, min = 0, max = Inf)
-                                  #                  ),
-                                  #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("ods_p2_EST_to", "Máximo:", value = 1.7, step = .1, min = 0, max = Inf)
-                                  #                  ),
-                                  #                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                  #                      numericInput("ods_p2_EST_by", "Intervalo:", value = 0.1, min = 0, step = .1) %>%
-                                  #                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                  #                                    title = "Sequência")
-                                  #                  )
-                                  #
-                                  # ),
-
-                                  textInput(inputId = "precisao_p2_EST_plot",
-                                            label   = "Digite valores de precisão (%) para fazer o gráfico:",
-                                            value   = "10, 15, 20",
-                                            width   = "600px") %>%
-                                    help_buttom(body = "Defina os valores de precisão (%).
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                                    ),
-
-
-
-
-                                  shinycssloaders::withSpinner(plotly::plotlyOutput("p2_EST_plot", width = "80%"), type = 5),
-                                  p("Obs.: a linha tracejada representa a % no grupo controle definida no painel lateral."),
-                                  br(), br(),
-                                  downloadButton("download_p2_EST_tab","Download tabela"),
-                                  shinycssloaders::withSpinner(DT::dataTableOutput("p2_EST_tab", width = "100%"), type = 5)
-                 ),
+                 # conditionalPanel(condition = "input.prop2_estatistica_B_est == 'percent'",
+                 #
+                 #                  br(),
+                 #                  HTML('<hr style="color: black;">'),
+                 #                  br(),br(),
+                 #
+                 #                  titlePanel("Construção de cenários"),
+                 #                  br(),
+                 #
+                 #
+                 #
+                 #                  ###
+                 #                  # conditionalPanel(condition = "input.prop2_estatistica_B_est == 'percent'",
+                 #
+                 #                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                 #                        Você pode definir um intervalo de % para o grupo Tratamento e especificar valores do poder (%).
+                 #                        Demais informações serão recuperadas do painel lateral."
+                 #                  ),
+                 #                  HTML("<b>Defina a sequência de valores (%) para o grupo Tratamento:</b>"),
+                 #                  # bsplus::shiny_iconlink(name = "question-circle") %>%
+                 #                  #   bsplus::bs_embed_popover(title = "Defina a sequência (%) para o grupo Tratamento. Essa sequência será utilizada para compor o eixo x do gráfico",
+                 #                  #                            placement = "left"),
+                 #                  br(),
+                 #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                 #                      numericInput("p2_EST_from", "Mínimo", value = 5, step = 1, min = 0, max = 99)
+                 #                  ),
+                 #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                      numericInput("p2_EST_to", "Máximo", value = 95, step = 1, min = 1, max = 100)
+                 #                  ),
+                 #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                      numericInput("p2_EST_by", "Intervalo", value = 5, min = 0, step = 1, max = 99) %>%
+                 #                        .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                 #                                    title = "Sequência")
+                 #                  ),
+                 #                  # ),
+                 #
+                 #
+                 #                  # ratio
+                 #                  # conditionalPanel(condition = "input.prop2_estatistica_B_est == 'ratio'",
+                 #                  #
+                 #                  #
+                 #                  #                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                 #                  #                        Você pode definir um intervalo para o Risco relativo (Tratamento/Controle) e especificar valores do poder (%).
+                 #                  #                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
+                 #                  #                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
+                 #                  #                  ),
+                 #                  #                  HTML("<b>Defina a sequência do risco relativo:</b>"),
+                 #                  #                  # bsplus::shiny_iconlink(name = "question-circle") %>%
+                 #                  #                  #   bsplus::bs_embed_popover(title = "Defina a sequência do risco relativo. Essa sequência será utilizada para compor o eixo x do gráfico",
+                 #                  #                  #                            placement = "left"),
+                 #                  #                  br(),
+                 #                  #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                 #                  #                      numericInput("rr_p2_EST_from", "Mínimo", value = 1.2, step = .1, min = 0, max = Inf)
+                 #                  #                  ),
+                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                      numericInput("rr_p2_EST_to", "Máximo", value = 1.7, step = .1, min = 0, max = Inf)
+                 #                  #                  ),
+                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                      numericInput("rr_p2_EST_by", "Intervalo", value = 0.1, min = 0, step = .1) %>%
+                 #                  #                        .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                 #                  #                                    title = "Sequência")
+                 #                  #                  )
+                 #                  #
+                 #                  # ),
+                 #                  #
+                 #                  # # odds
+                 #                  # conditionalPanel(condition = "input.prop2_estatistica_B_est == 'odds'",
+                 #                  #
+                 #                  #
+                 #                  #                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
+                 #                  #                        Você pode definir um intervalo para a Razão de chances (Tratamento/Controle) e especificar valores do poder (%).
+                 #                  #                        Serão utilizados o % do grupo Controle, nível de confiança, tipo de teste, aplicação da correção de continuidade,
+                 #                  #                        balanceamento da amostra e percentual de perdas/ recusas definidos no painel lateral."
+                 #                  #                  ),
+                 #                  #                  HTML("<b>Defina a sequência do risco relativo:</b>"),
+                 #                  #                  # bsplus::shiny_iconlink(name = "question-circle") %>%
+                 #                  #                  #   bsplus::bs_embed_popover(title = "Defina a sequência da razão de chances. Essa sequência será utilizada para compor o eixo x do gráfico",
+                 #                  #                  #                            placement = "left"),
+                 #                  #                  br(),
+                 #                  #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                 #                  #                      numericInput("ods_p2_EST_from", "Mínimo", value = 1.2, step = .1, min = 0, max = Inf)
+                 #                  #                  ),
+                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                      numericInput("ods_p2_EST_to", "Máximo", value = 1.7, step = .1, min = 0, max = Inf)
+                 #                  #                  ),
+                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                      numericInput("ods_p2_EST_by", "Intervalo", value = 0.1, min = 0, step = .1) %>%
+                 #                  #                        .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                 #                  #                                    title = "Sequência")
+                 #                  #                  )
+                 #                  #
+                 #                  # ),
+                 #
+                 #                  fluidRow(
+                 #                    column(6,
+                 #                           textInput(inputId = "precisao_p2_EST_plot",
+                 #                                     label   = "Digite valores de precisão (%) para fazer o gráfico:",
+                 #                                     value   = "10, 15, 20",
+                 #                                     width   = "600px") %>%
+                 #                             .help_buttom(body = "Defina os valores de precisão (%).
+                 #                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
+                 #                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+                 #                    )
+                 #                  ),
+                 #
+                 #
+                 #
+                 #
+                 #                  shinycssloaders::withSpinner(plotly::plotlyOutput("p2_EST_plot", width = "80%"), type = 5),
+                 #                  p("Obs.: a linha tracejada representa a % no grupo controle definida no painel lateral."),
+                 #                  br(), br(),
+                 #                  downloadButton("download_p2_EST_tab","Download tabela"),
+                 #                  shinycssloaders::withSpinner(DT::dataTableOutput("p2_EST_tab", width = "100%"), type = 5)
+                 # ),
                )
              )
 
@@ -1592,53 +1046,70 @@ aba_TH_duas_amostra_prop <- tabPanel(
     tabPanel("Poder",
              sidebarLayout(
                sidebarPanel(
-                 numericInput( "prop2a_th_power",
-                               "Proporção de desfechos no grupo A (%)",
-                               value = 35,
-                               min = 0,
-                               max = 100,
-                               step = 1
+
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   withMathJax("$$H_0: \\pi_{Grupo A} = \\pi_{Grupo B}$$"),
+                   withMathJax("$$H_1: \\pi_{Grupo A} \\neq \\pi_{Grupo B}$$")
                  ),
 
-                 numericInput( "prop2a_th_n",
-                               "Tamanho amostral do grupo A",
-                               value = 40,
-                               min = 1,
-                               step = 1
+                 HTML(paste0("<b><font size = '2.95'>Proporção (%) de desfechos no</font></b><br>")),
+                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                     numericInput( "prop2a_th_power",
+                                   "Grupo A",
+                                   value = 35,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
+                 ),
+                 div(style="display: inline-block;vertical-align:top; width: 49%;",
+                     numericInput( "prop2b_th_power",
+                                   "Grupo B",
+                                   value = 60,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
                  ),
 
-                 numericInput( "prop2b_th_power",
-                               "Proporção de desfechos no grupo B (%)",
-                               value = 60,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ),
 
-                 numericInput( "prop2b_th_n",
-                               "Tamanho amostral do grupo B",
-                               value = 40,
-                               min = 1,
-                               step = 1
+                 HTML(paste0("<b><font size = '2.95'>Tamanho amostral no</font></b><br>")),
+                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                     numericInput( "prop2a_th_n",
+                                   "Grupo A",
+                                   value = 35,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
                  ),
-
+                 div(style="display: inline-block;vertical-align:top; width: 49%;",
+                     numericInput( "prop2b_th_n",
+                                   "Grupo B",
+                                   value = 60,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
+                 ),
                  numericInput( "prop2_th_power_sig",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
 
                  checkboxInput("prop2_th_power_correction", "Aplicar correção de continuidade", value = TRUE
-                 ) %>% help_buttom(body = "Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade")
+                 ) %>% .help_buttom(body = paste0("Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade", .txt_definido_pesquisador))
                  # selectInput('alternative_TH2_prop_pwr2_power',
                  #             'Tipo de teste de acordo com hipótese alternativa:',
                  #             choices = c('A % em A é DIFERENTE da % em B' = 'two.sided',
                  #                         'A % em A é MAIOR do que a % em B' = 'greater',
                  #                         'A % em A é MENOR do que a % em B' =  'less'),
                  #             selected = 'two.sided'
-                 # ) %>% help_buttom(body = "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+                 # ) %>% .help_buttom(body = .txt_h1)
 
 
                ),
@@ -1660,8 +1131,13 @@ aba_TH_duas_amostra_media_equivalencia <- tabPanel(
   titlePanel("Inf/ Equi/ Sup de duas médias de grupos independentes"),
   withMathJax(),
   wellPanel(
-    HTML(paste0('Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
-                '<b><a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Teste de hipóteses: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+    HTML(paste0(
+      "Alguns estudos podem querer verificar se um novo tratamento é melhor (estudo de superioridade) do que o padrão,
+fixado um limite superior; que ele não é inferior (estudo de não-inferioridade) ao padrão, fixado um limite
+inferior; ou tão eficaz (estudo de equivalência) quanto o padrão, fixados um limite inferior e um superior. ",
+      'Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
+      '<b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+
     ))
   ),
   #helpText("$$H_0: \\mu_{Tratamento} - \\mu_{Controle} \\le \\delta$$"),
@@ -1714,8 +1190,13 @@ aba_TH_duas_amostra_prop_equivalencia <- tabPanel(
   titlePanel("Para duas proporções de grupos independentes"),
   withMathJax(),
   wellPanel(
-    HTML(paste0('Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
-                '<b><a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Teste de hipóteses: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+    HTML(paste0(
+      "Alguns estudos podem querer verificar se um novo tratamento é melhor (estudo de superioridade) do que o padrão,
+fixado um limite superior; que ele não é inferior (estudo de não-inferioridade) ao padrão, fixado um limite
+inferior; ou tão eficaz (estudo de equivalência) quanto o padrão, fixados um limite inferior e um superior. ",
+      'Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
+      '<b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+
     ))
   ),
   tabsetPanel(
@@ -1770,19 +1251,19 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
                    uiOutput("mean_paired_formula"),
                  ),
                  numericInput( "mean_paired_n_differenca",
-                               "Diferença a ser detectada: (Média do grupo 1) - (Média do grupo 2)",
+                               "Média das diferenças a ser detectada",
                                value = 5,
                                min = -Inf,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
+                 ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Média das diferenças a ser detectada"),
                  numericInput( "sigma_mean_paired_n",
-                               "Desvio padrão da diferença entre as médias",
+                               "Desvio padrão da diferença",
                                value = 15,
                                min = 0,
                                max = Inf,
                                step = 5
-                 ) %>% help_buttom(body = "É o desvio padrão da diferença."),
+                 ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
                  actionLink("show_desvio_tpareado", "Obter o desvio padrão da diferença entre grupos pareados"),
                  br(), br(),
 
@@ -1792,32 +1273,35 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "power_mean_paired_n",
                                "Poder (%)",
                                value = 80,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "mean_paired_n_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)"),
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)"),
                  selectInput( "alternative_mean_paired_n",
                               'Tipo de teste de acordo com hipótese alternativa',
-                              choices = c('A média do grupo 1 é DIFERENTE da média do grupo 2' = 'two.sided',
-                                          'A média do grupo 1 é MAIOR do que a média do grupo 2' = 'greater',
-                                          'A média do grupo 1 é MENOR do que a média do grupo 2' =  'less'),
+                              # choices = c('A média do grupo 1 é DIFERENTE da média do grupo 2' = 'two.sided',
+                              #             'A média do grupo 1 é MAIOR do que a média do grupo 2' = 'greater',
+                              #             'A média do grupo 1 é MENOR do que a média do grupo 2' =  'less'),
+                              choices = c("Bilateral" = "two.sided",
+                                          "Unilateral" = "one.sided"),
                               selected = 'two.sided'
-                 ) %>% help_buttom(body = "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+                 ) %>% .help_buttom(body = .txt_h1)
                ),
 
                mainPanel(
-                 shinycssloaders::withSpinner(htmlOutput("mean_paired_n"), type = 5)
+                 shinycssloaders::withSpinner(htmlOutput("mean_paired_n"), type = 5),
+                 uiOutput("cenarios_duas_medias_dep_thUi")
                )
              )
     ),
@@ -1830,14 +1314,14 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
                                min = -Inf,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
+                 ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada"),
                  numericInput( "sigma_mean_paired_power",
                                "Desvio padrão da diferença",
                                value = 15,
                                min = 0,
                                max = Inf,
                                step = 5
-                 ) %>% help_buttom(body = "É o desvio padrão da diferença."),
+                 ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
                  actionLink("show_desvio_tpareado2", "Obter o desvio padrão da diferença entre grupos pareados"),
                  br(), br(),
                  numericInput( "n_mean_paired_power",
@@ -1846,14 +1330,14 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
                                min = 1,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "Qual o n de cada grupo. Assume grupos de mesmo tamanho."),
+                 ) %>% .help_buttom(body = "Qual o n de cada grupo. Assume grupos de mesmo tamanho."),
                  numericInput( "sig_mean_paired_power",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)")
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)")
 
                ),
 
@@ -1866,6 +1350,48 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
 
   HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
 )
+
+
+
+
+## 2 prop dependentes ----
+
+aba_TH_duas_amostra_prop_dep <- tabPanel(
+  "Dois grupos dependentes",
+
+
+  titlePanel("Duas proporções de grupos dependentes"),
+  withMathJax(),
+  wellPanel(
+    includeMarkdown(file.path("www", "Teste_Mcnemar.Rmd"))
+    # includeHTML("www/Teste_Mcnemar.html")
+  ),
+  tabsetPanel(
+    tabPanel("Testar",
+             sidebarLayout(
+               sidebarPanel(
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   uiOutput("prop2n_dep_th")
+                 ),
+                 actionLink("show_prop2n_dep", "Mudar nomes"),
+                 br(), br(),
+                 uiOutput("prop2n_dep_sideUi")
+               ),
+               mainPanel(
+                 shinycssloaders::withSpinner(htmlOutput("prop2n_dep_resultadoUi"), type = 5),
+
+                 uiOutput("cenarios_duas_prop_dep_thUi")
+               )
+             )
+    )
+
+  ),
+
+  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+
+)
+
 
 
 
@@ -1897,103 +1423,149 @@ aba_TH_medidas_repetidas <- tabPanel(
 
 # Dois grupos independentes ----------.
 
-# aba_TH_duas_amostra_media_2tempos <- tabPanel(
-#   "Delta de dois grupos independentes",
-#
-#   titlePanel("Comparação da mudança média ao longo do tempo de grupos independentes"),
-#   wellPanel(
-#     includeMarkdown(file.path("Markdown", "Caput_th_delta_duas_medias.Rmd")),
-#   ),
-#
-#   sidebarLayout(
-#     sidebarPanel(
-#       checkboxInput("th2_mean_dep_utilizar_medias", "Utilizar os valores dos deltas de cada grupo", value = FALSE
-#       ) %>% help_buttom(body = "Clique aqui para usar os valores dos deltas de cada grupo ao invés da diferença esperada."),
-#       conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == false",
-#                        numericInput( "th2_mean_dep_diff",
-#                                      "Diferença esperada/ desejada",
-#                                      value = 0.4,
-#                                      min = 0,
-#                                      max = Inf,
-#                                      step = 0.5
-#                        ) %>% help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico).")
-#       ),
-#
-#       conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == true",
-#
-#                        numericInput( "th2_mean_dep_delta_tratamento",
-#                                      "Mudança média ao longo do tempo do grupo Tratamento",
-#                                      value = 5,
-#                                      min = -Inf,
-#                                      max = Inf,
-#                                      step = .5
-#                        ) %>% help_buttom(body = "É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
-#                        numericInput( "th2_mean_dep_delta_controle",
-#                                      "Mudança média ao longo do tempo do grupo Controle",
-#                                      value = 4.5,
-#                                      min = 0,
-#                                      max = Inf,
-#                                      step = .5
-#                        ) %>% help_buttom(body = "lalala")
-#       ),
-#       numericInput( "th2_mean_dep_sigma1",
-#                     "Desvio padrão do grupo Tratamento no início do estudo",
-#                     value = 1.4,
-#                     min = 0,
-#                     max = Inf,
-#                     step = .5
-#       ) %>% help_buttom(body = "Desvio padrão esperado para o grupo tratamento no início do estudo (baseline), geralmente obtido de estudos anteriores."),
-#       numericInput( "th2_mean_dep_sigma2",
-#                     "Desvio padrão do grupo Tratamento no final do estudo",
-#                     value = 1.2,
-#                     min = 0,
-#                     max = Inf,
-#                     step = .5
-#       ) %>% help_buttom(body = "Desvio padrão esperado para o grupo tratamento no final do estudo (endpoint), geralmente obtido de estudos anteriores."),
-#       numericInput( "th2_mean_dep_rho",
-#                     "Correlação das medidas (início e fim) dentro do grupo Tratamento",
-#                     value = 0.5,
-#                     min = -1,
-#                     max = 1,
-#                     step = 1
-#       ) %>% help_buttom(body = "Correlação das medidas (início e fim) dentro do grupo Tratamento"),
-#       numericInput( "th2_mean_dep_pwr",
-#                     "Poder (%)",
-#                     value = 80,
-#                     min = 0,
-#                     max = 100,
-#                     step = 1
-#       ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
-#       numericInput( "th2_mean_dep_sig",
-#                     "Nível de significância (%)",
-#                     value = 5,
-#                     min = 0,
-#                     max = 100,
-#                     step = 1
-#       ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
-#       # selectInput('alternative_TH2_mean_pwr',
-#       #             'Tipo de teste de acordo com hipótese alternativa',
-#       #             choices = c('A média do grupo A é DIFERENTE da média do grupo B' = 'two.sided',
-#       #                         'A média do grupo A é MAIOR do que a média do grupo B' = 'greater',
-#       #                         'A média do grupo A é MENOR do que a média do grupo B' =  'less'),
-#       #             selected = 'two.sided'
-#       # ) %>% help_buttom(body = "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente."),
-#       numericInput( "th2_mean_dep_perdas_recusa",
-#                     "Perdas/ Recusa (%)",
-#                     value = 10,
-#                     min = 0,
-#                     max = 100,
-#                     step = 1
-#       ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
-#     ),
-#
-#     mainPanel(
-#       shinycssloaders::withSpinner(htmlOutput("th2_mean_dep_out"), type = 5)
-#     )
-#   ),
-#
-#   HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
-# )
+aba_TH_duas_amostra_media_2tempos <- tabPanel(
+  "Delta de dois grupos independentes",
+
+  titlePanel("Comparação da mudança média ao longo do tempo de grupos independentes"),
+  wellPanel(
+    includeMarkdown(file.path("www", "Delta_two_groups_independents.Rmd")),
+  ),
+
+  sidebarLayout(
+    sidebarPanel(
+      checkboxInput("th2_mean_dep_utilizar_medias", "Utilizar os valores dos deltas de cada grupo", value = FALSE
+      ) %>% .help_buttom(body = "Clique aqui para usar os valores dos deltas de cada grupo ao invés da diferença esperada."),
+      conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == false",
+                       numericInput( "th2_mean_dep_diff",
+                                     "Diferença esperada/ desejada entre os deltas",
+                                     value = 0.4,
+                                     min = 0,
+                                     max = Inf,
+                                     step = 0.5
+                       ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada")
+      ),
+
+      conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == true",
+
+                       # numericInput( "th2_mean_dep_delta_tratamento",
+                       #               "Mudança média ao longo do tempo do grupo Tratamento",
+                       #               value = 5,
+                       #               min = -Inf,
+                       #               max = Inf,
+                       #               step = .5
+                       # ) %>% .help_buttom(body = "É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
+                       # numericInput( "th2_mean_dep_delta_controle",
+                       #               "Mudança média ao longo do tempo do grupo Controle",
+                       #               value = 4.5,
+                       #               min = 0,
+                       #               max = Inf,
+                       #               step = .5
+                       # ) %>% .help_buttom(body = "lalala")
+
+
+                       HTML(paste0("<b><font size = '2.95'>Mudança média (delta) ao longo do tempo do grupo</font></b><br>")),
+                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                           numericInput( "th2_mean_dep_delta_tratamento",
+                                         "Tratamento",
+                                         value = 5,
+                                         min = -Inf,
+                                         max = Inf,
+                                         step = .5
+                           )
+                       ),
+                       div(style="display: inline-block;vertical-align:top; width: 49%;",
+                           numericInput( "th2_mean_dep_delta_controle",
+                                         "Controle",
+                                         value = 4.5,
+                                         min = 0,
+                                         max = Inf,
+                                         step = .5
+                           )
+                       )
+
+
+      ),
+      # numericInput( "th2_mean_dep_sigma1",
+      #               "Desvio padrão do grupo Tratamento no início do estudo",
+      #               value = 1.4,
+      #               min = 0,
+      #               max = Inf,
+      #               step = .5
+      # ) %>% .help_buttom(body = "Desvio padrão esperado para o grupo tratamento no início do estudo (baseline), geralmente obtido de estudos anteriores."),
+      # numericInput( "th2_mean_dep_sigma2",
+      #               "Desvio padrão do grupo Tratamento no final do estudo",
+      #               value = 1.2,
+      #               min = 0,
+      #               max = Inf,
+      #               step = .5
+      # ) %>% .help_buttom(body = "Desvio padrão esperado para o grupo tratamento no final do estudo (endpoint), geralmente obtido de estudos anteriores."),
+
+      HTML(paste0("<b><font size = '2.95'>Desvio padrão esperado do grupo Tratamento no</font></b><br>")),
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+          numericInput( "th2_mean_dep_sigma1",
+                        "Início do estudo",
+                        value = 1.4,
+                        min = 0,
+                        max = Inf,
+                        step = .5
+          )
+      ),
+      div(style="display: inline-block;vertical-align:top; width: 49%;",
+          numericInput( "th2_mean_dep_sigma2",
+                        "Final do estudo",
+                        value = 1.2,
+                        min = 0,
+                        max = Inf,
+                        step = .5
+          ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
+      ),
+
+
+
+      numericInput( "th2_mean_dep_rho",
+                    "Correlação das medidas (início e fim) dentro do grupo Tratamento",
+                    value = 0.5,
+                    min = -1,
+                    max = 1,
+                    step = 1
+      ) %>% .help_buttom(body = paste0("Correlação das medidas (início e fim) dentro do grupo Tratamento", .txt_definido_pesquisador_OU_literatura)),
+      numericInput( "th2_mean_dep_pwr",
+                    "Poder (%)",
+                    value = 80,
+                    min = 0,
+                    max = 100,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
+      numericInput( "th2_mean_dep_sig",
+                    "Nível de significância (%)",
+                    value = 5,
+                    min = 0,
+                    max = 100,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+      # selectInput('alternative_TH2_mean_pwr',
+      #             'Tipo de teste de acordo com hipótese alternativa',
+      #             choices = c('A média do grupo A é DIFERENTE da média do grupo B' = 'two.sided',
+      #                         'A média do grupo A é MAIOR do que a média do grupo B' = 'greater',
+      #                         'A média do grupo A é MENOR do que a média do grupo B' =  'less'),
+      #             selected = 'two.sided'
+      # ) %>% .help_buttom(body = .txt_h1),
+      numericInput( "th2_mean_dep_perdas_recusa",
+                    "Perdas/ Recusa (%)",
+                    value = 10,
+                    min = 0,
+                    max = 100,
+                    step = 1
+      ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
+    ),
+
+    mainPanel(
+      shinycssloaders::withSpinner(htmlOutput("th2_mean_dep_out"), type = 5)
+    )
+  ),
+
+  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+)
 
 
 
@@ -2017,9 +1589,11 @@ aba_anova_one_way <- tabPanel(
   titlePanel("ANOVA de uma via"),
   wellPanel(paste0("A Análise de Variância, mais conhecida como ANOVA, é utilizada para comparar as
                      médias de três ou mais grupos independentes com o objetivo de saber se os grupos
-                     diferem ou não em relação à resposta média de interesse. Ao calcular o tamanho da amostra para este objetivo, ",
-                   "estaremos supondo que a variável de interesse, am cada um dos grupos, segue uma distribuição normal, ",
-                   "com uma determinada média e uma determinada variância.")),
+                     diferem ou não em relação à resposta média de interesse."
+                   #   "Ao calcular o tamanho da amostra para este objetivo, ",
+                   # "estaremos supondo que a variável de interesse, am cada um dos grupos, segue uma distribuição normal, ",
+                   # "com uma determinada média e uma determinada variância."
+  )),
   tabsetPanel(
     tabPanel("Tamanho amostral por grupo",
              sidebarLayout(
@@ -2030,38 +1604,48 @@ aba_anova_one_way <- tabPanel(
                    ),
                    uiOutput("anova_formula"),
                  ),
-                 checkboxInput("anova_mean_f", "Usar tamanho de efeito f", value = FALSE
-                 ), # %>% help_buttom(body = "Clique aqui para usar o tamanho de efeito f ao invés das diferenças e desvio padrão."),
+                 checkboxInput("anova_mean_f", "Usar tamanho de efeito f", value = FALSE),
+
                  conditionalPanel(condition = "input.anova_mean_f == true",
-                                  actionLink("show_f_anova", "O que é a magnitude do efeito (f)?"),
-                                  br(), br(),
+                                  # actionLink("show_f_anova", "O que é a magnitude do efeito (f)?"),
+                                  # br(), br(),
                                   numericInput( "f_anova_n",
                                                 "Magnitude do efeito (f)",
                                                 value = .4,
                                                 min = 0,
                                                 max = 1,
                                                 step = .01
-                                  ) %>% help_buttom(body = "Magnitude do efeito f (0.1 é considerado pequeno)"),
+                                  )  %>%
+                                    shinyhelper::helper(type = "markdown",
+                                                        title = "Tamanho de efeito f",
+                                                        content = "Effect_size_f", #,includeMarkdown(file.path("Markdown", "Effect_size_f.Rmd")),
+                                                        buttonLabel = "Fechar",
+                                                        fade = TRUE,
+                                                        colour = "#006338",
+                                                        size = "l"),
+                                  # %>% .help_buttom(body = paste0("Magnitude do efeito f (0.1 é considerado pequeno). ", .txt_definido_pesquisador_OU_literatura)),
                                   numericInput( "k_anova_n",
                                                 "Número de grupos",
                                                 value = 3,
                                                 min = 2,
                                                 max = Inf,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Nº de grupos para comparar")
+                                  ) %>% .help_buttom(body = paste0("Nº de grupos para comparar.", .txt_definido_pesquisador))
                  ),
                  conditionalPanel(condition = "input.anova_mean_f == false",
                                   textInput( "medias_anova_n",
                                              "Médias dos grupos",
                                              value = "12.6, 14.9, 16"
-                                  ) %>% help_buttom(body = "Insira as médias dos grupos separadas por vígula. Use ponto '.' como separador decimal."),
+                                  ) %>% .help_buttom(body = paste0("Insira as médias esperadas dos grupos separadas por vígula. Use ponto '.' como separador decimal.",
+                                                                   .txt_definido_pesquisador_OU_literatura)
+                                  ),
                                   numericInput( "desvio_anova_n",
-                                                "Desvio padrão (homocedasticidade)",
+                                                "Desvio padrão esperado (homocedasticidade)",
                                                 value = 4,
                                                 min = 0,
                                                 max = Inf,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Desvio padrão comum entre os grupos")
+                                  ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
                  ),
 
                  numericInput( "power_anova_n",
@@ -2070,21 +1654,21 @@ aba_anova_one_way <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "sig_anova_n",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "one_way_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  # actionButton("help_anova_n", "Ajuda")
                ),
 
@@ -2093,109 +1677,14 @@ aba_anova_one_way <- tabPanel(
 
 
                  ###  CENARIOS  ####.
-
-
-                 conditionalPanel(condition = "input.anova_mean_f == true",
-                                  br(),
-                                  HTML('<hr style="color: black;">'),
-                                  br(),br(),
-
-                                  titlePanel("Construção de cenários"),
-                                  br(),
-
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar uma sequência de valores de magnitude de efeito e poder desejado.
-                                        Serão utilizados o número de grupos, o nível de significância e o percentual de perdas/ recusas definidos
-                                        no painel lateral.
-                                                  "),
-
-                                  textInput(inputId = "anovaOne_power_plot",
-                                            label   = "Digite valores de poder para fazer o gráfico",
-                                            value   = "80, 90, 95",
-                                            width   = "400px") %>%
-                                    help_buttom(body = "Defina os valores de poder desejado.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                                    ),
-
-                                  HTML("<b>Defina a sequência de valores para a magnitude do efeito:</b>"),
-                                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #   bsplus::bs_embed_popover(title = "Defina a sequência damagnitude do efeito. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                            placement = "left"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("anovaOne_from", "Mínimo:", value = 0.1, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_to", "Máximo:", value = 1.1, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_by", "Intervalo:", value = 0.2, min = 0, step = 0.1) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência")
-                                  ),
-                                  br(),
-
-                                  plotly::plotlyOutput("anovaOne_plot", width = "80%"),
-                                  br(), br(),
-                                  downloadButton("download_anovaOne_tab","Download tabela"),
-                                  DT::dataTableOutput("anovaOne_tab", width = "100%")
-                 ),
-
-                 conditionalPanel(condition = "input.anova_mean_f == false",
-                                  br(),
-                                  HTML('<hr style="color: black;">'),
-                                  br(),br(),
-
-                                  titlePanel("Construção de cenários"),
-                                  br(),
-
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar uma sequência de valores de desvio padrão esperado e poder desejado.
-                                        Serão utilizados as médias esperadas, o nível de significância e o percentual de perdas/ recusas definidos
-                                        no painel lateral.
-                                                  "),
-
-                                  textInput(inputId = "anovaOne_sd_power_plot",
-                                            label   = "Digite valores de poder para fazer o gráfico",
-                                            value   = "80, 90, 95",
-                                            width   = "400px") %>%
-                                    help_buttom(body = "Defina os valores de poder desejado.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                                    ),
-
-                                  HTML("<b>Defina a sequência de valores para o desvio padrão:</b>"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("anovaOne_sd_from", "Mínimo:", value = 3, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_sd_to", "Máximo:", value = 5, step = 0.5)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("anovaOne_sd_by", "Intervalo:", value = 0.4, min = 0, step = 0.1) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência de valores para o desvio padrão esperado")
-                                  ),
-                                  br(),
-
-                                  plotly::plotlyOutput("anovaOne_sd_plot", width = "80%"),
-                                  br(), br(),
-                                  downloadButton("download_anovaOne_sd_tab","Download tabela"),
-                                  DT::dataTableOutput("anovaOne_sd_tab", width = "100%")
-                 )
-
-
-
+                 uiOutput("cenarios_anova_oneUi")
                )
              )
     ),
     tabPanel("Poder",
              sidebarLayout(
                sidebarPanel(
-                 checkboxInput("anova_mean_f_power", "Usar tamanho de efeito f", value = FALSE
-                 ) %>% help_buttom(body = "Clique aqui para usar o tamanho de efeito f ao invés das diferenças e desvio padrão."),
+                 checkboxInput("anova_mean_f_power", "Usar tamanho de efeito f", value = FALSE),
 
                  conditionalPanel(condition = "input.anova_mean_f_power == true",
                                   numericInput( "n_anova_power",
@@ -2204,39 +1693,46 @@ aba_anova_one_way <- tabPanel(
                                                 min = 1,
                                                 max = Inf,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Nº de observações por grupo, assume-se que os grupos sejam balanceados."),
+                                  ) %>% .help_buttom(body = paste0("Nº de observações por grupo, assume-se que os grupos sejam balanceados.", .txt_definido_pesquisador)),
                                   numericInput( "k_anova_power",
                                                 "Número de grupos",
                                                 value = 3,
                                                 min = 2,
                                                 max = Inf,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Nº de grupos para comparar."),
+                                  ) %>% .help_buttom(body = "Nº de grupos para comparar."),
                                   numericInput( "f_anova_power",
-                                                "Magnitude do efeito",
+                                                "Magnitude do efeito f",
                                                 value = .4,
                                                 min = 0,
                                                 max = 1,
                                                 step = .01
-                                  ) %>% help_buttom(body = "Magnitude do efeito f (0.1 é considerado pequeno)")
+                                  )  %>%
+                                    shinyhelper::helper(type = "markdown",
+                                                        title = "Tamanho de efeito f",
+                                                        content = "Effect_size_f", #,includeMarkdown(file.path("Markdown", "Effect_size_f.Rmd")),
+                                                        buttonLabel = "Fechar",
+                                                        fade = TRUE,
+                                                        colour = "#006338",
+                                                        size = "l")
                  ),
                  conditionalPanel(condition = "input.anova_mean_f_power == false",
                                   textInput( "medias_anova_power",
                                              "Médias dos grupos",
                                              value = "12.6, 14.9, 16"
-                                  ) %>% help_buttom(body = "Insira as médias dos grupos separadas por vígula. Use ponto '.' como separador decimal."),
+                                  ) %>% .help_buttom(body = paste0("Insira as médias dos grupos separadas por vígula. Use ponto '.' como separador decimal.", .txt_definido_pesquisador_OU_literatura)),
                                   textInput( "n_anova_power2",
                                              "Tamanho amostral de cada grupo",
                                              value = "15, 16, 12"
-                                  ) %>% help_buttom(body = "Insira o tamanho amostral de cada grupo separadas por vígula. Use ponto '.' como separador decimal."),
+                                  ) %>% .help_buttom(body = "Insira o tamanho amostral de cada grupo separadas por vígula. Use ponto '.' como separador decimal."),
 
                                   numericInput( "sigma_anova_power2",
-                                                "Desvio padrão (homocedasticidade)",
+                                                "Desvio padrão esperado (homocedasticidade)",
                                                 value = 4.5,
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.5
-                                  ) %>% help_buttom(body = "Desvio padrão comum entre os grupos")
+                                  ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
                  ),
 
 
@@ -2246,7 +1742,7 @@ aba_anova_one_way <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)")
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)")
 
                ),
 
@@ -2263,7 +1759,7 @@ aba_anova_one_way <- tabPanel(
 )
 
 
-#### Two way ####
+# Two way ####
 
 aba_anova_two_way <- tabPanel(
   "ANOVA de duas vias",
@@ -2271,9 +1767,11 @@ aba_anova_two_way <- tabPanel(
 
   titlePanel("ANOVA de duas vias"),
   wellPanel(paste0("A Análise de Variância de duas vias, é utilizada para comparar as
-                     médias dos níveis de dois fatores. Ao calcular o tamanho da amostra para este objetivo, ",
-                   "estaremos supondo que a variável de interesse, am cada um dos grupos, segue uma distribuição normal, ",
-                   "com uma determinada média e uma determinada variância.")),
+                     médias dos níveis de dois fatores."
+                   #   "Ao calcular o tamanho da amostra para este objetivo, ",
+                   # "estaremos supondo que a variável de interesse, am cada um dos grupos, segue uma distribuição normal, ",
+                   # "com uma determinada média e uma determinada variância."
+  )),
   tabsetPanel(
     tabPanel("Efeitos principais",
              sidebarLayout(
@@ -2284,27 +1782,21 @@ aba_anova_two_way <- tabPanel(
                              <br>
                              <br> "),
 
-                 textInput(inputId = "two_nome_desfechoA",
-                           label   = "Descreva o nome do fator A",
-                           value   = "Fator A"
-                 ) %>% help_buttom(body = "Descreva o nome do fator A para que sirvam de guia no preenchimento dos valores."),
-                 textInput(inputId = "two_nome_desfechoB",
-                           label   = "Descreva o nome do fator B",
-                           value   = "Fator B"
-                 ) %>% help_buttom(body = "Descreva o nome do fator B para que sirvam de guia no preenchimento dos valores."),
-                 uiOutput("k_anova_n_A_ui"),
-                 uiOutput("k_anova_n_B_ui"),
-                 checkboxInput("two_way_cohen", "Usar magnitude de efeito", value = FALSE),
-                 conditionalPanel(condition = "input.two_way_cohen == true",
-                                  uiOutput("f_anova_n_A_ui"),
-                                  uiOutput("f_anova_n_B_ui")
-                 ),
+                 actionLink("show_th_anova2way", "Mudar nomes"),
+                 br(), br(),
+
+
+                 uiOutput("k_anova_n_ui"),
+
+                 checkboxInput("two_way_cohen", "Usar magnitude de efeito f", value = FALSE),
+
+                 conditionalPanel(condition = "input.two_way_cohen == true", uiOutput("f_anova_n_ui")),
 
                  conditionalPanel(condition = "input.two_way_cohen == false",
-                                  uiOutput("delta_anova_n_A_ui"),
-                                  uiOutput("delta_anova_n_B_ui"),
-                                  uiOutput("sigma_anova_n_A_ui"),
-                                  uiOutput("sigma_anova_n_B_ui")
+                                  uiOutput("delta_anova_n_ui"),
+                                  # uiOutput("delta_anova_n_B_ui"),
+                                  # uiOutput("sigma_anova_n_A_ui"),
+                                  uiOutput("sigma_anova_n_ui")
                  ),
                  HTML('<hr style="color: black;">'),
                  numericInput( "power_anova_n_two",
@@ -2313,21 +1805,21 @@ aba_anova_two_way <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "sig_anova_n_two",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "two_way_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  # actionButton("help_anova_n_two", "Ajuda")
                ),
 
@@ -2361,47 +1853,47 @@ a2 b2 16.8 $
 a2 b3 26.1",
                                                 rows = 6
 
-                                  ) %>% help_buttom(body = "Entre com as medias conforme leitura do SAS. O simbolo $ representa a entrada de novos dados."),
+                                  ) %>% .help_buttom(body = paste0("Entre com as medias conforme leitura do SAS. O simbolo $ representa a entrada de novos dados.", .txt_definido_pesquisador_OU_literatura)),
 
                                   numericInput( "desvio_anova_n22",
-                                                "Desvio padrão (homocedasticidade)",
+                                                "Desvio padrão esperado (homocedasticidade)",
                                                 value = 4,
                                                 min = 0,
                                                 max = Inf,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Desvio padrão comum entre os grupos"),
+                                  ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
                                   numericInput( "power_anova_n_two22",
                                                 "Poder (%)",
                                                 value = 80,
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                                  ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                                   numericInput( "sig_anova_n_two22",
                                                 "Nível de significância (%)",
                                                 value = 5,
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                                  ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                                   numericInput( "two_way_perdas_recusa22",
                                                 "Perdas/ Recusa (%)",
                                                 value = 10,
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                                  ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  ),
 
                  conditionalPanel(condition = "input.two_way_usar_medias == false",
                                   textInput(inputId = "two_nome_desfechoA2",
                                             label   = "Descreva o nome do fator A",
                                             value   = "Fator A"
-                                  ) %>% help_buttom(body = "Descreva o nome do fator A para que sirvam de guia no preenchimento dos valores."),
+                                  ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome do fator A para que sirvam de guia no preenchimento dos valores.")),
                                   textInput(inputId = "two_nome_desfechoB2",
                                             label   = "Descreva o nome do fator B",
                                             value   = "Fator B"
-                                  ) %>% help_buttom(body = "Descreva o nome do fator B para que sirvam de guia no preenchimento dos valores."),
+                                  ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome do fator B para que sirvam de guia no preenchimento dos valores.")),
                                   uiOutput("k_anova_n_A_ui2"),
                                   uiOutput("k_anova_n_B_ui2"),
                                   uiOutput("f_anova_n_A_ui2"),
@@ -2411,21 +1903,21 @@ a2 b3 26.1",
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                                  ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                                   numericInput( "sig_anova_n_two2",
                                                 "Nível de significância (%)",
                                                 value = 5,
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                                  ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                                   numericInput( "two_way_perdas_recusa2",
                                                 "Perdas/ Recusa (%)",
                                                 value = 10,
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                                  ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  )
                ),
 
@@ -2572,47 +2064,78 @@ aba_associacao <- tabPanel(
                  textInput(inputId = "chisq_desfecho",
                            label   = "Descreva as variáveis que deseja associar",
                            value   = "X1 e X2"
-                 ) %>% help_buttom(body = "Descreva o nome das variáveis para que sirvam de guia no preenchimento."),
-                 numericInput( "w_chisq_n",
-                               "Magnitude do efeito",
-                               value = .3,
-                               min = 0,
-                               max = 1,
-                               step = .01
-                 ) %>% help_buttom(body = "Magnitude do efeito w (0.1 é considerado pequeno)"),
-                 numericInput( "df_chisq_n",
-                               "Graus de liberdade",
-                               value = 3,
-                               min = 0,
-                               max = Inf,
-                               step = 1
-                 ) %>% help_buttom(body = "Número de graus de liberdade da estatística de teste. Pode ser obtido realizando o cálculo (L-1)x(C-1), onde L é o número de categorias da primeira variável e C da segunda variável."),
+                 ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome das variáveis que desejas associar para que sirvam de guia no preenchimento.")),
+
+                 # checkboxInput(inputId = "chisq_entrar_tabela",
+                 #               label   = "Entrar com tabela contingência",
+                 #               value   = FALSE
+                 #
+                 # ),
+
+                 selectInput(inputId = "chisq_input",
+                             label = "Qual o tipo de informação de entrada?",
+                             choices = c("Magnitude do efeito w" = 1,
+                                         "Tabela de contingência com proporções" = 2,
+                                         "Tabela de contingência com valores absolutos" = 3),
+                             selected = 1
+                 ),
+
+
+                 conditionalPanel("input.chisq_input == 1",
+                                  numericInput( "w_chisq_n",
+                                                "Magnitude do efeito w",
+                                                value = .3,
+                                                min = 0,
+                                                max = 1,
+                                                step = .01
+                                  ) %>% .help_buttom(body = paste0("Magnitude do efeito w (0.1 é considerado pequeno)", .txt_definido_pesquisador_OU_literatura)),
+
+
+                                  numericInput( "df_chisq_n",
+                                                "Graus de liberdade",
+                                                value = 3,
+                                                min = 0,
+                                                max = Inf,
+                                                step = 1
+                                  ) %>% .help_buttom(body = paste0("Número de graus de liberdade da estatística de teste. Pode ser obtido realizando o cálculo (L-1)x(C-1), onde L é o número de categorias da primeira variável e C da segunda variável.", .txt_definido_pesquisador_OU_literatura))
+                 ),
+
+                 uiOutput("chis_tabela_contUi"),
+                 uiOutput("chis_tabela_cont_valoresUi"),
+
                  numericInput( "power_chisq_n",
                                "Poder (%)",
                                value = 80,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "sig_chisq_n",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "chisq_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  # actionButton("help_chisq_n", "Ajuda")
                ),
 
                mainPanel(
-                 shinycssloaders::withSpinner(htmlOutput("chisq_n"), type = 5)
+                 conditionalPanel("input.chisq_input != 1",
+                                  uiOutput("chisq_tab_contUi") %>%
+                                    shinycssloaders::withSpinner(type = 5)
+
+                 ),
+                 shinycssloaders::withSpinner(htmlOutput("chisq_n"), type = 5),
+
+                 uiOutput("cenarios_chisq_Ui")
                )
              )
     )
@@ -2698,7 +2221,7 @@ aba_correlacao <- tabPanel(
                  # textInput(inputId = "cor_nome_desfechos",
                  #           label   = "Descreva os nomes dos desfechos",
                  #           value   = "X1 e X2"
-                 # ) %>% help_buttom(body = "Descreva o nome das variáveis para que sirvam de guia no preenchimento."),
+                 # ) %>% .help_buttom(body = "Descreva o nome das variáveis para que sirvam de guia no preenchimento."),
                  radioButtons(inputId = "r_r_coeficiente",
                               label   = "Calcular para",
                               choices = c("Pearson"  = "pearson",
@@ -2707,34 +2230,46 @@ aba_correlacao <- tabPanel(
                               selected = "pearson",
                               inline   = TRUE),
 
+                 textInput(inputId = "corr_est_desfecho",
+                           label   = "Descreva as variáveis que deseja correlacionar",
+                           value   = "X1 e X2"
+                 ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome das variáveis que desejas correlacionar para que sirvam de guia no preenchimento.")),
+
                  numericInput( "r_r_n_est",
                                "Coeficiente esperado",
                                value = .5,
                                min = 0,
                                max = 1,
                                step = .01
-                 ) %>% help_buttom(body = "Coeficiente de correlação linear de Pearson esperado, assumindo valores entre -1 e 1. Quando mais distante de zero, maior é a relação linear entre as variáveis."),
+                 ) %>% .help_buttom(body =
+                                      paste0(
+                                        "Coeficiente de correlação esperado, assumindo valores entre -1 e 1. Quando mais distante de zero, maior é a correlação entre as variáveis. ",
+                                        "Maiores informações em ",
+                                        '<a href="https://seer.ufrgs.br/hcpa/article/view/98944/pdf" target="_blank">Leotti et al. 2019</a>.',
+                                        .txt_definido_pesquisador_OU_literatura
+                                      )
+                 ),
                  numericInput( "precisao_rho",
                                "Amplitude do intervalo",
                                value = .4,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "É a amplitude do intervalo de confiança (limite superior menos limite inferior)."),
+                 ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                  numericInput( "conf_r_n_est",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  numericInput( "corr_TH_perdas_recusa_est",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  # actionButton("help_r_n_est", "Ajuda")
                ),
 
@@ -2742,35 +2277,7 @@ aba_correlacao <- tabPanel(
                  shinycssloaders::withSpinner(htmlOutput("r_nIest"), type = 5),
 
                  ###  CENARIOS  ####.
-
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),br(),
-                 wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode definir valores da amplitude do intervalo de confiança e definir o intervalo de valores esperados da correlação.
-                                        Serão utilizados o nível de confiança e o percentual de perdas/ recusas definidos no painel lateral.
-                                                  "),
-
-                 textInput(inputId = "corr_precisoes_plot",
-                           label   = "Digite valores da amplitude do intervalo de confiança para fazer o gráfico:",
-                           value   = "0.3, 0.4, 0.5",
-                           width   = "500px") %>%
-                   help_buttom(body = "Essa sequência será utilizada para compor diferentes linhas do gráfico"),
-                 sliderInput("range_cor_cenarios",
-                             "Intervalo de correlação:",
-                             min = 0,
-                             max = 1,
-                             value = c(0.3, 0.8),
-                             step  = 0.05,
-                             width = "500px") %>%
-                   help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico"),
-                 plotly::plotlyOutput("cor_est_plot", width = "80%"),
-                 br(), br(),
-                 downloadButton("download_cor_est_tab", "Download tabela"),
-                 DT::dataTableOutput("cor_est_tab", width = "100%")
+                 uiOutput("cenarios_est_correlacaoUi")
                )
              )
 
@@ -2785,38 +2292,58 @@ aba_correlacao <- tabPanel(
                    ),
                    uiOutput("correlacao_th_formula"),
                  ),
-                 # textInput(inputId = "cor_nome_desfechosTH",
-                 #           label   = "Descreva os nomes dos desfechos",
-                 #           value   = "X1 e X2"
-                 # ) %>% help_buttom(body = "Descreva o nome das variáveis para que sirvam de guia no preenchimento."),
+                 textInput(inputId = "corr_testar_desfecho",
+                           label   = "Descreva as variáveis que deseja correlacionar",
+                           value   = "X1 e X2"
+                 ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome das variáveis para que sirvam de guia no preenchimento.")),
+
                  numericInput( "r_r_n",
                                "Coeficiente esperado",
                                value = .5,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Coeficiente de correlação linear de Pearson esperado, assumindo valores entre -1 e 1. Quando mais distante de zero, maior é a relação linear entre as variáveis."),
+                 ) %>% .help_buttom(body =
+                                      paste0(
+                                        "Coeficiente de correlação linear de Pearson esperado, assumindo valores entre -1 e 1. Quando mais distante de zero, maior é a correlação entre as variáveis. ",
+                                        "Maiores informações em ",
+                                        '<a href="https://seer.ufrgs.br/hcpa/article/view/98944/pdf" target="_blank">Leotti et al. 2019</a>.',
+                                        .txt_definido_pesquisador_OU_literatura
+                                      )
+                 ),
                  numericInput( "r_r_h0_n",
                                "Coeficiente sob a hipótese nula",
                                value = 0,
                                min = -1,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Coeficiente de correlação linear de Pearsonsob a hipótese nula."),
+                 ) %>% .help_buttom(body = paste0(
+                   "Coeficiente de correlação linear de Pearson sob a hipótese nula. ",
+                   "Maiores informações em ",
+                   '<a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Hirakata et al. 2019</a>.',
+                   .txt_definido_pesquisador
+                 )),
+                 numericInput( "r_n_parcial",
+                               "Número de variáveis para correlação parcial",
+                               value = 0,
+                               min = 0,
+                               max = Inf,
+                               step = 1
+                 ) %>% .help_buttom(body = paste0("Número de variáveis para correlação parcial.", .txt_definido_pesquisador)),
                  numericInput( "power_r_n",
                                "Poder (%)",
                                value = 80,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "sig_r_n",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  uiOutput('alternative_r_nUi'),
                  numericInput( "corr_TH_perdas_recusas",
                                "Perdas/ Recusa (%)",
@@ -2824,7 +2351,7 @@ aba_correlacao <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  # actionButton("help_r_n", "Ajuda")
                ),
 
@@ -2834,35 +2361,7 @@ aba_correlacao <- tabPanel(
                  # shinycssloaders::withSpinner(htmlOutput("r_interval_th"), type = 5),
 
                  ###  CENARIOS  ####.
-
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),br(),
-                 wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode definir valores do poder (%) e definir o intervalo de valores esperados da correlação.
-                                        Serão utilizados o nível de significância, o valor do coeficiente sob a hipótese nula, o tipo de teste de acordo com a hipótese alternativa e o percentual de perdas/ recusas definidos no painel lateral.
-                                                  "),
-
-                 textInput(inputId = "corr_power_th_plot",
-                           label   = "Digite valores de poder (%) para fazer o gráfico",
-                           value   = "80, 85, 90",
-                           width   = "500px") %>%
-                   help_buttom(body = "Essa sequência será utilizada para compor diferentes linhas do gráfico"),
-                 sliderInput("range_cor_cenarios_th",
-                             "Intervalo de correlação:",
-                             min   = 0,
-                             max   = 1,
-                             value = c(0.30, 0.8),
-                             step  = 0.05,
-                             width = "500px") %>%
-                   help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico"),
-                 plotly::plotlyOutput("cor_th_plot", width = "80%"),
-                 br(), br(),
-                 downloadButton("download_cor_th_tab", "Download tabela"),
-                 DT::dataTableOutput("cor_th_tab", width = "100%")
+                 uiOutput("cenarios_th_correlacaoUi")
 
                )
              )
@@ -2879,21 +2378,26 @@ aba_correlacao <- tabPanel(
                                min = 1,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "Número de observações"),
+                 ) %>% .help_buttom(body = "Número de observações"),
                  numericInput( "r_r_power",
                                "Coeficiente esperado",
                                value = .5,
                                min = 0,
                                max = 1,
                                step = .01
-                 ) %>% help_buttom(body = "Coeficiente de correlação linear de Pearson, assumindo valores entre -1 e 1. Quando mais distante de zero, maior é a relação linear entre as variáveis."),
+                 ) %>% .help_buttom(body = paste0(
+                   "Coeficiente de correlação linear de Pearson sob a hipótese nula. ",
+                   "Maiores informações em ",
+                   '<a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Hirakata et al. 2019</a>.',
+                   .txt_definido_pesquisador
+                 )),
                  numericInput( "sig_r_power",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  # selectInput('alternative_r_power',
                  #             'Tipo de teste de acordo com hipótese alternativa:',
                  #             choices = c('A correlação é DIFERENTE de zero.' = 'two.sided',
@@ -2901,7 +2405,7 @@ aba_correlacao <- tabPanel(
                  #                         'A correlação é MENOR do que zero.' =  'less'
                  #             ),
                  #             selected = 'two.sided'
-                 # ) %>% help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
+                 # ) %>% .help_buttom(body = "O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente.")
                ),
 
                mainPanel(
@@ -2922,89 +2426,78 @@ aba_correlacao <- tabPanel(
 #___________-----
 # Inclinacao  ----
 
-aba_inclinacao_linear <- tabPanel("Linear",
-                                  titlePanel("Coeficiente de inclinação da reta para um modelo de regressão linear simples."),
-                                  wellPanel("Quando um estudo quer observar a variação conjunta de duas variáveis, supondo uma relação linear, ",
-                                            "o pesquisador pode estar interessado em estimar o coeficiente de inclinação da relação entre elas. ",
-                                            "Ao calcular o tamanho da amostra para este objetivo, ",
-                                            "estaremos supondo que o desfecho de interesse segue uma distribuição normal, ",
-                                            "com uma determinada média e uma determinada variância constante ao longo da reta de regressão."
-                                  ),
-                                  tabsetPanel(
+aba_inclinacao_linear <- tabPanel(
+  "Linear",
+  titlePanel("Coeficiente de inclinação da reta para um modelo de regressão linear simples."),
+  wellPanel("Quando um estudo quer observar a variação conjunta de duas variáveis, supondo uma relação linear, ",
+            "o pesquisador pode estar interessado em estimar o coeficiente de inclinação da relação entre elas. ",
+            "Ao calcular o tamanho da amostra para este objetivo, ",
+            "estaremos supondo que o desfecho de interesse segue uma distribuição normal, ",
+            "com uma determinada média e uma determinada variância constante ao longo da reta de regressão."
+  ),
+  tabsetPanel(
 
-                                    tabPanel("Testar",
-                                             sidebarLayout(
-                                               sidebarPanel(
-                                                 wellPanel(
-                                                   HTML(
-                                                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
-                                                   ),
-                                                   uiOutput("inclinacao_reg_formula"),
-                                                 ),
-                                                 checkboxInput(inputId = "inclinacao_usar_r2",
-                                                               label   = "Calcular com base no valor do R²",
-                                                               value   = FALSE
-                                                 ),
-                                                 conditionalPanel("input.inclinacao_usar_r2 == false",
-                                                                  numericInput( "inclinacao_reg",
-                                                                                "Coeficiente de inclinação esperado",
-                                                                                value = .8,
-                                                                                step = 1
-                                                                  ) %>% help_buttom(body = "Coeficiente de inclinação esperado (beta1), geralmente encontrado na literatura"),
-                                                                  numericInput( "sd_dependente_Y",
-                                                                                "Desvio padrão da variável resposta",
-                                                                                value = 0.5,
-                                                                                min = 0,
-                                                                                max = Inf,
-                                                                                step = 1
-                                                                  ) %>% help_buttom(body = "Desvio padrão esperado da variável resposta/ dependente (Y)"),
-                                                                  numericInput( "sd_preditor_X",
-                                                                                "Desvio padrão do preditor",
-                                                                                value = 0.2,
-                                                                                min = 0,
-                                                                                max = Inf,
-                                                                                step = 1
-                                                                  ) %>% help_buttom(body = "Desvio padrão esperado da variável preditora/ independente (X)")
-                                                 ),
-                                                 conditionalPanel("input.inclinacao_usar_r2 == true",
-                                                                  numericInput( "inclinacao_reg_r2",
-                                                                                "Coeficiente de determinação esperado",
-                                                                                value = 0.2,
-                                                                                min = 0,
-                                                                                max = Inf,
-                                                                                step = 1
-                                                                  ) %>% help_buttom(body = "Coeficiente de determinação esperado (R²)")
-                                                 ),
-                                                 numericInput( "power_inclinacao_reg",
-                                                               "Poder (%)",
-                                                               value = 80,
-                                                               min = 0,
-                                                               max = 100,
-                                                               step = 1
-                                                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
-                                                 numericInput( "conf_inclinacao_reg",
-                                                               "Nível de significância (%)",
-                                                               value = 5,
-                                                               min = 0,
-                                                               max = 100,
-                                                               step = 1
-                                                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
-                                                 numericInput( "inclinacao_reg_perdas_recusa_est",
-                                                               "Perdas/ Recusa (%)",
-                                                               value = 10,
-                                                               min = 0,
-                                                               max = 100,
-                                                               step = 1
-                                                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
-                                                 # actionButton("help_r_n_est", "Ajuda")
-                                               ),
+    tabPanel("Testar",
+             sidebarLayout(
+               sidebarPanel(
+                 wellPanel(
+                   HTML(
+                     "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
+                   ),
+                   uiOutput("inclinacao_reg_formula"),
+                 ),
+                 actionLink("inclinacao_nomes", "Mudar nomes"),
+                 br(), br(),
 
-                                               mainPanel(
-                                                 shinycssloaders::withSpinner(htmlOutput("out_inclinacao_reg"), type = 5)
-                                               )
-                                             )
-                                    )
-                                  )
+                 checkboxInput(inputId = "inclinacao_usar_r2",
+                               label   = "Calcular com base no valor do R²",
+                               value   = FALSE
+                 ),
+                 uiOutput("inclinacao_inclinacaoUi"),
+                 conditionalPanel("input.inclinacao_usar_r2 == true",
+                                  numericInput( "inclinacao_reg_r2",
+                                                "Coeficiente de determinação esperado",
+                                                value = 0.2,
+                                                min = 0,
+                                                max = Inf,
+                                                step = 1
+                                  ) %>% .help_buttom(body = paste0(
+                                    "O coeficiente de determinação é uma medida de quão bem o modelo de regressão descreve os dados observados. ",
+                                    "É o % da variação total de Y que é explicada pela variação de X. ",
+                                    "Por exemplo, suponhamos um modelo com um R² = 0,49, então 49% da variação de Y pode ser explicada pela variação de X",
+                                    .txt_definido_pesquisador_OU_literatura),
+                                    title = "Coeficiente de determinação esperado (R²)")
+                 ),
+                 numericInput( "power_inclinacao_reg",
+                               "Poder (%)",
+                               value = 80,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
+                 numericInput( "conf_inclinacao_reg",
+                               "Nível de significância (%)",
+                               value = 5,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+                 numericInput( "inclinacao_reg_perdas_recusa_est",
+                               "Perdas/ Recusa (%)",
+                               value = 10,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
+                 # actionButton("help_r_n_est", "Ajuda")
+               ),
+
+               mainPanel(
+                 shinycssloaders::withSpinner(htmlOutput("out_inclinacao_reg"), type = 5)
+               )
+             )
+    )
+  )
 )
 
 
@@ -3016,7 +2509,7 @@ aba_inclinacao_linear <- tabPanel("Linear",
 aba_logistica <- tabPanel(
   "Logística",
   titlePanel("Regressão logística univariável"),
-  wellPanel("Nesta aba é possível calcular o tamanho de amostra para testar se a razão de chances ",
+  wellPanel("Nesta aba é possível calcular o tamanho de amostra para testar se a razão de chances (RC)",
             "é igual a 1 em um modelo de regressão logística simples (univariável).",
             "No caso em que a variável preditora é contínua, estaremos supondo que sua distribuição adere à normal.",
 
@@ -3044,14 +2537,14 @@ aba_logistica <- tabPanel(
                                                 min = 0,
                                                 max = Inf,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Razão de chances esperada"),
+                                  ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance"),
                                   numericInput( "logistic_rate_mean",
                                                 "% de eventos na média da variável preditora",
                                                 value = 50,
                                                 min  = 0,
                                                 max  = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "O percentual de eventos esperados na média da variável preditora contínua.")
+                                  ) %>% .help_buttom(body = paste0("O percentual de eventos esperados na média da variável preditora contínua.", .txt_definido_pesquisador_OU_literatura))
                  ),
 
                  conditionalPanel("input.logistic_tipo_variavel == 0",
@@ -3061,7 +2554,7 @@ aba_logistica <- tabPanel(
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Não expostos, geralmente é utilizado algum valor com base na literatura."),
+                                  ) %>% .help_buttom(body = paste0("O percentual esperado de eventos no grupo Não expostos, geralmente é utilizado algum valor com base na literatura.", .txt_definido_pesquisador_OU_literatura)),
 
                                   selectInput('or_th_estatistica',
                                               'Medida do grupo expostos:',
@@ -3078,7 +2571,7 @@ aba_logistica <- tabPanel(
                                                                  min = 0,
                                                                  max = 100,
                                                                  step = 1
-                                                   ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Expostos, geralmente é utilizado algum valor com base na literatura.")
+                                                   ) %>% .help_buttom(body = paste0("O percentual esperado de eventos no grupo Expostos, geralmente é utilizado algum valor com base na literatura.", .txt_definido_pesquisador_OU_literatura))
                                   ),
                                   conditionalPanel(condition = 'input.or_th_estatistica == "ratio"',
                                                    numericInput( "logistic_cat_ratio",
@@ -3087,7 +2580,7 @@ aba_logistica <- tabPanel(
                                                                  min = 0,
                                                                  max = Inf,
                                                                  step = 0.1
-                                                   )  %>% help_buttom(body = "Risco relativo ou razão de prevalências esperado entre Expostos e Não expostos, geralmente é utilizado algum valor com base na literatura.")
+                                                   )  %>% .help_buttom(body = .txt_risco_relativo, title = "Risco relativo/ Razão de prevalências")
                                   ),
                                   conditionalPanel(condition = 'input.or_th_estatistica == "odds"',
                                                    numericInput( "logistic_cat_odds",
@@ -3096,7 +2589,7 @@ aba_logistica <- tabPanel(
                                                                  min = 0,
                                                                  max = Inf,
                                                                  step = 0.1
-                                                   ) %>% help_buttom(body = "Razão de chances esperada entre Expostos e Não expostos, geralmente é utilizado algum valor com base na literatura.")
+                                                   ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance")
                                   ),
                                   numericInput( "logistic_cat_k",
                                                 "Balanço da amostra (Não expostos:Expostos).",
@@ -3104,10 +2597,7 @@ aba_logistica <- tabPanel(
                                                 min   = 0,
                                                 max   = Inf,
                                                 step  = .5
-                                  ) %>% help_buttom("Nº de não expostos para cada expostos. Se colocar o valor 2, será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 não expostos para cada expostos. Se colocar o valor 0.5,
-                                                                      será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 expostos para cada não expostos.")
+                                  ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento")
 
                  ),
 
@@ -3117,21 +2607,21 @@ aba_logistica <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "sig_logistic",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "logistic_perdas_recusa_est",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -3149,7 +2639,7 @@ aba_logistica <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Não exposto, geralmente é utilizado algum valor com base na literatura."),
+                 ) %>% .help_buttom(body = paste0("O percentual esperado de eventos no grupo Não exposto.", .txt_definido_pesquisador_OU_literatura)),
 
                  selectInput('or_est_estatistica',
                              'Medida do grupo expostos:',
@@ -3166,7 +2656,7 @@ aba_logistica <- tabPanel(
                                                 min = 0,
                                                 max = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "O percentual esperado de eventos no grupo Expostos, geralmente é utilizado algum valor com base na literatura.")
+                                  ) %>% .help_buttom(body = paste0("O percentual esperado de eventos no grupo Expostos, geralmente é utilizado algum valor com base na literatura.", .txt_definido_pesquisador_OU_literatura))
                  ),
                  conditionalPanel(condition = 'input.or_est_estatistica == "ratio"',
                                   numericInput( "logistic_est_ratio",
@@ -3175,7 +2665,7 @@ aba_logistica <- tabPanel(
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.1
-                                  )  %>% help_buttom(body = "Risco relativo ou razão de prevalências esperado entre Expostos e Não expostos, geralmente é utilizado algum valor com base na literatura.")
+                                  )  %>% .help_buttom(body = .txt_risco_relativo, title = "Risco relativo/ Razão de prevalências")
                  ),
                  conditionalPanel(condition = 'input.or_est_estatistica == "odds"',
                                   numericInput( "logistic_est_odds",
@@ -3184,7 +2674,7 @@ aba_logistica <- tabPanel(
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.1
-                                  ) %>% help_buttom(body = "Razão de chances esperada entre Expostos e Não expostos, geralmente é utilizado algum valor com base na literatura.")
+                                  ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance")
                  ),
                  numericInput( "logistic_est_k",
                                "Balanço da amostra (Não expostos:Expostos).",
@@ -3192,10 +2682,7 @@ aba_logistica <- tabPanel(
                                min   = 0,
                                max   = Inf,
                                step  = .5
-                 ) %>% help_buttom("Nº de não expostos para cada expostos. Se colocar o valor 2, será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 não expostos para cada expostos. Se colocar o valor 0.5,
-                                                                      será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 expostos para cada não expostos."),
+                 ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
 
 
                  numericInput( "logistic_est_amplitude",
@@ -3204,16 +2691,16 @@ aba_logistica <- tabPanel(
                                min = 0,
                                max = Inf,
                                step = .1
-                 ) %>% help_buttom(body = "Amplitude desejada para o intervalo de confiança."),
+                 ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                  numericInput( "logistic_est_confiança",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  selectInput("logistic_est_metodo",
-                             "Método utilizado para calcular a precisão",
+                             "Método utilizado para calcular o intervalo de confiança",
                              choices = c("indip_smooth", "gart", "woolf"),
                              selected = "indip_smooth"
                  ),
@@ -3223,7 +2710,7 @@ aba_logistica <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -3267,32 +2754,37 @@ aba_surv_cox <- tabPanel(
                                min = 0,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "Hazard ratio esperado. Com base na literatura."),
+                 ) %>% .help_buttom(body = paste0("O hazard ratio (HR), ou razão de riscos proporcionais, é calculado quando o desfecho de interesse é o tempo até o evento ocorrer. ",
+                                                  "Desta forma, a razão de riscos proporcionais é obtida dividindo o risco (hazard) de desenvolver o evento em um grupo pelo risco de outro grupo. ",
+                                                  "Maiores informações em ",
+                                                  '<a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Castro et al. 2019</a>.',
+                                                  .txt_definido_pesquisador_OU_literatura
+                 ), title = "Hazard ratio"
+                 ),
 
 
                  conditionalPanel("input.cox_tipo_variavel == 0",
 
                                   HTML(
-                                    "<b><font size = '2.99'>Probabilidade (%) de falha:</font></b><br>"
+                                    "<b><font size = '2.99'>Probabilidade (%) de sobrevivência até o final do seguimento no grupo</font></b><br>"
                                   ),
 
                                   div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
                                       numericInput( "cox_failure_trat",
-                                                    "No grupo Tratamento",
-                                                    value = 80,
+                                                    "Tratamento",
+                                                    value = 20,
                                                     min  = 0,
                                                     max  = 100,
-                                                    step = 1
-                                      ) %>% help_buttom(body = "Probabilidade de falhar/ sofre o desfecho no grupo tratamento.")
+                                                    step = 1)
                                   ),
                                   div(style="display: inline-block;vertical-align:top; width: 49%;",
                                       numericInput( "cox_failure_control",
-                                                    "e no grupo Controle",
-                                                    value = 80,
+                                                    "Controle",
+                                                    value = 20,
                                                     min  = 0,
                                                     max  = 100,
                                                     step = 1
-                                      ) %>% help_buttom(body = "Probabilidade de falhar/ sofre o desfecho no grupo controle.")
+                                      ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento", .txt_definido_literatura))
                                   ),
 
                                   numericInput( "cox_balanceamento",
@@ -3301,27 +2793,27 @@ aba_surv_cox <- tabPanel(
                                                 min = 0,
                                                 max = Inf,
                                                 step = 0.5
-                                  ) %>% help_buttom(body = "Ratio of participants in group E (experimental group) compared to group C (control group).")
+                                  ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento")
                  ),
 
 
 
                  conditionalPanel("input.cox_tipo_variavel == 1",
                                   numericInput( "cox_failure_continua",
-                                                "Probabilidade (%) de falha",
-                                                value = 80,
+                                                "Probabilidade (%) de sobrevivência até o final do seguimento",
+                                                value = 100 -73.8,
                                                 min  = 0,
                                                 max  = 100,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Probabilidade de falhar/ sofre ao longo do acompanhamento."),
+                                  ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento.", .txt_definido_literatura)),
 
                                   numericInput( "cox_desvio_padrao",
                                                 "Desvio padrão da variável independente",
-                                                value = 12,
+                                                value = 0.3126,
                                                 min  = 0,
                                                 max  = Inf,
                                                 step = 1
-                                  ) %>% help_buttom(body = "Desvio padrão da variável independente contínua de interesse."),
+                                  ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
 
                                   numericInput( "cox_r2",
                                                 "Coeficiente de correlação múltipla",
@@ -3329,8 +2821,8 @@ aba_surv_cox <- tabPanel(
                                                 min  = -1,
                                                 max  = 1,
                                                 step = .2
-                                  ) %>% help_buttom(body = "Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
-                                                     Defina zero (default) se não haverá outras variáveis independentes.")
+                                  ) %>% .help_buttom(body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
+                                                     Defina zero (default) se não haverá outras variáveis independentes.", .txt_definido_pesquisador_OU_literatura))
                  ),
 
 
@@ -3340,21 +2832,21 @@ aba_surv_cox <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "cox_significancia",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "cox_perdas_recusa_est",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  # actionButton("help_r_n_est", "Ajuda")
                ),
 
@@ -3362,53 +2854,7 @@ aba_surv_cox <- tabPanel(
                  shinycssloaders::withSpinner(htmlOutput("cox_out"), type = 5),
 
                  ###  CENARIOS  ####.
-
-                 conditionalPanel("input.cox_tipo_variavel == 0",
-                                  br(),
-                                  HTML('<hr style="color: black;">'),
-                                  br(),br(),
-
-                                  titlePanel("Construção de cenários"),
-                                  br(),
-
-                                  wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar valores de HR desejados.
-                                        Serão utilizados o nível de significância, balanceamento da amostra e
-                                        probabilidades de falha definidos no painel lateral."
-                                  ),
-
-                                  textInput(inputId = "cox_power_plot",
-                                            label   = "Digite valores de poder (%) para fazer o gráfico",
-                                            value   = "80, 90, 95",
-                                            width   = "400px") %>%
-                                    help_buttom(body = "Defina os valores de poder desejado.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                                    ),
-
-                                  HTML("<b>Defina a sequência de valores para o <i>hazard ratio</i>:</b>"),
-                                  # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                  #   bsplus::bs_embed_popover(title = "Defina a sequência do HR. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                  #                            placement = "left"),
-                                  br(),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                      numericInput("cox_from", "Mínimo:", value = 1.2, step = 0.05)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("cox_to", "Máximo:", value = 2, step = 0.05)
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                      numericInput("cox_by", "Intervalo:", value = 0.05, min = 0, step = 0.05) %>%
-                                        help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                    title = "Sequência")
-                                  ),
-                                  br(),
-
-                                  plotly::plotlyOutput("cox_plot", width = "80%"),
-                                  br(), br(),
-                                  downloadButton("download_cox_tab","Download tabela"),
-                                  DT::dataTableOutput("cox_tab", width = "100%")
-                 )
+                 uiOutput("cenarios_testar_cox")
                )
              )
     )
@@ -3466,7 +2912,7 @@ aba_obter_dp <- tabPanel(
                                      min = 0,
                                      max = Inf,
                                      step = 1
-                       ) %>% help_buttom(body = "Erro padrão relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.")
+                       ) %>% .help_buttom(body = "Erro padrão relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.")
       ),
 
 
@@ -3478,7 +2924,7 @@ aba_obter_dp <- tabPanel(
                                      min = -Inf,
                                      max = Inf,
                                      step = 1
-                       ) %>% help_buttom(body = "Um dos valores do intervalo de confiança relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.
+                       ) %>% .help_buttom(body = "Um dos valores do intervalo de confiança relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.
                                           Pode ser o limite inferior ou o superior.")
       ),
 
@@ -3490,7 +2936,7 @@ aba_obter_dp <- tabPanel(
                                      min = -Inf,
                                      max = Inf,
                                      step = 1
-                       ) %>% help_buttom(body = "Estatística t.")
+                       ) %>% .help_buttom(body = "Estatística t.")
       ),
 
       # Valor de p
@@ -3501,7 +2947,7 @@ aba_obter_dp <- tabPanel(
                                      min = 0,
                                      max = 1,
                                      step = .01
-                       ) %>% help_buttom(body = "Valor de p."),
+                       ) %>% .help_buttom(body = "Valor de p."),
                        p("ATENÇÃO! Quando o p não for definido de forma exata o cálculo não será correto. ",
                          "Utilizar o maior número de casas decimais possíveis, principalmente se p < 0.001.")
       ),
@@ -3516,7 +2962,7 @@ aba_obter_dp <- tabPanel(
                                      min = -Inf,
                                      max = Inf,
                                      step = 1
-                       ) %>% help_buttom(body = "Estatística sob H0.")
+                       ) %>% .help_buttom(body = "Estatística sob H0.")
       ),
 
 
@@ -3529,7 +2975,7 @@ aba_obter_dp <- tabPanel(
                                      min = -Inf,
                                      max = Inf,
                                      step = 1
-                       ) %>% help_buttom(body = "Média do estudo na qual o intervalo de confiança foi extraído.")
+                       ) %>% .help_buttom(body = "Média do estudo na qual o intervalo de confiança foi extraído.")
       ),
 
 
@@ -3542,7 +2988,7 @@ aba_obter_dp <- tabPanel(
                                      min = 2,
                                      max = Inf,
                                      step = 1
-                       ) %>% help_buttom(body = "Tamanho da amostra do estudo na qual o intervalo de confiança foi extraído.")
+                       ) %>% .help_buttom(body = "Tamanho da amostra do estudo na qual o intervalo de confiança foi extraído.")
       ),
 
 
@@ -3554,7 +3000,7 @@ aba_obter_dp <- tabPanel(
                                      min = 0,
                                      max = 100,
                                      step = 1
-                       ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)")
+                       ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)")
       ),
 
 
@@ -3567,7 +3013,7 @@ aba_obter_dp <- tabPanel(
                                      min = 0,
                                      max = Inf,
                                      step = 1) %>%
-                         help_buttom(body = "Em estudos longitudinais o Grupo 1 pode ser entendido como o Momento 1."),
+                         .help_buttom(body = "Em estudos longitudinais o Grupo 1 pode ser entendido como o Momento 1."),
 
                        numericInput( "ferramentas_sd_follow",
                                      "Desvio padrão do Grupo 2",
@@ -3575,7 +3021,7 @@ aba_obter_dp <- tabPanel(
                                      min = 0,
                                      max = Inf,
                                      step = 1) %>%
-                         help_buttom(body = "Em estudos longitudinais o Grupo 2 pode ser entendido como o Momento 2."),
+                         .help_buttom(body = "Em estudos longitudinais o Grupo 2 pode ser entendido como o Momento 2."),
 
                        numericInput( "ferramentas_sd_correlation",
                                      "Correlação entre as medidas do Grupo1 e Grupo2",
@@ -3595,7 +3041,7 @@ aba_obter_dp <- tabPanel(
                     min = 0,
                     max = Inf,
                     step = 1
-      ) %>% help_buttom(body = "Número de casas decimais para exibir o desvio padrão calculado.")
+      ) %>% .help_buttom(body = "Número de casas decimais para exibir o desvio padrão calculado.")
 
     ), # Fecha sidebar
 
@@ -3666,7 +3112,7 @@ aba_obter_dp <- tabPanel(
 #                                                          min = -Inf,
 #                                                          max = Inf,
 #                                                          step = 1
-#                                            ) %>% help_buttom(body = "Um dos valores do intervalo de confiança relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.
+#                                            ) %>% .help_buttom(body = "Um dos valores do intervalo de confiança relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.
 #                                           Pode ser o limite inferior ou o superior.")
 #                           ),
 #
@@ -3677,7 +3123,7 @@ aba_obter_dp <- tabPanel(
 #                                                          min = -Inf,
 #                                                          max = Inf,
 #                                                          step = 1
-#                                            ) %>% help_buttom(body = "Estatística t.")
+#                                            ) %>% .help_buttom(body = "Estatística t.")
 #                           ),
 #
 #                           conditionalPanel('input.ferramentes_desvio_padrao_statistic == "Valor de p"',
@@ -3687,7 +3133,7 @@ aba_obter_dp <- tabPanel(
 #                                                          min = 0,
 #                                                          max = 1,
 #                                                          step = .01
-#                                            ) %>% help_buttom(body = "Valor de p."),
+#                                            ) %>% .help_buttom(body = "Valor de p."),
 #                                            p("ATENÇÃO! Quando o não for definido de forma exata o cálculo não será correto. ",
 #                                              "Utilizar o maior número de casas decimais possíveis, principalmente se p < 0.001.")
 #                           ),
@@ -3700,7 +3146,7 @@ aba_obter_dp <- tabPanel(
 #                                                          min = -Inf,
 #                                                          max = Inf,
 #                                                          step = 1
-#                                            ) %>% help_buttom(body = "Estatística sob H0.")
+#                                            ) %>% .help_buttom(body = "Estatística sob H0.")
 #                           ),
 #
 #                           numericInput( "ferramentas_ic_media",
@@ -3709,14 +3155,14 @@ aba_obter_dp <- tabPanel(
 #                                         min = -Inf,
 #                                         max = Inf,
 #                                         step = 1
-#                           ) %>% help_buttom(body = "Média do estudo na qual o intervalo de confiança foi extraído."),
+#                           ) %>% .help_buttom(body = "Média do estudo na qual o intervalo de confiança foi extraído."),
 #                           numericInput( "ferramentas_ic_n",
 #                                         "Tamanho da amostra",
 #                                         value = 20,
 #                                         min = 2,
 #                                         max = Inf,
 #                                         step = 1
-#                           ) %>% help_buttom(body = "Tamanho da amostra do estudo na qual o intervalo de confiança foi extraído."),
+#                           ) %>% .help_buttom(body = "Tamanho da amostra do estudo na qual o intervalo de confiança foi extraído."),
 #
 #                           conditionalPanel('input.ferramentes_desvio_padrao_statistic == "Intervalo de confiança"',
 #                                            numericInput( "ferramentas_ic_conf",
@@ -3725,7 +3171,7 @@ aba_obter_dp <- tabPanel(
 #                                                          min = 0,
 #                                                          max = 100,
 #                                                          step = 1
-#                                            ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)")
+#                                            ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)")
 #                           ),
 #
 #                           numericInput( "ferramentas_ic_decimals",
@@ -3734,7 +3180,7 @@ aba_obter_dp <- tabPanel(
 #                                         min = 0,
 #                                         max = Inf,
 #                                         step = 1
-#                           ) %>% help_buttom(body = "Número de casas decimais para exibir o desvio padrão calculado.")
+#                           ) %>% .help_buttom(body = "Número de casas decimais para exibir o desvio padrão calculado.")
 #                         ),
 #
 #                         mainPanel(
@@ -3806,21 +3252,21 @@ aba_cohen <- tabPanel("d de Cohen",
                                         min = -Inf,
                                         max = Inf,
                                         step = 1
-                          ) %>% help_buttom(body = "Diferença observada entre os dois grupos."),
+                          ) %>% .help_buttom(body = "Diferença observada entre os dois grupos."),
                           numericInput( "cohen_sigma1",
                                         "Desvio padrão do grupo A",
                                         value = 1.2,
                                         min = 0,
                                         max = Inf,
                                         step = .01
-                          ) %>% help_buttom(body = "Desvio padrão esperado para o grupo A, geralmente obtido de estudos anteriores."),
+                          ),
                           numericInput( "cohen_sigma2",
                                         "Desvio padrão do grupo B",
                                         value = 1.4,
                                         min = 0,
                                         max = Inf,
                                         step = .01
-                          ) %>% help_buttom(body = "Desvio padrão esperado para o grupo B, geralmente obtido de estudos anteriores."),
+                          ),
 
                           numericInput( "cohen_n1",
                                         "Tamanho amostral do grupo A",
@@ -3828,14 +3274,14 @@ aba_cohen <- tabPanel("d de Cohen",
                                         min = 3,
                                         max = Inf,
                                         step = 1
-                          ) %>% help_buttom(body = "Tamanho amostral do grupo A."),
+                          ) %>% .help_buttom(body = "Tamanho amostral do grupo A."),
                           numericInput( "cohen_n2",
                                         "Tamanho amostral do grupo B",
                                         value = 20,
                                         min = 3,
                                         max = Inf,
                                         step = 1
-                          ) %>% help_buttom(body = "Tamanho amostral do grupo B."),
+                          ) %>% .help_buttom(body = "Tamanho amostral do grupo B."),
 
                           numericInput( "cohen_decimals",
                                         "Número de casas decimais",
@@ -3843,7 +3289,7 @@ aba_cohen <- tabPanel("d de Cohen",
                                         min = 0,
                                         max = Inf,
                                         step = 1
-                          ) %>% help_buttom(body = "Número de casas decimais para exibir o desvio padrão calculado.")
+                          ) %>% .help_buttom(body = "Número de casas decimais para exibir o desvio padrão calculado.")
                         ),
 
                         mainPanel(
@@ -3970,38 +3416,42 @@ aba_curva_roc <- tabPanel(
                                min = 0.5,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Área sobre a curva que se espera encontrar."),
+                 ) %>% .help_buttom(body = paste0("Área sobre a curva que se espera encontrar.", .txt_definido_pesquisador_OU_literatura)),
+                 # numericInput( "auc_k",
+                 #               "Balanço da amostra (Controle:Casos)",
+                 #               value = 1,
+                 #               min = 0,
+                 #               max = Inf,
+                 #               step = .5
+                 # ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
                  numericInput( "auc_k",
-                               "Balanço da amostra (Controle:Casos)",
-                               value = 1,
+                               "Prevalênica de casos (%)",
+                               value = 50,
                                min = 0,
                                max = Inf,
                                step = .5
-                 ) %>% help_buttom("Nº de controles para cada caso. Se colocar o valor 2, será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 controles para cada caso Se colocar o valor 0.5,
-                                                                      será calculado um tamanho de amostra
-                                                                      tal que será necessário 2 caso para cada controle."),
+                 ) %>% .help_buttom(paste0("Prevalência de casos (%).", .txt_definido_pesquisador_OU_literatura)),
                  numericInput( "auc_poder",
                                "Poder (%)",
                                value = 80,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "auc_significancia",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  numericInput( "auc_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -4009,51 +3459,8 @@ aba_curva_roc <- tabPanel(
                    shinycssloaders::withSpinner(type = 5),
 
                  ###  CENARIOS  ####.
+                 uiOutput("cenarios_roc_th_Ui")
 
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),
-
-                 wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar valores de magnitude de efeito desejado.
-                                        Serão utilizados o nível de significânica, o balanço da amostra e
-                                        o percentual de perdas/ recusas definidos no painel lateral."
-                 ),
-
-                 textInput(inputId = "auc_power_plot",
-                           label   = "Digite valores de poder para fazer o gráfico",
-                           value   = "80, 90, 95",
-                           width   = "400px") %>%
-                   help_buttom(body = "Defina os valores de poder desejado.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                   ),
-
-                 HTML("<b>Defina a sequência de valores para a área sob a curva:</b>"),
-                 # bsplus::shiny_iconlink(name = "question-circle") %>%
-                 #   bsplus::bs_embed_popover(title = "Defina a sequência da área sob a curva. Essa sequência será utilizada para compor o eixo x do gráfico",
-                 #                            placement = "left"),
-                 br(),
-                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("auc_from", "Mínimo:", value = 0.6, step = 0.05)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("auc_to", "Máximo:", value = 0.95, step = 0.05)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("auc_by", "Intervalo:", value = 0.05, min = 0, step = 0.05) %>%
-                       help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                   title = "Sequência")
-                 ),
-                 br(),
-
-                 plotly::plotlyOutput("auc_plot", width = "80%"),
-                 br(), br(),
-                 downloadButton("download_auc_tab","Download tabela"),
-                 DT::dataTableOutput("auc_tab", width = "100%")
                )
              )
     ),
@@ -4067,35 +3474,35 @@ aba_curva_roc <- tabPanel(
                                min = 0.1,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Área sobre a curva que se espera encontrar."),
+                 ) %>% .help_buttom(body = paste0("Área sobre a curva que se espera encontrar.", .txt_definido_pesquisador_OU_literatura)),
                  numericInput( "auc_est_amplitude",
                                "Amplitude desejada",
                                value = 0.3,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Amplitude desejada para o intervalo de confiança."),
+                 ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                  numericInput( "auc_est_k",
                                "Prevalênica de casos (%)",
                                value = 50,
                                min = 0,
                                max = Inf,
                                step = .5
-                 ) %>% help_buttom("Prevalência de casos (%)."),
+                 ) %>% .help_buttom(paste0("Prevalência de casos (%).", .txt_definido_pesquisador_OU_literatura)),
                  numericInput( "auc_est_confiança",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  numericInput( "auc_est_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -4136,8 +3543,7 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                                                value = 75,
                                                                min = 0,
                                                                max = 100,
-                                                               step = 1
-                                                 ) %>% help_buttom(body = "Sensibilidade que se espera encontrar.")
+                                                               step = 1)
                                              ),
                                              div(style="display: inline-block;vertical-align:top; width: 49%;",
                                                  numericInput( "especif_especificidade",
@@ -4145,8 +3551,7 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                                                value = 75,
                                                                min = 0,
                                                                max = 100,
-                                                               step = 1
-                                                 ) %>% help_buttom(body = "Especificidade que se espera encontrar.")
+                                                               step = 1)
                                              ),
 
                                              numericInput( "sensibil_prevalencia",
@@ -4155,33 +3560,33 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                                            min = 0,
                                                            max = 100,
                                                            step = 1
-                                             ) %>% help_buttom(body = "Prevalência do desfecho que se espera encontrar."),
+                                             ) %>% .help_buttom(body = "Prevalência do desfecho que se espera encontrar."),
                                              numericInput( "sensibil_amplitude",
                                                            "Amplitude (%)",
                                                            value = 20,
                                                            min = 0,
                                                            max = 100,
                                                            step = 1
-                                             ) %>% help_buttom(body = "Amplitude desejada para o intervalo de confiança."),
+                                             ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                                              numericInput( "sensibil_confianca",
                                                            "Nível de confiança (%)",
                                                            value = 95,
                                                            min = 0,
                                                            max = 100,
                                                            step = 1
-                                             ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                                             ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                                              selectInput("sensibil_metodo",
-                                                         "Método utilizado para calcular a precisão",
+                                                         "Método utilizado para calcular o intervalo de confiança",
                                                          choices = c("wilson", "agresti-coull", "exact", "wald"),
-                                                         selected = "wilson"
-                                             ),
+                                                         selected = "wald"
+                                             ) %>% .help_buttom(body = .txt_per_method),
                                              numericInput( "sensibil_perdas_recusa",
                                                            "Perdas/ Recusa (%)",
                                                            value = 10,
                                                            min = 0,
                                                            max = 100,
                                                            step = 1
-                                             ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                                             ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                                            ),
 
                                            mainPanel(
@@ -4190,51 +3595,7 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
 
 
                                              ###  CENARIOS  ####.
-
-                                             br(),
-                                             HTML('<hr style="color: black;">'),
-                                             br(),br(),
-
-                                             titlePanel("Construção de cenários"),
-                                             br(),
-
-                                             wellPanel("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar valores de sensibilidade e especificidade desejados.
-                                        Serão utilizados o nível de significância e a amplitude
-                                             definidos no painel lateral."
-                                             ),
-
-                                             textInput(inputId = "sensibil_prev_plot",
-                                                       label   = "Digite valores de prevalência (%) para fazer o gráfico",
-                                                       value   = "40, 50, 70",
-                                                       width   = "400px") %>%
-                                               help_buttom(body = paste0("Defina os valores de prevalência desejado. ",
-                                                                         "Esses valores serão utilizados para criar diferentes linhas no gráfico. Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                                               )
-                                               ),
-
-                                             HTML("<b>Defina a sequência de valores para a sensibilidade/ especificidade (%):</b>"),
-                                             # bsplus::shiny_iconlink(name = "question-circle") %>%
-                                             #   bsplus::bs_embed_popover(title = "Defina a sequência de sensibilidade e especificidade. Essa sequência será utilizada para compor o eixo x do gráfico",
-                                             #                            placement = "left"),
-                                             br(),
-                                             div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                                                 numericInput("sensibil_from", "Mínimo:", value = 5, step = 5)
-                                             ),
-                                             div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                                 numericInput("sensibil_to", "Máximo:", value = 95, step = 5)
-                                             ),
-                                             div(style="display: inline-block;vertical-align:top; width: 70px;",
-                                                 numericInput("sensibil_by", "Intervalo:", value = 10, min = 0, step = 1) %>%
-                                                   help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                                               title = "Sequência")
-                                             ),
-                                             br(),
-
-                                             plotly::plotlyOutput("sensibil_plot", width = "80%"),
-                                             br(), br(),
-                                             downloadButton("download_sensibil_tab","Download tabela"),
-                                             DT::dataTableOutput("sensibil_tab", width = "100%")
+                                             uiOutput("cenarios_sensi_espUi")
                                            )
                                          )
                                 )
@@ -4262,35 +3623,35 @@ aba_especificidade <- tabPanel("Especificidade",
                                #                              min = 0,
                                #                              max = 100,
                                #                              step = 1
-                               #                ) %>% help_buttom(body = "Especificidade que se espera encontrar."),
+                               #                ) %>% .help_buttom(body = "Especificidade que se espera encontrar."),
                                #                numericInput( "especif_prevalencia",
                                #                              "Prevalência esperada do desfecho (%)",
                                #                              value = 30,
                                #                              min = 0,
                                #                              max = 100,
                                #                              step = 1
-                               #                ) %>% help_buttom(body = "Prevalência do desfecho que se espera encontrar."),
+                               #                ) %>% .help_buttom(body = "Prevalência do desfecho que se espera encontrar."),
                                #                numericInput( "especif_amplitude",
                                #                              "Precisão (%)",
                                #                              value = 10,
                                #                              min = 0,
                                #                              max = 100,
                                #                              step = 1
-                               #                ) %>% help_buttom(body = "É a metade da amplitude do intervalo de confiança."),
+                               #                ) %>% .help_buttom(body = "É a metade da amplitude do intervalo de confiança."),
                                #                numericInput( "especif_confianca",
                                #                              "Nível de confiança (%)",
                                #                              value = 95,
                                #                              min = 0,
                                #                              max = 100,
                                #                              step = 1
-                               #                ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                               #                ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                                #                numericInput( "especif_perdas_recusa",
                                #                              "Perdas/ Recusa (%)",
                                #                              value = 10,
                                #                              min = 0,
                                #                              max = 100,
                                #                              step = 1
-                               #                ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                               #                ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                                #              ),
                                #
                                #              mainPanel(
@@ -4338,14 +3699,14 @@ aba_kappa <- tabPanel(
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Valor de kappa que se espera encontrar."),
+                 ) %>% .help_buttom(body = paste0("Valor de kappa que se espera encontrar.", .txt_definido_pesquisador_OU_literatura)),
                  numericInput( "kappa_h0",
                                "Kappa sob H0",
                                value = 0.5,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Kappa para testar em H0"),
+                 ) %>% .help_buttom(body = paste0("Kappa para testar em H0", .txt_definido_pesquisador)),
                  conditionalPanel("input.kappa_k_categorias == 2",
                                   numericInput( "kappa_prev2",
                                                 "Probabilidade diagnóstico positivo (%)",
@@ -4353,7 +3714,7 @@ aba_kappa <- tabPanel(
                                                 min = 0,
                                                 max = 100,
                                                 step = 5
-                                  ) %>% help_buttom(body = "Probabilidade diagnóstico positivo (%)")
+                                  ) %>% .help_buttom(body = paste0("Probabilidade diagnóstico positivo (%)", .txt_definido_literatura))
                  ),
                  uiOutput("kappa_prevk_Ui"),
 
@@ -4363,28 +3724,28 @@ aba_kappa <- tabPanel(
                  #               min = 0,
                  #               max = 100,
                  #               step = 5
-                 # ) %>% help_buttom(body = "Probabilidade diagnóstico positivo pelo método B (%)"),
+                 # ) %>% .help_buttom(body = "Probabilidade diagnóstico positivo pelo método B (%)"),
                  numericInput( "kappa_raters",
                                "Número de métodos/ avaliadores",
                                value = 2,
                                min = 2,
                                max = 6,
                                step = 1
-                 ) %>% help_buttom(body = "The number of raters that are available"),
+                 ) %>% .help_buttom(body = paste0("The number of raters that are available", .txt_definido_pesquisador)),
                  numericInput( "kappa_power",
                                "Poder (%)",
                                value = 80,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "kappa_significancia",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  # selectInput(inputId = "kappa_sided",
                  #             label   = "Direção do teste",
                  #             choices = c("Bilateral", "Unilateral"),
@@ -4396,7 +3757,7 @@ aba_kappa <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -4432,14 +3793,14 @@ aba_kappa <- tabPanel(
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Valor de kappa que se espera encontrar."),
+                 ) %>% .help_buttom(body = "Valor de kappa que se espera encontrar."),
                  numericInput( "kappa_est_amplitude",
                                "Amplitude desejada",
                                value = 0.2,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Amplitude desejada para o intervalo de confiança."),
+                 ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                  conditionalPanel("input.kappa_est_k_categorias == 2",
                                   numericInput( "kappa_est_prev2",
                                                 "Probabilidade diagnóstico positivo (%)",
@@ -4447,7 +3808,7 @@ aba_kappa <- tabPanel(
                                                 min = 0,
                                                 max = 100,
                                                 step = 5
-                                  ) %>% help_buttom(body = "Probabilidade diagnóstico positivo (%)")
+                                  ) %>% .help_buttom(body = paste0("Probabilidade diagnóstico positivo (%)", .txt_definido_literatura))
                  ),
                  uiOutput("kappa_est_prevk_Ui"),
 
@@ -4457,28 +3818,28 @@ aba_kappa <- tabPanel(
                  #               min = 0,
                  #               max = 100,
                  #               step = 5
-                 # ) %>% help_buttom(body = "Probabilidade diagnóstico positivo pelo método B (%)"),
+                 # ) %>% .help_buttom(body = "Probabilidade diagnóstico positivo pelo método B (%)"),
                  numericInput( "kappa_est_raters",
                                "Número de métodos/ avaliadores",
                                value = 2,
                                min = 2,
                                max = 6,
                                step = 1
-                 ) %>% help_buttom(body = "The number of raters that are available"),
+                 ) %>% .help_buttom(body = "The number of raters that are available"),
                  numericInput( "kappa_est_confianca",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
                  numericInput( "kappa_est_perdas_recusa",
                                "Perdas/ Recusa (%)",
                                value = 10,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -4514,39 +3875,39 @@ aba_icc <- tabPanel(
                  ),
                  numericInput( "icc_icc_esperado",
                                "ICC esperado",
-                               value = 0.85,
+                               value = 0.6,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Valor do coeficiente de correlação intraclasse que se espera encontrar."),
+                 ) %>% .help_buttom(body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", .txt_definido_pesquisador_OU_literatura)),
                  numericInput( "icc_h0",
                                "ICC sob H0",
                                value = 0.5,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "ICC para testar em H0"),
+                 ) %>% .help_buttom(body = paste0("ICC para testar em H0", .txt_definido_pesquisador)),
                  numericInput( "icc_ratings",
                                "Número de avaliadores",
                                value = 2,
                                min = 2,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "Número de avaliadores por unidade amostral."),
+                 ) %>% .help_buttom(body = paste0("Número de avaliadores por unidade amostral.", .txt_definido_pesquisador)),
                  numericInput( "icc_power",
                                "Poder (%)",
                                value = 80,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de rejeitar a hipótese nula quando a mesma é falsa. É o complementar do erro tipo II.", title = "Poder (%)"),
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
                  numericInput( "icc_significancia",
                                "Nível de significância (%)",
                                value = 5,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Probabilidade de cometer erro do tipo I, rejeitando a hipótese nula quando a mesma é verdadeira.", title = "Nível de significância (%)"),
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
                  # selectInput(inputId = "icc_sided",
                  #             label   = "Direção do teste",
                  #             choices = c("Bilateral", "Unilateral"),
@@ -4559,7 +3920,7 @@ aba_icc <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -4567,53 +3928,7 @@ aba_icc <- tabPanel(
                    shinycssloaders::withSpinner(type = 5),
 
                  ###  CENARIOS  ####.
-
-                 br(),
-                 HTML('<hr style="color: black;">'),
-                 br(),br(),
-
-                 titlePanel("Construção de cenários"),
-                 br(),
-
-                 wellPanel(
-                   paste0("Utilize os argumentos abaixo para construir diferentes cenários.
-                                        Você pode especificar valores de ICC desejados.
-                                        Serão utilizados o nível de significância, ICC sob Ho e o número de avaliadores
-                                             definidos no painel lateral."
-                   )
-                 ),
-
-                 textInput(inputId = "icc_power_plot",
-                           label   = "Digite valores de poder (%) para fazer o gráfico",
-                           value   = "80, 90, 95",
-                           width   = "400px") %>%
-                   help_buttom(body = paste0("Defina os valores de poder desejado. ",
-                                             "Esses valores serão utilizados para criar diferentes linhas no gráfico. Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-                   )
-                   ),
-
-                 HTML("<b>Defina a sequência de valores para o ICC:</b>"),
-                 # bsplus::shiny_iconlink(name = "question-circle") %>%
-                 #   bsplus::bs_embed_popover(title = "Defina a sequência do ICC. Essa sequência será utilizada para compor o eixo x do gráfico",
-                 #                            placement = "left"),
-                 br(),
-                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-                     numericInput("icc_from", "Mínimo:", value = 0.6, step = 0.05)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("icc_to", "Máximo:", value = 0.95, step = 0.05)
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 70px;",
-                     numericInput("icc_by", "Intervalo:", value = 0.05, min = 0, step = 0.05) %>%
-                       help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                                   title = "Sequência")
-                 ),
-                 br(),
-
-                 plotly::plotlyOutput("icc_plot", width = "80%"),
-                 br(), br(),
-                 downloadButton("download_icc_tab","Download tabela"),
-                 DT::dataTableOutput("icc_tab", width = "100%")
+                 uiOutput("cenarios_icc_thUi")
                )
              )
     ),
@@ -4627,28 +3942,28 @@ aba_icc <- tabPanel(
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Valor do coeficiente de correlação intraclasse que se espera encontrar."),
+                 ) %>% .help_buttom(body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", .txt_definido_pesquisador_OU_literatura)),
                  numericInput( "icc_est_amplitude",
                                "Amplitude desejada",
                                value = 0.2,
                                min = 0,
                                max = 1,
                                step = .1
-                 ) %>% help_buttom(body = "Amplitude desejada para o intervalo de confiança."),
+                 ) %>% .help_buttom(body = .txt_amplitude, title = "Amplitude do intervalo"),
                  numericInput( "icc_est_ratings",
                                "Número de avaliadores",
                                value = 2,
                                min = 2,
                                max = Inf,
                                step = 1
-                 ) %>% help_buttom(body = "Número de avaliadores por unidade amostral."),
+                 ) %>% .help_buttom(body = paste0("Número de avaliadores por unidade amostral.", .txt_definido_pesquisador)),
                  numericInput( "icc_est_confiança",
                                "Nível de confiança (%)",
                                value = 95,
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+                 ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
 
                  numericInput( "icc_est_perdas_recusa",
                                "Perdas/ Recusa (%)",
@@ -4656,7 +3971,7 @@ aba_icc <- tabPanel(
                                min = 0,
                                max = 100,
                                step = 1
-                 ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)")
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                ),
 
                mainPanel(
@@ -4686,21 +4001,30 @@ aba_estimacao_bland <- tabPanel(
                     min = 0,
                     max = Inf,
                     step = 0.5
-      ) %>% help_buttom(body = "É a amplitude do intervalo de confiança (limite superior menos limite inferior)."),
+      ) %>%
+        shinyhelper::helper(type = "inline",
+                            title = "Amplitude do intervalo de confiança",
+                            content = includeMarkdown(file.path("www", "Bland_altman_plot.md")),
+                            buttonLabel = "Fechar",
+                            fade = TRUE,
+                            colour = "#006338",
+                            size = "l"),
+
+      # .help_buttom(body = "É a amplitude do intervalo de confiança (limite superior menos limite inferior)."),
       numericInput( "bland_confianca",
                     "Nível de confiança (%)",
                     value = 95,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "O nível de confiança representa a porcentagem de intervalos que iriam incluir o parâmetro populacional se você reunisse amostras da mesma população, repetidas vezes.", title = "Nivel de confiança (%)"),
+      ) %>% .help_buttom(body = .txt_confianca, title = "Nível de confiança (%)"),
       numericInput( "bland_perdas_recusa",
                     "Perdas/ Recusa (%)",
                     value = 10,
                     min = 0,
                     max = 100,
                     step = 1
-      ) %>% help_buttom(body = "Percentual de perdas previstas ao longo da pesquisa. O cálculo do tamanho da amostra é ajustado para compensá-las.", title = "Perdas/ Recusas (%)"),
+      ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)"),
     ),
 
     mainPanel(
@@ -4717,29 +4041,33 @@ aba_estimacao_bland <- tabPanel(
       br(),
 
       wellPanel("Utilize os argumentos abaixo para construir diferentes cenários. ",
-                "Você pode especificar uma sequência de valores para a amplitude e nível de confiança desejada."),
+                "Você pode especificar uma sequência de valores para a amplitude e valores de nível de confiança desejada.
+                Demais informações serão recuperadas do painel lateral."),
 
-      textInput(inputId = "bland_cenarios_confianca",
-                label   = "Digite valores de nível de confiança (%) para fazer o gráfico",
-                value   = "90, 95, 99",
-                width   = "400px") %>%
-        help_buttom(body = "Defina os valores de nível de confiança desejado.
+      fluidRow(
+        column(6,
+               textInput(inputId = "bland_cenarios_confianca",
+                         label   = "Digite valores de nível de confiança (%) para fazer o gráfico",
+                         value   = "90, 95, 99",
+                         width   = "400px") %>%
+                 .help_buttom(body = "Defina os valores de nível de confiança desejado.
                                                       Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal."
-        ),
+                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
+        )
+      ),
 
       HTML("<b>Defina a sequência de valores para a amplitude do intervalo de confiança:</b>"),
       br(),
-      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 70px;",
-          numericInput("bland_from", "Mínimo:", value = 0.3, step = 0.5)
+      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+          numericInput("bland_from", "Mínimo", value = 0.3, step = 0.5)
       ),
-      div(style="display: inline-block;vertical-align:top; width: 70px;",
-          numericInput("bland_to", "Máximo:", value = 1.1, step = 0.5)
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("bland_to", "Máximo", value = 1.1, step = 0.5)
       ),
-      div(style="display: inline-block;vertical-align:top; width: 70px;",
-          numericInput("bland_by", "Intervalo:", value = 0.1, min = 0, step = 0.1) %>%
-            help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico.",
-                        title = "Sequência")
+      div(style="display: inline-block;vertical-align:top; width: 80px;",
+          numericInput("bland_by", "Intervalo", value = 0.1, min = 0, step = 0.1) %>%
+            .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
+                         title = "Sequência")
       ),
       br(),
 
@@ -4764,196 +4092,203 @@ aba_estimacao_bland <- tabPanel(
 # ui ----------------
 #_____-----
 
-ui <- navbarPage( windowTitle = "PSS Health",
-                  theme  = shinythemes::shinytheme("sandstone"),
-                  tabPanel(""),
+
+
+ui <- fluidPage(fluidRow(
+  navbarPage( windowTitle = "PSS Health",
+              theme = "theme_pss.css",
+
+              tabPanel(""),
+
+
+              # Página de entrada #
+
+              tabPanel("Boas vindas!",
+                       tags$head(tags$link(rel = "icon", href = "Favicon.gif")),
+
+                       fluidPage(fluidRow(
+                         column(11,
+                                fluidRow(
+                                  h2("PSS Health"),
+                                  HTML(paste0(
+                                    "<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers (versão ",
+                                    packageVersion("PSS.Health"), ")")
+                                  )
+                                )
+                         ),
+                         column(1, img(src='Favicon.gif', align = "right", width="150%")),
+
+                       )),
+
+
+                       # uiOutput("PSS_CRAN"),
+
+                       br(),
+                       HTML("Navegue entre as abas para encontrar o cenário correspondente ao objetivo do estudo. Altere os parâmetros conforme necessidade e utilize o texto como auxílio para entender o cálculo.",
+                            "<br>",
+                            "<b>Sempre</b> procure um profissional de estatística para orientações no planejamento do estudo.",
+                            ""),
+
+
+
+                       br(),br(),br(),
+                       h3("Leituras recomendadas"),
+                       HTML("Frequentemente a Unidade de Bioestatística do Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre publica artigos na seção de bioestatística da revista ",
+                            "<a href='https://seer.ufrgs.br/hcpa' target='_blank'>Clinical & Biomedical Research</a>",
+                            ". Nessas publicações são abordadas temas que podem te auxiliar na definição do tamanho amostral e do poder do teste.",
+
+                            "<br><br>",
+                            "<ul>", # inicio da lista
+
+                            "<li><b>Principais conceitos em Epidemiologia:</b> Têm dúvidas sobre os tipos de delineamento e métodos de amostragem?</li>",
+                            "<ul>",
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/42338/27237" target="_blank">Os principais delineamentos na Epidemiologia</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/44253/28281" target="_blank">Os principais delineamentos na Epidemiologia: Ensaios Clínicos I</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/44657/28397" target="_blank">Os principais delineamentos na Epidemiologia: Ensaios Clínicos II </a></b></li>',
+                            "</ul>",
+
+                            "<br><br>",
+                            "<li><b>Série \"Perguntas que você sempre quis fazer, mas nunca teve coragem\":</b> Têm dúvidas sobre conceitos comumente utilizados em estatística e epidemiologia?</li>",
+                            "<ul>",
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/89242/pdf" target="_blank">Estatística Descritiva: Perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Teste de hipóteses: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/98944/pdf" target="_blank">Modelagem estatística: Perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/101299/pdf" target="_blank">Equívocos Estatísticos: Perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
+                            "</ul>",
+
+                            "<br><br>",
+                            "<li><b>Outras publicações:</b> </li>",
+                            "<ul>",
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/27267/16646" target="_blank">Um alerta sobre o uso de amostras pequenas na regressão logística</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/23574/15837" target="_blank">Cálculo de tamanho de amostra: proporções</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/9737/5819" target="_blank">Estudos transversais e longitudinais com desfechos binários: qual a melhor medida de efeito a ser utilizada? </a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/33160/22836" target="_blank">Calculando o tamanho de efeito no SPSS</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/14766/8828" target="_blank">Beanplot uma nova ferramenta gráfica</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/11727/7021" target="_blank">Análise de concordância entre métodos de Bland-Altman</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/36971/23993" target="_blank">Uso do Modelo de Equações de Estimações Generalizadas na análise de dados longitudinais</a></b></li>',
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/29874/19186" target="_blank">Normalidade de variáveis: métodos de verificação e comparação de alguns testes não-paramétricos por simulação</a></b></li>',
+                            "</ul>",
+
+                            "</ul>" # fim da lista de artigos
+                       ),
+
+                       br(), br(),
+                       h3("Sobre"),
+                       HTML("Esse aplicativo foi concebido no trabalho de conclusão do curso de Bacharelado em estatística do aluno ",
+                            '<a href="https://lume.ufrgs.br/handle/10183/212679" target="_blank">Guilherme Azambuja</a>',
+                            ", sob a orientação da professora Stela Castro. Recebeu incrementos, novas funcionalidades e é mantido pela equipe da Unidade de Bioestatística Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre:<br><br>",
+
+                            "<ul>", # inicio da lista
+
+                            "<li> Aline Castello Branco Mancuso ",
+                            "<a href='https://orcid.org/0000-0001-6033-8335' target='_blank'>(Orcid iD)</a> ",
+                            "<a href='http://lattes.cnpq.br/3041495053719418' target='_blank'>(Lattes iD)</a></li>",
+
+
+                            "<li> Rogério Boff Borges ",
+                            "<a href='https://orcid.org/0000-0002-2548-1889' target='_blank'>(Orcid iD)</a>",
+                            "<a href='http://lattes.cnpq.br/4664814523190366' target='_blank'>(Lattes iD)</a></li>",
+
+                            "<li> Stela Maris de Jezus Castro ",
+                            "<a href='https://orcid.org/0000-0001-5862-6709' target='_blank'>(Orcid iD)</a>",
+                            "<a href='http://lattes.cnpq.br/3433964793739774' target='_blank'>(Lattes iD)</a></li>",
+
+
+                            "<li>Suzi Alves Camey ",
+                            "<a href='https://orcid.org/0000-0002-5564-081X' target='_blank'>(Orcid iD)</a>",
+                            "<a href='http://lattes.cnpq.br/8280035478871760' target='_blank'>(Lattes iD)</a></li>",
+
+
+                            "<li>Vanessa Bielefeldt Leotti ",
+                            "<a href='https://orcid.org/0000-0003-3860-9367' target='_blank'>(Orcid iD)</a>",
+                            "<a href='http://lattes.cnpq.br/5223855158009832' target='_blank'>(Lattes iD)</a></li>",
+
+
+                            "<li>Vânia Naomi Hirakata ",
+                            "<a href='https://orcid.org/0000-0003-4645-2080' target='_blank'>(Orcid iD)</a>",
+                            "<a href='http://lattes.cnpq.br/4647357908962910' target='_blank'>(Lattes iD)</a></li>",
+
+
+                            "</ul>" # fim da lista de autores
+                       ),
+                       hr(),
+                       HTML("<br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+
+
+              ),
+
+
+              #### Estimacao de parametros ####.
+              # navbarMenu( "Estimação de Parâmetros",
+              #             aba_estimacao_uma_media,
+              #             aba_estimacao_uma_prop,
+              #             aba_estimacao_Cronbach
+              # ),
+
+              #### Teste de hipoteses para uma amostra ####.
+              # navbarMenu("Teste de Hipótese para uma amostra",
+              #            aba_TH_uma_media,
+              #            aba_TH_uma_prop,
+              #            aba_TH_uma_media_equivalencia,
+              #            aba_TH_uma_prop_equivalencia
+              #            ),
+
+              #### Teste de hipotese para duas amostras ####.
+              navbarMenu("Médias",
+                         aba_estimacao_uma_media,
+                         aba_TH_duas_amostra_media,
+                         aba_TH_duas_amostra_media_equivalencia,
+                         aba_TH_duas_amostra_mean_pareado,
+                         aba_TH_duas_amostra_media_2tempos,
+                         aba_TH_medidas_repetidas,
+                         aba_anova_one_way,
+                         aba_anova_two_way
+              ),
+              navbarMenu("Proporções",
+                         aba_estimacao_uma_prop,
+                         aba_TH_duas_amostra_prop,
+                         aba_TH_duas_amostra_prop_equivalencia,
+                         aba_TH_duas_amostra_prop_dep
+              ),
+
+
+              aba_associacao,
+              aba_correlacao,
+
+              navbarMenu("Regressão",
+                         aba_inclinacao_linear,
+                         aba_logistica,
+                         aba_surv_cox
+              ),
+
+              # Classificacao ----.
+              navbarMenu("Classificação",
+                         aba_curva_roc,
+                         aba_sensibilidade
+              ),
+
+              # Concordancia ----.
+              navbarMenu("Concordância",
+                         aba_kappa,
+                         aba_icc,
+                         aba_estimacao_bland
+              ),
+
+
+              #### Cronbach  ####.
+              aba_estimacao_Cronbach,
+
+
+              navbarMenu("Outras ferramentas",
+                         aba_obter_dp,
+                         aba_pooled_var,
+                         aba_cohen
+              )
 
 
 
 
-                  # Página de entrada #
 
-                  tabPanel("Boas vindas!",
-                           titlePanel(HTML("PSS Health")),
-
-                           # HTML("Aplicativo para determinação do <b>T</b>amanho <b>A</b>mostral da <b>U</b>nidade de <b>B</b>io<b>e</b>statística (sei que não ficou com uma fonética agradável, mas é só pra ilustração inicial ;)<br><br><br>"),
-                           HTML("<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers"),
-
-                           # uiOutput("PSS_CRAN"),
-                           #br(),br(),
-                           # h3("PSS Health no CRAN"),
-                           #HTML(paste0("O PSS Health está disponível no ",
-                           #            "<a href='https://cran.r-project.org/web/packages/PSS.Health/index.html' target='_blank'>CRAN</a>",
-                           #            " e pode ser utilizado pelo computador por meio do pacote ", code("PSS.Health"), ".")),
-                           #br(), br(),
-                           #code("install.packages('PSS.Health')"),
-                           #br(),
-                           #code("PSS.Health::PSS_Health()"),
-
-
-                           br(),br(),br(),
-                           h3("Instruções gerais"),
-                           HTML("Navegue entre as abas para encontrar o cenário correspondente ao objetivo do estudo. Altere os parâmetros conforme necessidade e utilize o texto como auxílio para entender o cálculo.",
-                                "<br><br>",
-                                "<b>Sempre</b> procure um profissional de estatística para orientações no planejamento do estudo.",
-                                ""),
-
-                           br(),br(),br(),
-                           h3("Leituras recomendadas"),
-                           HTML("Frequentemente a Unidade de Bioestatística do Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre publica artigos na seção de bioestatística da revista ",
-                                "<a href='https://seer.ufrgs.br/hcpa' target='_blank'>Clinical & Biomedical Research</a>",
-                                ". Nessas publicações são abordadas temas que podem te auxiliar na definição do tamanho amostral e do poder do teste.",
-
-                                "<br><br>",
-                                "<ul>", # inicio da lista
-
-                                "<li><b>Principais conceitos em Epidemiologia:</b> Têm dúvidas sobre os tipos de delineamento e métodos de amostragem?</li>",
-                                "<ul>",
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/42338/27237" target="_blank">Os principais delineamentos na Epidemiologia</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/44253/28281" target="_blank">Os principais delineamentos na Epidemiologia: Ensaios Clínicos I</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/44657/28397" target="_blank">Os principais delineamentos na Epidemiologia: Ensaios Clínicos II </a></b></li>',
-                                "</ul>",
-
-                                "<br><br>",
-                                "<li><b>Série \"Perguntas que você sempre quis fazer, mas nunca teve coragem\":</b> Têm dúvidas sobre conceitos comumente utilizados em estatística e epidemiologia?</li>",
-                                "<ul>",
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/89242/pdf" target="_blank">Estatística Descritiva: Perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Teste de hipóteses: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/98944" target="_blank">Modelagem estatística: Perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/101299" target="_blank">Equívocos Estatísticos: Perguntas que você sempre quis fazer, mas nunca teve coragem</a></b></li>',
-                                "</ul>",
-
-                                "<br><br>",
-                                "<li><b>Outras publicações:</b> </li>",
-                                "<ul>",
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/27267/16646" target="_blank">Um alerta sobre o uso de amostras pequenas na regressão logística</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/23574/15837" target="_blank">Cálculo de tamanho de amostra: proporções</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/9737/5819" target="_blank">Estudos transversais e longitudinais com desfechos binários: qual a melhor medida de efeito a ser utilizada? </a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/33160/22836" target="_blank">Calculando o tamanho de efeito no SPSS</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/14766/8828" target="_blank">Beanplot uma nova ferramenta gráfica</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/11727/7021" target="_blank">Análise de concordância entre métodos de Bland-Altman</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/36971/23993" target="_blank">Uso do Modelo de Equações de Estimações Generalizadas na análise de dados longitudinais</a></b></li>',
-                                '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/29874/19186" target="_blank">Normalidade de variáveis: métodos de verificação e comparação de alguns testes não-paramétricos por simulação</a></b></li>',
-                                "</ul>",
-
-                                "</ul>" # fim da lista de artigos
-                           ),
-
-                           br(), br(),
-                           h3("Sobre"),
-                           HTML("Esse aplicativo foi concebido no trabalho de conclusão do curso de Bacharelado em estatística do aluno ",
-                                '<a href="https://lume.ufrgs.br/handle/10183/212679" target="_blank">Guilherme Azambuja</a>',
-                                ", sob a orientação da professora Stela Castro. Recebeu incrementos, novas funcionalidades e é mantido pela equipe da Unidade de Bioestatística Grupo de Pesquisa e Pós-Graduação do Hospital de Clínicas de Porto Alegre:<br><br>",
-
-                                "<ul>", # inicio da lista
-
-                                "<li> Aline Castello Branco Mancuso ",
-                                "<a href='https://orcid.org/0000-0001-6033-8335' target='_blank'>(Orcid iD)</a> ",
-                                "<a href='http://lattes.cnpq.br/3041495053719418' target='_blank'>(Lattes iD)</a></li>",
-
-
-                                "<li> Rogério Boff Borges ",
-                                "<a href='https://orcid.org/0000-0002-2548-1889' target='_blank'>(Orcid iD)</a>",
-                                "<a href='http://lattes.cnpq.br/4664814523190366' target='_blank'>(Lattes iD)</a></li>",
-
-                                "<li> Stela Maris de Jezus Castro ",
-                                "<a href='https://orcid.org/0000-0001-5862-6709' target='_blank'>(Orcid iD)</a>",
-                                "<a href='http://lattes.cnpq.br/3433964793739774' target='_blank'>(Lattes iD)</a></li>",
-
-
-                                "<li>Suzi Alves Camey ",
-                                "<a href='https://orcid.org/0000-0002-5564-081X' target='_blank'>(Orcid iD)</a>",
-                                "<a href='http://lattes.cnpq.br/8280035478871760' target='_blank'>(Lattes iD)</a></li>",
-
-
-                                "<li>Vanessa Bielefeldt Leotti ",
-                                "<a href='https://orcid.org/0000-0003-3860-9367' target='_blank'>(Orcid iD)</a>",
-                                "<a href='http://lattes.cnpq.br/5223855158009832' target='_blank'>(Lattes iD)</a></li>",
-
-
-                                "<li>Vânia Naomi Hirakata ",
-                                "<a href='https://orcid.org/0000-0003-4645-2080' target='_blank'>(Orcid iD)</a>",
-                                "<a href='http://lattes.cnpq.br/4647357908962910' target='_blank'>(Lattes iD)</a></li>",
-
-
-                                "</ul>" # fim da lista de autores
-                           ),
-                           hr(),
-                           HTML("<br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
-
-
-                  ),
-
-
-                  #### Estimacao de parametros ####.
-                  # navbarMenu( "Estimação de Parâmetros",
-                  #             aba_estimacao_uma_media,
-                  #             aba_estimacao_uma_prop,
-                  #             aba_estimacao_Cronbach
-                  # ),
-
-                  #### Teste de hipoteses para uma amostra ####.
-                  # navbarMenu("Teste de Hipótese para uma amostra",
-                  #            aba_TH_uma_media,
-                  #            aba_TH_uma_prop,
-                  #            aba_TH_uma_media_equivalencia,
-                  #            aba_TH_uma_prop_equivalencia
-                  #            ),
-
-                  #### Teste de hipotese para duas amostras ####.
-                  navbarMenu("Médias",
-                             aba_estimacao_uma_media,
-                             aba_TH_duas_amostra_media,
-                             aba_TH_duas_amostra_media_equivalencia,
-                             aba_TH_duas_amostra_mean_pareado,
-                             # aba_TH_duas_amostra_media_2tempos,
-                             aba_TH_medidas_repetidas,
-                             aba_anova_one_way,
-                             aba_anova_two_way
-                  ),
-                  navbarMenu("Proporções",
-                             aba_estimacao_uma_prop,
-                             aba_TH_duas_amostra_prop,
-                             aba_TH_duas_amostra_prop_equivalencia
-                  ),
-
-
-                  aba_associacao,
-                  aba_correlacao,
-
-                  navbarMenu("Regressão",
-                             aba_inclinacao_linear,
-                             aba_logistica,
-                             aba_surv_cox
-                  ),
-
-                  # Classificacao ----.
-                  navbarMenu("Classificação",
-                             aba_curva_roc,
-                             aba_sensibilidade
-                  ),
-
-                  # Concordancia ----.
-                  navbarMenu("Concordância",
-                             aba_kappa,
-                             aba_icc,
-                             aba_estimacao_bland
-                  ),
-
-
-                  #### Cronbach  ####.
-                  aba_estimacao_Cronbach,
-
-
-                  navbarMenu("Outras ferramentas",
-                             aba_obter_dp,
-                             aba_pooled_var,
-                             aba_cohen
-                  )
-
-
-
-
-
-)
+  )
+))
