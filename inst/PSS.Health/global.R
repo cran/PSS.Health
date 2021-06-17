@@ -1,8 +1,40 @@
 
-require("shiny")
-require("tidyverse")
-require("magrittr")
+# Éãç
+# options(encoding = 'UTF-8')
 
+# {
+#   # require('PSS.Health')
+#   require('DT')
+#   require('easypower')
+#   require('epiR')
+#   require('EnvStats')
+#   require('ICC.Sample.Size')
+#   require('kappaSize')
+#   require('longpower')
+#   require("magrittr")
+#   require('plotly')
+#   require('powerMediation')
+#   require('powerSurvEpi')
+#   require("presize")
+#   require('pROC')
+#   require('pwr')
+#   require('pwr2')
+#   require('shiny')
+#   require('shinycssloaders')
+#   require('shinyFeedback')
+#   require('shinyhelper')
+#   require('tidyverse')
+#   require('writexl')
+#
+# }
+
+
+{
+  require("shiny")
+  require("tidyverse")
+  require("magrittr")
+  # library("PSS.Health")
+}
 
 
 .txt_definido_pesquisador_OU_literatura <- "<br><br><b>Pode ser um valor da literatura ou um valor que o pesquisador deseja encontrar e que tenha relevância clínica.</b>"
@@ -176,6 +208,22 @@ require("magrittr")
   .txt_definido_pesquisador
 )
 
+# HTML(paste0("<i>", .txt_desfecho, "</i>")),
+# br(), br(),
+
+
+
+
+#' @name help_buttom
+#' @title Add a question mark helper button
+#' @description Shortcut to add an action button with a question mark help icon. USE INTERNAL ONLY.
+#' @importFrom shinyhelper helper
+#' @export
+#' @keywords internal
+#' @note Use internal only.
+#' @param local A shiny input element.
+#' @param body Text to include in the body.
+#' @param title Text to include in the title.
 
 
 
@@ -201,14 +249,65 @@ require("magrittr")
 #-----------------.
 
 
+.data <- "2021/04/19"
+.data_citacao_f1 <- format.Date(Sys.Date(), "%Y %b. %e")
+.data_citacao_f2 <- format.Date(Sys.Date(), "%e %b. %Y")
+.data_citacao_f3 <- format.Date(Sys.Date(), "%Y-%m-%d")
+.data_publicacao1 <- format.Date(as.Date(.data), "%Y %b. %e")
+.data_publicacao2 <- format.Date(as.Date(.data), "%e %b. %Y")
+
+
+
+
+
+
+.txt_referencia_tap <-
+  paste0(
+    "<br><br><br><i>Sugestões de citação:</i><br>",
+    "<p style=\"font-size:75% \">",
+    # paste0("<b>Vancouver: </b>PSS Health: Power and Sample Size for Health Researchers [Internet]. [cited ", .data_citacao_f1, "]. Available from: https://hcpa-unidade-bioestatistica.shinyapps.io/PSS_Health<br><br>"),
+
+
+    paste0("<b>ABNT: </b> BORGES, Rogério Boff et al. Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde. ",
+           "<b>Clinical & Biomedical Research</b>, [S.l.], v. 40, n. 4, apr. 2021. ISSN 2357-9730. Available at: ",
+           "<a href='https://seer.ufrgs.br/hcpa/article/view/109542' target='_blank'>&lthttps://seer.ufrgs.br/hcpa/article/view/109542&gt</a>",
+           ". Date accessed: ", .data_citacao_f2, ".<br><br>"),
+
+    paste0("<b>APA:</b> Borges, R., Mancuso, A., Camey, S., Leotti, V., Hirakata, V., Azambuja, G., & Castro, S. (2021). ",
+           "Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde. ",
+           "<i>Clinical & Biomedical Research</i>, 40(4). Retrieved from ",
+           "<a href='https://seer.ufrgs.br/hcpa/article/view/109542' target='_blank'>https://seer.ufrgs.br/hcpa/article/view/109542</a>",
+           "<br><br>"),
+
+    paste0("<b>BibTex: </b>",
+           "@article{PSSHealth,<br>",
+           "author = {Rogério Borges and Aline Mancuso and Suzi Camey and Vanessa Leotti and Vânia Hirakata and Guilherme Azambuja and Stela Castro},<br>",
+           "title = {Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde.},<br>",
+           "journal = {Clinical & Biomedical Research},<br>",
+           "volume = {40},<br>",
+           "number = {4},<br>",
+           "year = {2021},<br>",
+           "keywords = {tamanho de amostra, poder do teste, estimação de parâmetros, comparação de grupos, R},<br>",
+           "issn = {2357-9730},<br>",
+           "url = {https://seer.ufrgs.br/hcpa/article/view/109542}<br>",
+           "}"
+    ),
+    "</p>"
+  )
+
+
+
+
+
+
+# Versão online? ----
+.versao_online <- TRUE
+
 
 .txt_citacao_tap <- paste("ferramenta PSS Health versão",
-                          packageVersion("PSS.Health"),
-                          "(citação abaixo)")
-
-.txt_referencia_tap <-  paste0(
-  "<br><br><br><i><b>Sugestões de citação:</b></i><br>",
-  "<p style=\"font-size:75% \">",
-  paste0("Borges RB, Azambuja GS, Mancuso ACB, Leotti VB, Hirakata VN, Camey SA, Castro SMJ (2021). PSS.Health: Power and Sample Size for Health Researchers via Shiny. R package version 0.1.6. ",
-         "Available from: https://CRAN.R-project.org/package=PSS.Health"),
-  "</p>")
+                         if(!.versao_online){
+                           packageVersion("PSS.Health")
+                         } else{
+                           "on-line"
+                         },
+                         "(citação abaixo)")

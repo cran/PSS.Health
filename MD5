@@ -1,9 +1,9 @@
-c0a13f2e9f3c0b86ec46a60412f75180 *DESCRIPTION
+2e5688b5798ea1c5f10514bbf6355a08 *DESCRIPTION
 9cdc10f3186ea17ea6f91063fd187451 *NAMESPACE
-165ce39833b3031f9aef37edcbcef4a3 *R/PSS_Health.R
-0441e91905f8e4fbeb37392cacb3dadc *inst/PSS.Health/global.R
-b65281980fce3fb2e2b2b35b74d8a2f1 *inst/PSS.Health/server.R
-87f865b7ee426cf73d565190e572a5e9 *inst/PSS.Health/ui.R
+156bc2aa6743f9f63f55ea529c9da83d *R/PSS_Health.R
+c4496b7f53b62f81466791e7dd397c9d *inst/PSS.Health/global.R
+695eeced8ec228b09cddc84fe7e48a36 *inst/PSS.Health/server.R
+407612894e0d6bef0affd81b36507122 *inst/PSS.Health/ui.R
 f2e805102f2870bf34c4843f3486d65d *inst/PSS.Health/www/Bland_altman_plot.html
 fdbad9402efbfec6dfe2f242f8c34052 *inst/PSS.Health/www/Bland_altman_plot.md
 721dee458634bab9b150b4d1bfdff1b5 *inst/PSS.Health/www/Bland_altman_plot.png
@@ -12,5 +12,5 @@ da0169e08a3cb6fb101439aee9c08378 *inst/PSS.Health/www/Delta_two_groups_independe
 15ee274a71a182f0d2dc13f89f816409 *inst/PSS.Health/www/Effect_size_f.md
 cbab433116d19831fdd3ecd8858cbc99 *inst/PSS.Health/www/Favicon.gif
 596246563235f062f05019db50a5a8ea *inst/PSS.Health/www/Teste_Mcnemar.Rmd
-d8fa005c7ee9a148d4da4b5d90d1fac0 *inst/PSS.Health/www/theme_pss.css
-32aa6c34fb87f2e96269d13479e8ade5 *man/PSS_Health.Rd
+13ada639ffe381da593bf7705ce8d63a *inst/PSS.Health/www/theme_pss.css
+6ea00bed7a53111cbf4ad5c2d8b1daa9 *man/PSS_Health.Rd

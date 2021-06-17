@@ -11,7 +11,10 @@ aba_estimacao_uma_media <- tabPanel(
   titlePanel("Uma média"),
   wellPanel(
     # includeMarkdown(file.path("Markdown", "Caput_estimar_uma_media.Rmd")),
-    "Um estudo pode ter como objetivo estimar ou testar o valor médio de uma variável quantitativa referente à população de interesse."),
+    "Um estudo pode ter como objetivo estimar ou testar o valor médio de uma variável quantitativa referente à população de interesse. "
+    # 'Mais detalhes sobre o uso dessa aba em ',
+    # HTML('<b><a href="https://seer.ufrgs.br/hcpa/article/view/109542/pdf" target="_blank">Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde</a></b>')
+  ),
   tabsetPanel(
     tabPanel("Estimar",
              sidebarLayout(
@@ -2204,6 +2207,9 @@ aba_correlacao <- tabPanel(
                                     }")
     )
   ),
+  # tags$head(tags$style(HTML(as.character(
+  #   ".js-irs-0 .irs-single, .js-irs-0 .irs-from, .js-irs-0 .irs-to, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar{ background: DeepPink ;}"
+  # )))),
   titlePanel("Coeficientes de correlação"),
   wellPanel("Muitas vezes o objetivo do estudo é analisar se duas variáveis variam conjuntamente. Nestes casos, a estatística de interesse é o coeficiente de correlação.
                            Os coeficiente de correlação avaliam a direção e o grau de alinhamento entre duas variáveis.
@@ -2277,6 +2283,8 @@ aba_correlacao <- tabPanel(
                  shinycssloaders::withSpinner(htmlOutput("r_nIest"), type = 5),
 
                  ###  CENARIOS  ####.
+
+
                  uiOutput("cenarios_est_correlacaoUi")
                )
              )
@@ -4093,10 +4101,64 @@ aba_estimacao_bland <- tabPanel(
 #_____-----
 
 
+# require("fresh")
+# mytheme <- create_theme(
+#   theme = "default",
+#   bs_vars_navbar(
+#     default_bg = "#006338", # barra superios
+#     default_color = "#f0f5f5", # Letras quando passa o mouse por cima
+#     default_link_color = "#ffffff", # Letras do menu
+#     default_link_active_color = "#ffffff",# Letras do menu quando selecionadas
+#     default_link_active_bg = "#008048", # Fundo do menu quando selecionado
+#     default_link_hover_color = "f0f5f5",
+#     default_link_hover_bg = "#00663a",
+#     inverse_link_hover_color   = "#ff0000"
+#   ),
+#   bs_vars_button(
+#     default_color = "#000000", # cor do texto dos botoes (download...)
+#     default_bg = "#75a38c", # Background color for default buttons.
+#     default_border = "#29473d"
+#   ),
+#
+#   bs_vars_global(
+#     link_color = "#006338",
+#     text_color = "#000000"
+#   ),
+#
+#   bs_vars_dropdown(
+#     link_active_bg  = "#009645"
+#   ),
+#
+#   bs_vars_tabs(
+#     active_link_hover_bg = "#f5f5ef",
+#     active_link_hover_color = "#000000"
+#   ),
+#
+#   bs_vars_alert(
+#     info_bg  = "#009645"
+#   ),
+#
+#   bs_vars_input(
+#     border_focus = "#009645"
+#   ),
+#
+#   output_file = NULL
+#   # output_file = "inst\\PSS.Health\\www\\theme_pss.css"
+# )
+
+
 
 ui <- fluidPage(fluidRow(
   navbarPage( windowTitle = "PSS Health",
               theme = "theme_pss.css",
+
+              # header = tagList(
+              #   use_theme(mytheme) # <-- use your theme
+              # ),
+
+
+
+
 
               tabPanel(""),
 
@@ -4105,14 +4167,35 @@ ui <- fluidPage(fluidRow(
 
               tabPanel("Boas vindas!",
                        tags$head(tags$link(rel = "icon", href = "Favicon.gif")),
+                       # Muda a cor dos sliderInput
+                       tags$head(tags$style(HTML(as.character(paste0(
+                         ".js-irs-1 .irs-single, .js-irs-1 .irs-from, .js-irs-1 .irs-to, .js-irs-1 .irs-bar-edge, .js-irs-1 .irs-bar{background: #006338 ;  }",
+                         ".js-irs-2 .irs-single, .js-irs-2 .irs-from, .js-irs-2 .irs-to, .js-irs-2 .irs-bar-edge, .js-irs-2 .irs-bar{background: #006338 ;  }",
+                         ".js-irs-2 .irs-single, .js-irs-3 .irs-from, .js-irs-3 .irs-to, .js-irs-3 .irs-bar-edge, .js-irs-3 .irs-bar{background: #006338 ;  }",
+                         ".js-irs-2 .irs-single, .js-irs-4 .irs-from, .js-irs-4 .irs-to, .js-irs-4 .irs-bar-edge, .js-irs-4 .irs-bar{background: #006338 ;  }"
+                       ))))),
+                       # tags$head(includeHTML(("google-analytics.html"))),
+
+                       # tags$script(HTML("var header = $('.navbar > .container-fluid');
+                       # header.append('<div style=\"float:right\"><ahref=\"URL\"><img src=\"Favicon.gif\" alt=\"alt\" style=\"float:right;width:33px;height:41px;padding-top:10px;\"> </a>`</div>');
+                       #     console.log(header)")
+                       # ),
+
+
+
+                       # titlePanel(HTML("PSS Health")),
+                       # HTML("<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers"),
 
                        fluidPage(fluidRow(
                          column(11,
                                 fluidRow(
                                   h2("PSS Health"),
                                   HTML(paste0(
-                                    "<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers (versão ",
-                                    packageVersion("PSS.Health"), ")")
+                                    "<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers (versão ", if(!.versao_online){
+                                      packageVersion("PSS.Health")
+                                    } else{
+                                      "on-line"
+                                    }, ")")
                                   )
                                 )
                          ),
@@ -4123,13 +4206,21 @@ ui <- fluidPage(fluidRow(
 
                        # uiOutput("PSS_CRAN"),
 
-                       br(),
+                       br(),br(),
                        HTML("Navegue entre as abas para encontrar o cenário correspondente ao objetivo do estudo. Altere os parâmetros conforme necessidade e utilize o texto como auxílio para entender o cálculo.",
                             "<br>",
                             "<b>Sempre</b> procure um profissional de estatística para orientações no planejamento do estudo.",
                             ""),
 
-
+                       br(),br(),br(),
+                       # h3("PSS Health no CRAN"),
+                       HTML(paste0("O PSS Health está disponível no ",
+                                   "<a href='https://cran.r-project.org/web/packages/PSS.Health/index.html' target='_blank'>CRAN</a>",
+                                   " e pode ser utilizado pelo computador por meio do pacote ", code("PSS.Health"), ".")),
+                       br(), br(),
+                       code("install.packages('PSS.Health')"),
+                       br(),
+                       code("PSS.Health::PSS_Health()"),
 
                        br(),br(),br(),
                        h3("Leituras recomendadas"),
@@ -4140,6 +4231,12 @@ ui <- fluidPage(fluidRow(
                             "<br><br>",
                             "<ul>", # inicio da lista
 
+                            "<li><b>Artigo sobre o PSS Health:</b></li>",
+                            "<ul>",
+                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/109542/pdf" target="_blank">Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde</a></b></li>',
+                            "</ul>",
+
+                            "<br><br>",
                             "<li><b>Principais conceitos em Epidemiologia:</b> Têm dúvidas sobre os tipos de delineamento e métodos de amostragem?</li>",
                             "<ul>",
                             '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/42338/27237" target="_blank">Os principais delineamentos na Epidemiologia</a></b></li>',

@@ -497,7 +497,6 @@ server <- function(input, output, session) {
 
 
 
-
   #...........................-----
   #  1  media  ----
 
@@ -1086,7 +1085,10 @@ server <- function(input, output, session) {
       geom_point() +
       scale_x_continuous(breaks = seq(from = input$mean_from, to = input$mean_to, by = input$mean_by)) +
       xlab("Margem de erro absoluta") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
@@ -1421,7 +1423,10 @@ server <- function(input, output, session) {
       geom_point() +
       geom_line() +
       xlab("Proporção esperada (%)") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
@@ -2037,6 +2042,7 @@ server <- function(input, output, session) {
 
   output$th2_mean_formula1 <- renderUI({
     req(!is.null(sided_two_means_test()))
+    req(length(sided_two_means_test()) != 0)
     req(!is.null(th2mean_grupoTratamento()))
     sinal_h0 <- case_when(input$alternative_TH2_mean_pwr == 'two.sided' ~ "=",
                           input$alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test()$alternative_d == "greater"  ~ "\\leq",
@@ -2048,6 +2054,7 @@ server <- function(input, output, session) {
 
   output$th2_mean_formula2 <- renderUI({
     req(!is.null(sided_two_means_test()))
+    req(length(sided_two_means_test()) != 0)
     req(!is.null(th2mean_grupoTratamento()))
     sinal_h1 <- case_when(input$alternative_TH2_mean_pwr == 'two.sided' ~ "\\neq",
                           input$alternative_TH2_mean_pwr == 'one.sided' & sided_two_means_test()$alternative_d == "greater"  ~ ">",
@@ -2180,6 +2187,7 @@ server <- function(input, output, session) {
   sided_two_means_test <- reactive({
 
     req(!is.null(input$alternative_TH2_mean_pwr))
+    req(!is.null(input$TH2_mean_margin))
     # req(!is.null(input$cohen_TH2_mean_pwr) | !is.null(input$TH2_mean_margin))
 
 
@@ -2327,8 +2335,8 @@ server <- function(input, output, session) {
       eval(parse(text = validate_n("npwr")))
 
 
-      n1 <- npwr$n.treat
-      n2 <- npwr$n.control
+      n1 <- ceiling(npwr$n.treat)
+      n2 <- ceiling(npwr$n.control)
 
       n <- n1 + n2
       nperdas1 <- n_perdas(n1, input$TH_mean_perdas_recusa)
@@ -2575,7 +2583,10 @@ server <- function(input, output, session) {
       geom_line() +
       scale_x_continuous(breaks = seq(from = input$th2_mean_from, to = input$th2_mean_to, by = input$th2_mean_by)) +
       xlab("Magnitude do efeito (d)") +
-      ylab("Tamanho total da amostra*")
+      ylab("Tamanho total da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
@@ -2591,7 +2602,10 @@ server <- function(input, output, session) {
         geom_line() +
         scale_x_continuous(breaks = seq(from = input$th2_mean_from_diff, to = input$th2_mean_to_diff, by = input$th2_mean_by_diff)) +
         xlab("Diferença entre as médias") +
-        ylab("Tamanho da amostra*")
+        ylab("Tamanho da amostra*") +
+        theme_bw() +
+        theme(axis.text = element_text(colour = "black")) +
+        scale_color_brewer(palette = "Set1")
 
 
       plotly::ggplotly(g1, tooltip = c("x", "colour", "y", "n1", "n2")) %>%
@@ -2813,22 +2827,22 @@ server <- function(input, output, session) {
     if(input$th2_pwr_mean_cohen){
 
       if(input$poder_alternative_TH2_mean_pwr != "two.sided" & input$cohen_TH2_mean_pwr < 0){
-        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
+        texto_comparacao <- paste0("Foi calculado o poder do teste para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
         alternative <- 1
         alternative_d <- "less"
       } else{
-        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
+        texto_comparacao <- paste0("Foi calculado o poder do teste para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
         alternative <- 1
         alternative_d <- "greater"
       }
     } else {
 
       if(input$poder_alternative_TH2_mean_pwr != "two.sided" & input$poder_TH2_mean_margin < 0){
-        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
+        texto_comparacao <- paste0("Foi calculado o poder do teste para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é inferior a do ", th2mean_grupoControle(), ", ")
         alternative <- 1
         alternative_d <- "less"
       } else{
-        texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
+        texto_comparacao <- paste0("Foi calculado o poder do teste para detectar que a média de <b>Y</b> no grupo ", th2mean_grupoTratamento(), " é superior a do ", th2mean_grupoControle(), ",")
         alternative <- 1
         alternative_d <- "greater"
       }
@@ -2837,7 +2851,7 @@ server <- function(input, output, session) {
 
     # O de dois lados se sobrepoe
     if(input$poder_alternative_TH2_mean_pwr == "two.sided"){
-      texto_comparacao <- paste0("Foi calculado o tamanho de amostra para detectar diferenças na média de <b>", mean2_nome_desfecho(), "</b> entre os grupos ", th2mean_grupoTratamento(), " e ", th2mean_grupoControle(), ", ")
+      texto_comparacao <- paste0("Foi calculado o poder do teste para detectar diferenças na média de <b>", mean2_nome_desfecho(), "</b> entre os grupos ", th2mean_grupoTratamento(), " e ", th2mean_grupoControle(), ", ")
       alternative <- 2
       alternative_d <- "two.sided"
     }
@@ -4435,7 +4449,11 @@ server <- function(input, output, session) {
         geom_vline(xintercept=input$p2_TH_prop2, linetype="dashed", color = "red") +
         scale_x_continuous(breaks = seq(from = input$p2_TH_from, to = input$p2_TH_to, by = input$p2_TH_by)) +
         xlab(paste0("% no ", th2prop_grupoTratamento())) +
-        ylab("Tamanho da amostra*")
+        ylab("Tamanho da amostra*") +
+        theme_bw() +
+        theme(axis.text = element_text(colour = "black")) +
+        scale_color_brewer(palette = "Set1")
+
     } else if(input$prop2_estatistica_B == 'ratio'){
 
       g1 <- ggplot(tab_p2_TH_cenarios(),
@@ -4449,7 +4467,10 @@ server <- function(input, output, session) {
         geom_vline(xintercept=input$p2_TH_ratio, linetype="dashed", color = "red") +
         scale_x_continuous(breaks = seq(from = input$rr_p2_TH_from, to = input$rr_p2_TH_to, by = input$rr_p2_TH_by)) +
         xlab(paste0("Risco relativo/ razão de prevalências (", th2prop_grupoTratamento(), "/", th2prop_grupoControle(), ")")) +
-        ylab("Tamanho da amostra*")
+        ylab("Tamanho da amostra*") +
+        theme_bw() +
+        theme(axis.text = element_text(colour = "black")) +
+        scale_color_brewer(palette = "Set1")
     } else{
 
       g1 <- ggplot(tab_p2_TH_cenarios(),
@@ -4463,7 +4484,10 @@ server <- function(input, output, session) {
         geom_vline(xintercept=input$p2_TH_odds, linetype="dashed", color = "red") +
         scale_x_continuous(breaks = seq(from = input$rc_p2_TH_from, to = input$rc_p2_TH_to, by = input$rc_p2_TH_by)) +
         xlab(paste0("Razão de chance (", th2prop_grupoTratamento(), "/", th2prop_grupoControle(), ")")) +
-        ylab("Tamanho da amostra*")
+        ylab("Tamanho da amostra*") +
+        theme_bw() +
+        theme(axis.text = element_text(colour = "black")) +
+        scale_color_brewer(palette = "Set1")
     }
 
 
@@ -5053,7 +5077,7 @@ server <- function(input, output, session) {
                         max = 100,
                         step = 5
           ) %>% .help_buttom(body = paste0(
-            "Percentual do total de pares disconcordantes (aqueles que obtiveram respostas diferentes) em cada categoria - ver explicação no cabeçalho da aba.",
+            "Percentual do total de pares discordantes (aqueles que obtiveram respostas diferentes) em cada categoria - ver explicação no cabeçalho da aba.",
             .txt_definido_pesquisador_OU_literatura
           )
           )
@@ -5338,7 +5362,10 @@ server <- function(input, output, session) {
       geom_line() +
       xlab(paste0("% de pares discordantes na categoria ", prop2n_dep_cat1())) +
       ylab("Tamanho total da amostra (pares)*") +
-      scale_x_continuous(breaks = seq(from = input$prop2n_dep_from, to = input$prop2n_dep_to, by = input$prop2n_dep_by))
+      scale_x_continuous(breaks = seq(from = input$prop2n_dep_from, to = input$prop2n_dep_to, by = input$prop2n_dep_by)) +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
@@ -5761,7 +5788,10 @@ server <- function(input, output, session) {
       geom_line() +
       xlab("Diferença a ser detectada") +
       ylab("Tamanho total da amostra (pares)*") +
-      scale_x_continuous(breaks = seq(from = input$th2_mean_paired_from, to = input$th2_mean_paired_to, by = input$th2_mean_paired_by))
+      scale_x_continuous(breaks = seq(from = input$th2_mean_paired_from, to = input$th2_mean_paired_to, by = input$th2_mean_paired_by)) +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
@@ -6983,7 +7013,10 @@ server <- function(input, output, session) {
       geom_point() +
       scale_x_continuous(breaks = seq(from = input$rep_th_from, to = input$rep_th_to, by = input$rep_th_by)) +
       xlab("Diferença a ser detectada") +
-      ylab("Tamanho total da amostra*")
+      ylab("Tamanho total da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y", "n Tratamento", "n Controle")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
@@ -7931,7 +7964,10 @@ server <- function(input, output, session) {
       geom_line() +
       scale_x_continuous(breaks = seq(from = input$anovaOne_from, to = input$anovaOne_to, by = input$anovaOne_by)) +
       xlab("Magnitude do efeito (f)") +
-      ylab("Tamanho da amostra (por grupo)*")
+      ylab("Tamanho da amostra (por grupo)*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
@@ -8013,7 +8049,10 @@ server <- function(input, output, session) {
       geom_line() +
       scale_x_continuous(breaks = seq(from = input$anovaOne_sd_from, to = input$anovaOne_sd_to, by = input$anovaOne_sd_by)) +
       xlab("Desvio padrão esperado") +
-      ylab("Tamanho da amostra (por grupo)*")
+      ylab("Tamanho da amostra (por grupo)*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
@@ -8055,7 +8094,7 @@ server <- function(input, output, session) {
   eval(parse(text = warning_numero_positivo("n_anova_power")))
   eval(parse(text = warning_numero_positivo("k_anova_power")))
   eval(parse(text = warning_prop("sig_anova_power2")))
-  eval(parse(text = warning_prop("sigma_anova_power2")))
+  eval(parse(text = warning_numero_positivo("sigma_anova_power2")))
 
   observeEvent(input$f_anova_power, {
     if(is.na(input$f_anova_power)){
@@ -8998,7 +9037,10 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       geom_line() +
       scale_x_continuous(breaks = seq(from = input$chisq_from, to = input$chisq_to, by = input$chisq_by)) +
       xlab("Magnitude do efeito w") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
@@ -9170,8 +9212,12 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
                                         Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
         )
       ),
+
       fluidRow(
         column(6,
+               # tags$head(tags$style(HTML(as.character(
+               #   ".js-irs-1 .irs-single, .js-irs-1 .irs-from, .js-irs-1 .irs-to, .js-irs-1 .irs-bar-edge, .js-irs-1 .irs-bar{background: #006338 ;  }"
+               # )))),
                sliderInput("range_cor_cenarios",
                            "Intervalo de correlação:",
                            min = 0,
@@ -9223,7 +9269,10 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       geom_point() +
       geom_line() +
       xlab("Correlação esperada") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g2,
                      tooltip = c("x", "colour", "y")) %>%
@@ -9561,6 +9610,9 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
 
       fluidRow(
         column(6,
+               # tags$head(tags$style(HTML(as.character(
+               #   ".js-irs-1 .irs-single, .js-irs-1 .irs-from, .js-irs-1 .irs-to, .js-irs-1 .irs-bar-edge, .js-irs-1 .irs-bar{background: #006338 ;  }"
+               # )))),
                sliderInput("range_cor_cenarios_th",
                            "Intervalo de correlação:",
                            min   = 0,
@@ -10368,7 +10420,10 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       geom_point() +
       geom_line() +
       xlab("Hazard ratio esperado") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
 
 
@@ -10855,7 +10910,10 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       geom_point() +
       geom_line() +
       xlab("AUC esperada") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
 
 
@@ -11040,13 +11098,14 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       if(sensibilidade != 0){
         code_sens <- paste0("presize::prec_sens(",
                             "sens = ", sensibilidade, ", ",
-                            "prev = ", prevalencia_doenca, ", ",
+                            # "prev = ", prevalencia_doenca, ", ",
                             "conf.width = ", amplitude, ", ",
                             "conf.level = ", alpha, ", ",
-                            "method = '", metodo, "')")
+                            "method = '", metodo, "')$n/",
+                            prevalencia_doenca)
 
         n_sens <- eval(parse(text = code_sens))
-        n_sens <- ceiling(n_sens$ntot)
+        n_sens <- ceiling(n_sens)
       }
     }
 
@@ -11055,12 +11114,13 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       if(especificidade != 0){
         code_esp <- paste0("presize::prec_spec(",
                            "spec = ", especificidade, ", ",
-                           "prev = ", prevalencia_doenca, ", ",
+                           # "prev = ", prevalencia_doenca, ", ",
                            "conf.width = ", amplitude, ", ",
                            "conf.level = ", alpha, ", ",
-                           "method = '", metodo, "')")
+                           "method = '", metodo, "')$n/(1 - ",
+                           prevalencia_doenca, ")")
         n_espe <- eval(parse(text = code_esp))
-        n_espe <- ceiling(n_espe$ntot)
+        n_espe <- ceiling(n_espe)
       }
     }
 
@@ -11202,20 +11262,20 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       if(n_sen){
         n <- tryCatch({
           presize::prec_sens(sens = sens_esp,
-                             prev = prevalencia,
+                             # prev = prevalencia,
                              conf.width = precisao,
                              conf.level = alpha,
-                             method = method)},
+                             method = method)$n/prevalencia},
           warning = function(warning_condition) { NA },
           error = function(error_condition) { NA })
 
       } else{
         n <- tryCatch({
           presize::prec_spec(spec = sens_esp,
-                             prev = prevalencia,
+                             # prev = prevalencia,
                              conf.width = precisao,
                              conf.level = alpha,
-                             method = method)},
+                             method = method)$n/(1 - prevalencia)},
           warning = function(warning_condition) { NA },
           error = function(error_condition) { NA })
       }
@@ -11223,7 +11283,7 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       if(class(n) == "logical"){
         NA_real_
       } else{
-        ceiling(n$ntot)
+        ceiling(n)
       }
     }
 
@@ -11287,7 +11347,10 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       geom_point() +
       geom_line() +
       xlab("Sensibilidade/ especificidade (%) esperada(s)") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
 
 
@@ -11909,7 +11972,10 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       geom_point() +
       geom_line() +
       xlab("ICC esperado") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
 
 
@@ -12074,7 +12140,10 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
       geom_point() +
       scale_x_continuous(breaks = seq(from = input$bland_from, to = input$bland_to, by = input$bland_by)) +
       xlab("Amplitude") +
-      ylab("Tamanho da amostra*")
+      ylab("Tamanho da amostra*") +
+      theme_bw() +
+      theme(axis.text = element_text(colour = "black")) +
+      scale_color_brewer(palette = "Set1")
 
     plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",

@@ -22,19 +22,8 @@ PSS_Health()
 \seealso{
 {
 
-Agranonik, M., & Hirakata, V. N. (2011). Cálculo de tamanho de amostra: Proporções. Clinical & Biomedical Research, 31(3), Article 3. \url{https://seer.ufrgs.br/hcpa/article/view/23574}
+Borges, R., Mancuso, A., Camey, S., Leotti, V., Hirakata, V., Azambuja, G., & Castro, S. (2021). Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde. Clinical & Biomedical Research, 40(4). Retrieved from \url{https://seer.ufrgs.br/hcpa/article/view/109542}
 
-Borges, R. B., Leotti, V. B., Mancuso, A. C. B., Castro, S. M. de J., Hirakata, V. N., & Camey, S. A. (2020). Equívocos Estatísticos: Perguntas que você sempre quis fazer, mas nunca teve coragem. Clinical & Biomedical Research, 40(1), Article 1. \url{https://seer.ufrgs.br/hcpa/article/view/101299}
-
-Coster, R., Torman, V. B. L., & Camey, S. A. (2012). Um alerta sobre o uso de amostras pequenas na regressão logística. Clinical & Biomedical Research, 32(1), Article 1. \url{https://seer.ufrgs.br/hcpa/article/view/27267}
-
-de Jezus Castro, S. M., Mancuso, A. C. B., Leotti, V. B., Hirakata, V. N., & Camey, S. A. (2020). Bioestatística e Epidemiologia: Perguntas que você sempre quis fazer, mas nunca teve coragem. Clinical & Biomedical Research, 39(3). \url{https://seer.ufrgs.br/hcpa/article/view/96394}
-
-Douglas G. Bonett. (2020). Sample Size Planning for Behavioral Science Research. Sample Size Planning for Behavioral Science Research.  \url{https://people.ucsc.edu/~dgbonett/sample.html}
-
-Hirakata, V. N., Mancuso, A. C. B., & Castro, S. M. de J. (2019). Teste de Hipóteses: Perguntas que você sempre quis fazer, mas nunca teve coragem. Clinical & Biomedical Research, 39(2), Article 2. \url{https://seer.ufrgs.br/hcpa/article/view/93649}
-
-Leotti, V. B., Mancuso, A. C. B., Borges, R. B., Castro, S. M. de J., Hirakata, V. N., & Camey, S. A. (2019). Modelagem estatística: Perguntas que você sempre quis fazer, mas nunca teve coragem. Clinical & Biomedical Research, 39(4), Article 4. \url{https://seer.ufrgs.br/hcpa/article/view/98944}
 }
 }
 \author{
