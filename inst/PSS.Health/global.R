@@ -4,27 +4,27 @@
 
 # {
 #   # require('PSS.Health')
-#   require('DT')
-#   require('easypower')
-#   require('epiR')
-#   require('EnvStats')
-#   require('ICC.Sample.Size')
-#   require('kappaSize')
-#   require('longpower')
-#   require("magrittr")
-#   require('plotly')
-#   require('powerMediation')
-#   require('powerSurvEpi')
-#   require("presize")
-#   require('pROC')
-#   require('pwr')
-#   require('pwr2')
-#   require('shiny')
-#   require('shinycssloaders')
-#   require('shinyFeedback')
-#   require('shinyhelper')
-#   require('tidyverse')
-#   require('writexl')
+  # require('DT')
+  # require('easypower')
+  # require('epiR')
+  # require('EnvStats')
+  # require('ICC.Sample.Size')
+  # require('kappaSize')
+  # require('longpower')
+  # require("magrittr")
+  # require('plotly')
+  # require('powerMediation')
+  # require('powerSurvEpi')
+  # require("presize")
+  # require('pROC')
+  # require('pwr')
+  # require('pwr2')
+  # require('shiny')
+  # require('shinycssloaders')
+  # require('shinyFeedback')
+  # require('shinyhelper')
+  # require('tidyverse')
+  # require('writexl')
 #
 # }
 
@@ -142,7 +142,7 @@
 
 
 .txt_h1 <- paste0(
-  "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, superior ou inferior. Nos dois útilmos casos, a hipótese alternativa é de que o parâmetro é maior ou menor do que o valor de referência, respectivamente. ",
+  "Tipo de teste de acordo com a hipótese alternativa: O teste pode ser bilateral, unilateral superior ou unilateral inferior.",
   "Maiores informações em ",
   '<a href="https://seer.ufrgs.br/hcpa/article/view/93649/pdf" target="_blank">Hirakata et al. 2019</a>.',
   .txt_definido_pesquisador
@@ -296,12 +296,20 @@
   )
 
 
+rodape <- fluidPage(
+  HTML("<br><br><hr><br><br>"),
+  column(11,
+         HTML('<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  ),
+  column(1, img(src = 'PSS.png', width = "100%"))
+)
+
 
 
 
 
 # Versão online? ----
-.versao_online <- TRUE
+.versao_online <- FALSE
 
 
 .txt_citacao_tap <- paste("ferramenta PSS Health versão",

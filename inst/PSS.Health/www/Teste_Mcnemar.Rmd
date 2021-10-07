@@ -30,7 +30,7 @@ sujeito é avaliado quanto a uma informação binária antes e depois de uma det
 
 
 
-Onde as células $p_b$ e $p_c$ representam o percentual do total de pares disconcordantes  (aqueles que obtiveram respostas diferentes).
+Onde as células $p_b$ e $p_c$ representam o percentual do total de pares discordantes  (aqueles que obtiveram respostas diferentes).
 
 
 

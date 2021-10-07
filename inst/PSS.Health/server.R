@@ -177,6 +177,31 @@ server <- function(input, output, session) {
     )
   }
 
+
+
+
+
+  warning_numero <- function(id){
+    paste0(
+      'observeEvent(input$', id,', {
+      shinyFeedback::hideFeedback("', id, '")
+      if(is.na(input$', id,')){
+        shinyFeedback::showFeedbackWarning(
+          inputId = "', id, '",
+          text = "Deve ser fornecido um valor.",
+          color = "red"
+        )
+      }
+    })
+    '
+    )
+  }
+
+
+
+
+
+
   testar_valor_perdas_valido <- function(x){
     if(!is.na(x)){
       x > 0 & x < 100
@@ -187,59 +212,6 @@ server <- function(input, output, session) {
 
 
 
-
-  # n_cor <- function(r, rho0, sig.level, power, alternative){
-  #   tryCatch({
-  #     wp.correlation(n = NULL,
-  #                    r = r,
-  #                    power = power/100,
-  #                    p = 0,  # Number of variables to partial out.
-  #                    rho0 = rho0,
-  #                    alpha = sig.level/100,
-  #                    alternative = alternative)$n %>% ceiling() },
-  #   warning = function(warning_condition) { NA },
-  #   error = function(error_condition) { NA })
-  # }
-  # n_corV <- Vectorize(n_cor)
-
-
-
-
-  auc_th_n <- function(auc, power, sig.level, kappaa){
-
-    n_p <- pROC::power.roc.test(auc = auc, sig.level = sig.level/100, power = power/100, kappa = kappaa)
-    n_casos <- ceiling(n_p$ncases)
-    n_control <- ceiling(n_p$ncontrols)
-
-    tibble(n_casos = n_casos, n_control = n_control)
-  }
-
-
-
-  n_cox_th <- function(power, k, pE, pC, RR, alpha){
-
-    n <- tryCatch({
-      powerSurvEpi::ssizeCT.default(k = k,
-                                    pE = pE/100,
-                                    pC = pC/100,
-                                    RR = RR,
-                                    alpha = alpha/100,
-                                    power = power/100)
-    }, warning = function(warning_condition) {
-      NA
-    }, error = function(error_condition) {
-      NA
-    }
-    )
-
-    if(is.numeric(n)){
-      df_ <- data.frame(n_trat = n[1], n_control = n[2])
-    } else{
-      df_ <- data.frame(n_trat = NA, n_control = NA)
-    }
-
-    return(df_)
-  }
 
 
   n_th2_prop <- function(prop_controle,
@@ -260,7 +232,7 @@ server <- function(input, output, session) {
                             power       = poder,
                             sample.type = "two.sample",
                             alternative = alternative,
-                            ratio       = if(ratio_controle_caso >= 1) ratio_controle_caso else 1/ratio_controle_caso,
+                            ratio       = if (ratio_controle_caso >= 1) ratio_controle_caso else 1/ratio_controle_caso,
                             correct     = correct)
       )
     }, warning = function(warning_condition) {
@@ -412,19 +384,6 @@ server <- function(input, output, session) {
 
 
 
-  #---------------------------------------------------.
-  # Sample size to estimate a  correlation
-  #---------------------------------------------------.
-
-  n_est_corr <- function(conf, cor, w, method) {
-
-    n <- presize::prec_cor(r = cor,
-                           conf.width = w,
-                           conf.level = conf/100,
-                           method = method)
-
-    return(n$n)
-  }
 
 
 
@@ -454,7 +413,7 @@ server <- function(input, output, session) {
     ul <- 1 - exp(log(1 - rel) - b - z*sqrt(2*k/((k - 1)*(n0 - 2))))
     w0 <- ul - ll
     n <- ceiling((n0 - 2)*(w0/w)^2 + 2)
-    return (n)
+    return(n)
   }
 
 
@@ -2913,7 +2872,7 @@ server <- function(input, output, session) {
                                      "por meio da ", .txt_citacao_tap, ". ",
                                      "Considerando nível de significância de <b>", input$poder_sig_TH2_mean_pwr, "%</b>, ",
                                      "tamanho amostral de ", input$poder_n1_TH2_mean_pwr, " para o grupo A e ", input$poder_n2_TH2_mean_pwr, " para o grupo B, ",
-                                     "e tamanho de efeito de <b>", round( input$cohen_TH2_mean_pwr, 2), "</b>, ",
+                                     "e tamanho de efeito de <b>", cohens_d, "</b>, ",
                                      "chegou-se à um poder de de <b>", round(100*npwr$power, digits = 1), "%</b>.")
       paste0(cabecalho,
              texto_tamanho_efeito,
@@ -4224,6 +4183,7 @@ server <- function(input, output, session) {
 
   output$cenarios_duas_prop_thUi <- renderUI({
 
+    req(!is.null(input$prop2_estatistica_B))
 
     razao_usada <- ifelse(input$prop2_estatistica_B == 'ratio', input$p2_TH_ratio, input$p2_TH_odds)
 
@@ -5172,6 +5132,84 @@ server <- function(input, output, session) {
   })
 
 
+  mecnemar <- function(n = NULL, paid = NULL, psi = NULL, sig.level = 0.05,
+                       power = NULL, alternative = c("two.sided", "one.sided"),
+                       method = c("normal", "exact", "cond.exact")) {
+    if (sum(sapply(list(n, paid, psi, power, sig.level), is.null)) !=
+        1) {
+      stop("exactly one of 'n', 'paid', 'psi', 'power', and 'sig.level' must be NULL")
+    }
+    if (!is.null(sig.level) && !is.numeric(sig.level) || any(0 >
+                                                             sig.level | sig.level > 1))
+      stop("'sig.level' must be numeric in [0, 1]")
+    if (!is.null(paid)) {
+      if (any(paid <= 0) || any(paid >= 0.5)) {
+        stop("paid is the smallest discordant probability and must be 0<paid<0.5")
+      }
+    }
+    if (!is.null(psi)) {
+      if (any(psi <= 1)) {
+        stop("psi must be 1 or greater since it is the ratio of the larger discordant probability to the smaller discordant probability")
+      }
+      if (any((psi + 1) * paid > 1)) {
+        stop("psi cannot be so big that the sum of the discordant probabilities exceed 1: ie., (1+paid)*psi>1")
+      }
+    }
+    alternative <- match.arg(alternative)
+    method <- match.arg(method)
+    tside <- switch(alternative, one.sided = 1, two.sided = 2)
+    f <- function(n, paid, psi, sig.level, power) {
+      bc <- ceiling(paid * n * (1 + psi))
+      pbinom(qbinom(sig.level/tside, size = bc, prob = 0.5) -
+               1, size = bc, prob = 1/(1 + psi)) + 1 - pbinom(qbinom(1 -
+                                                                       sig.level/tside, size = bc, prob = 0.5), size = bc,
+                                                              prob = 1/(1 + psi))
+    }
+    fexact <- function(n, paid, psi, sig.level, power, alt = alternative) {
+      sum(dbinom(seq(0, n), size = n, prob = paid * (1 + psi)) *
+            power_binom_test(seq(0, n), p0 = 0.5, pa = 1/(1 +
+                                                            psi), power = NULL, sig.level = sig.level, alternative = ifelse(alt ==
+                                                                                                                              "two.sided", "two.sided", "less"))$power)
+    }
+    if (method == "normal") {
+      p.body <- quote(pnorm((sqrt(n * paid) * (psi - 1) -
+                               qnorm(sig.level/tside, lower.tail = FALSE) * sqrt(psi +
+                                                                                   1))/sqrt((psi + 1) - paid * (psi - 1)^2)))
+    }
+    else if (method == "exact") {
+      p.body <- quote(fexact(n, paid, psi, sig.level, power))
+    }
+    else {
+      p.body <- quote(f(n, paid, psi, sig.level, power))
+    }
+    if (is.null(power)) {
+      power <- eval(p.body)
+    }
+    else if (is.null(n)) {
+      n <- uniroot(function(n) eval(p.body) - power, c(ceiling(log(sig.level)/log(0.5)),
+                                                       1e+07))$root
+    }
+    else if (is.null(paid))
+      paid <- uniroot(function(paid) eval(p.body) - power,
+                      c(1e-10, 1/(1 + psi) - 1e-10))$root
+    else if (is.null(psi))
+      psi <- uniroot(function(psi) eval(p.body) - power, c(1 +
+                                                             1e-10, 1/paid - 1 - 1e-10))$root
+    else if (is.null(sig.level))
+      sig.level <- uniroot(function(sig.level) eval(p.body) -
+                             power, c(1e-10, 1 - 1e-10))$root
+    else stop("internal error", domain = NA)
+    NOTE <- "n is number of pairs"
+    METHOD <- paste("McNemar paired comparison of proportions",
+                    ifelse(method == "normal", "approximate", ifelse(method ==
+                                                                       "exact", "exact unconditional", "exact conditional")),
+                    "power calculation")
+    structure(list(n = n, paid = paid, psi = psi, sig.level = sig.level,
+                   power = power, alternative = alternative, note = NOTE,
+                   method = METHOD), class = "power.htest")
+  }
+
+
 
   output$prop2n_dep_resultadoUi <- renderText({
     req(!is.null(input$prop2n_dep_discordante1))
@@ -5193,8 +5231,17 @@ server <- function(input, output, session) {
       'method = "normal")'
     )
 
+    codeRun <- paste0(
+      "mecnemar(n = NULL, ",
+      "psi = ", numerador, "/", denominador, ", ",
+      "paid = ", denominador, "/100, ",
+      "sig.level = ", input$prop2n_dep_sig, "/100, ",
+      "power = ", input$prop2n_dep_pwr, "/100, ",
+      'alternative = "', input$prop2n_dep_alternativa, '", ',
+      'method = "normal")'
+    )
 
-    n <- try_n(code)
+    n <- try_n(codeRun)
     eval(parse(text = validate_n("n")))
     n <- ceiling(n$n)
     eval(parse(text = validate_n_inf("n")))
@@ -5328,13 +5375,13 @@ server <- function(input, output, session) {
             denominador <- min(perc1, perc2)
 
             ceiling(
-              MESS::power_mcnemar_test(n = NULL,
-                                       psi = numerador/denominador,
-                                       paid = denominador/100,
-                                       sig.level = sig/100,
-                                       power = power/100,
-                                       alternative = alternative,
-                                       method = "normal")$n)
+              mecnemar(n = NULL,
+                       psi = numerador/denominador,
+                       paid = denominador/100,
+                       sig.level = sig/100,
+                       power = power/100,
+                       alternative = alternative,
+                       method = "normal")$n)
 
           },
           warning = function(warning_condition) { NA },
@@ -5893,8 +5940,258 @@ server <- function(input, output, session) {
 
   # 2 Deltas----
 
+  eval(parse(text = warning_numero("th2_mean_dep_diff")))
+  eval(parse(text = warning_numero("th2_mean_dep_delta_tratamento")))
+  eval(parse(text = warning_numero("th2_mean_dep_delta_controle")))
+  eval(parse(text = warning_numero_positivo("th2_mean_dep_sigma1")))
+  eval(parse(text = warning_numero_positivo("th2_mean_dep_sigma2")))
+  eval(parse(text = warning_numero_positivo("th2_mean_dep_desvio_diff")))
+  eval(parse(text = warning_prop("th2_mean_dep_sig")))
+  eval(parse(text = warning_prop("th2_mean_dep_pwr")))
+  eval(parse(text = warning_perdas("th2_mean_dep_perdas_recusa")))
+
+  observeEvent(input$th2_mean_dep_rho, {
+    shinyFeedback::hideFeedback("th2_mean_dep_rho")
+    if(is.na(input$th2_mean_dep_rho)){
+      shinyFeedback::showFeedbackWarning(
+        inputId = "th2_mean_dep_rho",
+        text = "Deve ser fornecido um valor.",
+        color = "red"
+      )
+    } else if (input$th2_mean_dep_rho >= 1) {
+      shinyFeedback::showFeedbackWarning(
+        inputId = "th2_mean_dep_rho",
+        text = "Deve ser menor do que 1.",
+        color = "red"
+      )
+    } else if (input$th2_mean_dep_rho <= -1) {
+      shinyFeedback::showFeedbackWarning(
+        inputId = "th2_mean_dep_rho",
+        text = "Deve ser maior do que -1.",
+        color = "red"
+      )
+    }
+  })
+
+
+
+  # observeEvent(input$th2_mean_dep_desvio_diff, {
+  #   shinyFeedback::hideFeedback("th2_mean_dep_desvio_diff")
+  #   if(is.na(input$th2_mean_dep_desvio_diff)){
+  #     shinyFeedback::showFeedbackWarning(
+  #       inputId = "th2_mean_dep_desvio_diff",
+  #       text = "Deve ser fornecido um valor.",
+  #       color = "red"
+  #     )
+  #   } else if (input$th2_mean_dep_desvio_diff <= 0) {
+  #     shinyFeedback::showFeedbackWarning(
+  #       inputId = "th2_mean_dep_desvio_diff",
+  #       text = "Deve ser menor do que 0.",
+  #       color = "red"
+  #     )
+  #   } else if (abs((input$th2_mean_dep_sigma1^2 + input$th2_mean_dep_sigma2^2 - input$th2_mean_dep_desvio_diff^2)/
+  #              (2*input$th2_mean_dep_sigma1 + input$th2_mean_dep_sigma2)) > 1) {
+  #     shinyFeedback::showFeedbackWarning(
+  #       inputId = "th2_mean_dep_desvio_diff",
+  #       text = paste0("Esse valor de resulta em uma correlação de ",
+  #                     round(
+  #                       (input$th2_mean_dep_sigma1^2 + input$th2_mean_dep_sigma2^2 - input$th2_mean_dep_desvio_diff^2)/
+  #                         (2*input$th2_mean_dep_sigma1 + input$th2_mean_dep_sigma2)), 4),
+  #       color = "red"
+  #     )
+  #   }
+  # })
+
+
+
+
+  observeEvent(input$show_th_2delta, {
+    showModal(
+      modalDialog(
+        title = "Ajustes",
+        fluidPage(
+
+          HTML("<b>Preencha os campos abaixo de acordo com seu estudo para que sirvam de guia no preenchimento dos demais campos</b>."),
+          br(), br(),
+          textInput(inputId = "delta2_nome_desfecho",
+                    label   = "Descreva o nome do desfecho",
+                    value   = ifelse(input$show_th_2delta == 0, "Y", delta2_nome_desfecho())),
+          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
+          br(), br(),
+          textInput(inputId = "delta2_unidade_medida",
+                    label   = paste0("Descreva a unidade de medida do desfecho"),
+                    value   = ifelse(input$show_th_2delta == 0, "u.m.", delta2_unidade_medida())),
+          HTML(paste0("<i>", str_remove_all(.txt_um, "<br><br>"), "</i>")),
+          br(), br(),
+
+          textInput(inputId = "delta2_grupoTratamento",
+                    label   = "Descreva um nome para o grupo Tratamento",
+                    value   = ifelse(input$show_th_2delta == 0, "Tratamento", delta2_grupoTratamento())),
+
+          HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
+
+          textInput(inputId = "delta2_grupoControle",
+                    label   = "Descreva um nome para o grupo Controle",
+                    value   = ifelse(input$show_th_2delta == 0, "Controle", delta2_grupoControle())),
+
+          HTML("<i>Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
+
+
+        ),
+        easyClose = TRUE,
+        footer    = NULL
+      )
+    )
+  })
+
+
+
+
+
+  delta2_grupoControle <- reactive({
+    ifelse(is.null(input$delta2_grupoControle), "Controle", input$delta2_grupoControle)
+  })
+
+  delta2_grupoTratamento <- reactive({
+    ifelse(is.null(input$delta2_grupoTratamento), "Tratamento", input$delta2_grupoTratamento)
+  })
+
+  delta2_nome_desfecho <- reactive({
+    ifelse(is.null(input$delta2_nome_desfecho), "Y", input$delta2_nome_desfecho)
+  })
+
+  delta2_unidade_medida <- reactive({
+    ifelse(is.null(input$delta2_unidade_medida), "u.m.", input$delta2_unidade_medida)
+  })
+
+
+
+  output$delta2_mean_formula1 <- renderUI({
+    req(!is.null(delta2_grupoTratamento()))
+
+    withMathJax(
+      paste0("$$H_0: \\bar{\\Delta}_{", delta2_grupoTratamento(), "} = \\bar{\\Delta}_{", delta2_grupoControle(), "} $$"))
+  })
+
+  output$delta2_mean_formula2 <- renderUI({
+    req(!is.null(delta2_grupoTratamento()))
+
+    withMathJax(
+      paste0("$$H_1: \\bar{\\Delta}_{", delta2_grupoTratamento(), "} \\neq \\bar{\\Delta}_{", delta2_grupoControle(), "} $$"))
+  })
+
+
+
+  output$delta2_painelUi <- renderUI({
+
+    fluidPage(fluidRow(
+
+      wellPanel(
+
+        checkboxInput(
+          "th2_mean_dep_utilizar_medias", "Utilizar os valores dos deltas de cada grupo", value = FALSE
+        ) ,
+        # %>% .help_buttom(body = "Clique aqui para usar os valores dos deltas de cada grupo ao invés da diferença esperada."),
+
+
+        conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == false",
+                         numericInput( "th2_mean_dep_diff",
+                                       paste0("Diferença esperada/ desejada entre os deltas (em ", delta2_unidade_medida(), ")"),
+                                       value = 0.4,
+                                       min = 0,
+                                       max = Inf,
+                                       step = 0.5
+                         ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada")
+        ),
+
+        conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == true",
+
+                         HTML(paste0("<b><font size = '2.95'>Mudança média (delta) de ", delta2_nome_desfecho(), " ao longo do tempo do grupo</font></b><br>")),
+                         div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                             numericInput( "th2_mean_dep_delta_tratamento",
+                                           delta2_grupoTratamento(),
+                                           value = 5,
+                                           min = -Inf,
+                                           max = Inf,
+                                           step = .5
+                             )
+                         ),
+                         div(style="display: inline-block;vertical-align:top; width: 49%;",
+                             numericInput( "th2_mean_dep_delta_controle",
+                                           delta2_grupoControle(),
+                                           value = 4.5,
+                                           min = 0,
+                                           max = Inf,
+                                           step = .5
+                             )
+                         )
+        )
+
+      ),
+
+    HTML(paste0("<b><font size = '2.95'>Desvio padrão esperado de ", delta2_nome_desfecho(), " no</font></b><br>")),
+    div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+        numericInput( "th2_mean_dep_sigma1",
+                      "Início do estudo",
+                      value = 1.4,
+                      min = 0,
+                      max = Inf,
+                      step = .5
+        )
+    ),
+    div(style="display: inline-block;vertical-align:top; width: 49%;",
+        numericInput( "th2_mean_dep_sigma2",
+                      "Final do estudo",
+                      value = 1.2,
+                      min = 0,
+                      max = Inf,
+                      step = .5
+        ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
+    ),
+
+
+    wellPanel(
+
+      checkboxInput(
+        inputId = "th2_mean_usar_desvio_diff",
+        label   = "Usar o desvio padrão da diferença",
+        value   = FALSE
+      ),
+
+      conditionalPanel(
+        'input.th2_mean_usar_desvio_diff == true',
+
+        numericInput( "th2_mean_dep_desvio_diff",
+                      paste0("Desvio padrão da diferença de ", delta2_nome_desfecho()),
+                      value = 2.5,
+                      min = 0,
+                      max = Inf,
+                      step = 1
+        ) %>% .help_buttom(body = paste0(.txt_dp, .txt_definido_literatura))
+      ),
+
+      conditionalPanel(
+        'input.th2_mean_usar_desvio_diff == false',
+
+        numericInput( "th2_mean_dep_rho",
+                      paste0("Correlação das medidas de ", delta2_nome_desfecho(), " (início e fim)"),
+                      value = 0.5,
+                      min = -1,
+                      max = 1,
+                      step = 1
+        ) %>% .help_buttom(body = paste0("Correlação das medidas (início e fim)", .txt_definido_pesquisador_OU_literatura))
+      )
+    )
+    ))
+  })
+
+
+
+
 
   output$th2_mean_dep_out <- renderText({
+
+    req(!is.null(input$th2_mean_dep_utilizar_medias))
 
     if(!input$th2_mean_dep_utilizar_medias){
       validate(
@@ -5904,8 +6201,8 @@ server <- function(input, output, session) {
     } else{
 
       validate(
-        need(!is.na(input$th2_mean_dep_delta_tratamento), "É obrigatório fornecer um valor da mudança média ao longo do tempo do grupo Tratamento."),
-        need(!is.na(input$th2_mean_dep_delta_controle), "É obrigatório fornecer um valor da mudança média ao longo do tempo do grupo Controle.")
+        need(!is.na(input$th2_mean_dep_delta_tratamento), "É obrigatório fornecer um valor da mudança média ao longo do tempo."),
+        need(!is.na(input$th2_mean_dep_delta_controle), "É obrigatório fornecer um valor da mudança média ao longo do tempo.")
       )
     }
 
@@ -5913,72 +6210,137 @@ server <- function(input, output, session) {
     validate(
       need(!is.na(input$th2_mean_dep_pwr), "É obrigatório fornecer um valor do poder."),
       need(!is.na(input$th2_mean_dep_sig),   "É obrigatório fornecer um valor do nível de significância."),
-      need(!is.na(input$th2_mean_dep_sigma1), "É obrigatório fornecer um valor do desvio padrão do grupo Tratamento no início do estudo."),
-      need(!is.na(input$th2_mean_dep_sigma2), "É obrigatório fornecer um valor do desvio padrão do grupo Tratamento no final do estudo."),
-      need(!is.na(input$th2_mean_dep_rho), "É obrigatório fornecer um valor da correlação das medidas (início e fim) dentro do grupo Tratamento."),
+      need(!is.na(input$th2_mean_dep_sigma1), "É obrigatório fornecer um valor do desvio padrão no início do estudo."),
+      need(!is.na(input$th2_mean_dep_sigma2), "É obrigatório fornecer um valor do desvio padrão no final do estudo."),
+      need(!is.na(input$th2_mean_dep_rho), "É obrigatório fornecer um valor da correlação das medidas (início e fim)."),
 
       need(input$th2_mean_dep_pwr < 100, "O poder deve ser menor do que 100%."),
       need(input$th2_mean_dep_sig < 100,   "O nível de significância deve ser menor do que 100%."),
       need(input$th2_mean_dep_pwr > 0, "O poder deve ser maior do que zero."),
       need(input$th2_mean_dep_sig > 0,   "O nível de significância deve ser maior do que zero."),
-      need(input$th2_mean_dep_sigma1 > 0, "O desvio padrão do grupo Tratamento no início do estudo deve ser maior do que zero."),
-      need(input$th2_mean_dep_sigma2 > 0, "O desvio padrão do grupo Tratamento no final do estudo deve ser maior do que zero."),
+      need(input$th2_mean_dep_sigma1 > 0, "O desvio padrão no início do estudo deve ser maior do que zero."),
+      need(input$th2_mean_dep_sigma2 > 0, "O desvio padrão no final do estudo deve ser maior do que zero."),
       need(input$th2_mean_dep_rho >= -1 & input$th2_mean_dep_rho <= 1,
-           "A correlação das medidas (início e fim) dentro do grupo Tratamento deve ser estar entre -1 e 1.")
+           "A correlação das medidas (início e fim) deve ser estar entre -1 e 1.")
     )
+
+
 
 
 
 
     if(!input$th2_mean_dep_utilizar_medias){
       delta <- input$th2_mean_dep_diff
-      info_texto <- paste0("diferença esperada/ desejada de <b>", input$th2_mean_dep_diff, " u.m</b>, ")
+      info_texto <- paste0("uma diferença esperada/ desejada de <b>", input$th2_mean_dep_diff, " ", delta2_unidade_medida(), "</b>, ")
     } else {
       delta <- abs(input$th2_mean_dep_delta_tratamento - input$th2_mean_dep_delta_controle)
       info_texto <- paste0("uma variação média no intervalo de tempo de <b>",
-                           input$th2_mean_dep_delta_tratamento, " u.m.</b> e <b>",
-                           input$th2_mean_dep_delta_controle, " u.m.</b>",
-                           " para o grupo Tratamento e Controle, respectivamente, ")
-
+                           input$th2_mean_dep_delta_tratamento, " ", delta2_unidade_medida(), "</b> e <b>",
+                           input$th2_mean_dep_delta_controle, " ", delta2_unidade_medida(), "</b>",
+                           " para o grupo ", delta2_grupoTratamento(), " e ", delta2_grupoControle(), ", respectivamente, ")
     }
 
 
+
+    if(input$th2_mean_usar_desvio_diff){
+      # correlacao <- (input$th2_mean_dep_sigma1^2 + input$th2_mean_dep_sigma2^2 - input$th2_mean_dep_desvio_diff^2)/
+      #   (2*input$th2_mean_dep_sigma1 + input$th2_mean_dep_sigma2)
+      #
+      # validate(
+      #   need(abs(correlacao) <= 1, "Verifique o painel lateral.")
+      # )
+
+      desvio_diff <- input$th2_mean_dep_desvio_diff
+
+    } else{
+      # correlacao <- input$th2_mean_dep_rho
+      sdb <- input$th2_mean_dep_sigma1
+      sdf <- input$th2_mean_dep_sigma2
+      corr <- input$th2_mean_dep_rho
+
+      sde2 <- sdb^2 + sdf^2  - (2*corr*sdb*sdf)
+
+      desvio_diff <- sqrt(sde2)
+    }
+
+
+    # code <- paste0(
+    #   "powerMediation::ssLongFull(",
+    #   "delta  = ", delta, ", ",
+    #   "sigma1 = ", input$th2_mean_dep_sigma1, ", ",
+    #   "sigma2 = ", input$th2_mean_dep_sigma2, ", ",
+    #   "rho    = ", correlacao, ", ",
+    #   "alpha  = ", input$th2_mean_dep_sig/100, ", ",
+    #   "power  = ", input$th2_mean_dep_pwr/100, ")"
+    # )
+
     code <- paste0(
-      "powerMediation::ssLongFull(",
-      "delta  = ", delta, ", ",
-      "sigma1 = ", input$th2_mean_dep_sigma1, ", ",
-      "sigma2 = ", input$th2_mean_dep_sigma2, ", ",
-      "rho    = ", input$th2_mean_dep_rho, ", ",
-      "alpha  = ", input$th2_mean_dep_sig/100, ", ",
-      "power  = ", input$th2_mean_dep_pwr/100, ")"
+      "epiR::epi.sscompc(",
+      "control = 0, ",
+      "treat = ", delta, ", ",
+      "sigma = ", desvio_diff, ", ",
+      "n = NA, power = ", input$th2_mean_dep_pwr, "/100, ",
+      "conf.level = 1 - ", input$th2_mean_dep_sig, "/100, ",
+      "r = ", input$th2_mean_dep_balanceamento, ", ",
+      "design = 1, sided.test = 2)"
     )
 
 
-    n <- try_n(code)
+    # n <- try_n(code)
+    # eval(parse(text = validate_n("n")))
+    # n <- 2 * ceiling(n/2)
+    # nperdas <- n_perdas(n, input$th2_mean_dep_perdas_recusa)
+    # nperdas <- 2 * ceiling(nperdas/2)
+    # eval(parse(text = validate_n("n")))
+
+    npwr <- try_n(code)
+    eval(parse(text = validate_n("npwr")))
+
+    n1 <- ceiling(npwr$n.treat)
+    n2 <- ceiling(npwr$n.control)
+
+    n <- n1 + n2
+    nperdas1 <- n_perdas(n1, input$th2_mean_dep_perdas_recusa)
+    nperdas2 <- n_perdas(n2, input$th2_mean_dep_perdas_recusa)
     eval(parse(text = validate_n("n")))
+    eval(parse(text = validate_n_inf("n")))
 
-    n <- 2 * ceiling(n/2)
-    nperdas <- n_perdas(n, input$th2_mean_dep_perdas_recusa)
-    nperdas <- 2 * ceiling(nperdas/2)
-
-    eval(parse(text = validate_n("n")))
+    cabecalho <- paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n1, " no ", th2mean_grupoTratamento(), " e ", n2, " no ", th2mean_grupoControle(), "</i>)",
+                        "</font></b></br></br><i>Sugestão de texto:</i></br></br>")
 
 
-    paste0("<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n/2, " em cada grupo</i>)",
-           "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
+    paste0(
+      cabecalho,
 
-           "Foi calculado o tamanho de amostra para detectar diferenças, na mudança média de <b>Y</b>, em um intervalo de tempo <b>T</b> entre os grupos Tratamento e o Controle, ",
-           "por meio da ", .txt_citacao_tap, ". ",
-           "Considerando poder de <b>", input$th2_mean_dep_pwr, "%</b>, ",
-           "nível de significância de <b>", input$th2_mean_dep_sig, "%</b>, ",
-           info_texto,
-           "correlação entre as medidas no tempo do grupo Tratamento de <b>", input$th2_mean_dep_rho, "</b>, ",
-           "desvios padrão de <b>", input$th2_mean_dep_sigma1, "</b> e <b>", input$th2_mean_dep_sigma2, " u.m.</b> ",
-           "do grupo Tratamento no ínicio e no final do estudo, respectivamente (dados de Fulano (1900)), ",
-           "chegou-se ao tamanho total da amostra de <b>", n, "</b> sujeitos, sendo <b>", n/2, "</b> sujeitos em cada grupo. ",
-           "Acrescentando <b>", input$th2_mean_dep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas, "</b>.",
+      "Foi calculado o tamanho de amostra para detectar diferenças, na mudança média de <b>", delta2_nome_desfecho(), "</b>, em um intervalo de tempo <b>T</b> entre os grupos ", delta2_grupoTratamento(), " e o ", delta2_grupoControle(), ", ",
+      "por meio da ", .txt_citacao_tap, ". ",
+      "Considerando ", info_texto,
+      "poder de <b>", input$th2_mean_dep_pwr, "%</b>, ",
+      "nível de significância de <b>", input$th2_mean_dep_sig, "%</b>, ",
 
-           .txt_referencia_tap, print_r_code(code)
+      if (input$th2_mean_usar_desvio_diff) {
+        paste0("desvio padrão da diferença de <b>", input$th2_mean_dep_desvio_diff, " ", delta2_unidade_medida(), "</b>, ")
+      } else {
+        paste0("correlação entre as medidas de <b>", input$th2_mean_dep_rho, "</b>, ")
+      },
+      "desvios padrão de <b>", input$th2_mean_dep_sigma1, "</b> e <b>", input$th2_mean_dep_sigma2, " ", delta2_unidade_medida(), "</b> ",
+      "no ínicio e no final do estudo, respectivamente (dados de Fulano (1900)), ",
+
+      if (input$th2_mean_dep_balanceamento == 1) {
+        paste0(
+          "chegou-se ao tamanho total da amostra de <b>", n, "</b> sujeitos, sendo <b>", n/2, "</b> sujeitos em cada grupo. ",
+          "Acrescentando <b>", input$th2_mean_dep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas1 + nperdas2, "</b>."
+        )
+      } else {
+        paste0(
+          "chegou-se ao tamanho total da amostra de <b>", n, "</b> sujeitos, sendo <b>",
+          n1, "</b> no grupo ", delta2_grupoTratamento(), " e <b>", n2, "</b> no grupo ", delta2_grupoControle(),
+          ". Acrescentando <b>", input$th2_mean_dep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra deverá ser <b>", nperdas1 + nperdas2, "</b> ",
+          "(",  nperdas1, "</b> no grupo ", delta2_grupoTratamento(), " e <b>", nperdas2, "</b> no grupo ", delta2_grupoControle(), ")."
+        )
+      },
+
+      .txt_referencia_tap, print_r_code(code)
     )
 
 
@@ -5991,1639 +6353,10 @@ server <- function(input, output, session) {
   # Medidas repetidas -----
 
 
-  # Testar ----
-  observeEvent(input$show_th_rep, {
-    showModal(
-      modalDialog(
-        title = "Ajustes",
-        fluidPage(
+  mod_medidas_repetidas_server("tamanho_amostral", tipo = "tamanho_amostral")
 
-          HTML("<b>Preencha os campos abaixo de acordo com seu estudo para que sirvam de guia no preenchimento dos demais campos</b>."),
-          br(), br(),
-          textInput(inputId = "rep_nome_desfecho",
-                    label   = "Descreva o nome do desfecho",
-                    value   = ifelse(input$show_th_rep == 0, "Y", rep_nome_desfecho())),
-          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
-          br(), br(),
-          textInput(inputId = "rep_grupoTratamento",
-                    label   = "Descreva um nome para o grupo Tratamento",
-                    value   = ifelse(input$show_th_rep == 0, "Tratamento", rep_grupoTratamento())),
+  mod_medidas_repetidas_server("poder", tipo = "poder")
 
-          HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
-
-          textInput(inputId = "rep_grupoControle",
-                    label   = "Descreva um nome para o grupo Controle",
-                    value   = ifelse(input$show_th_rep == 0, "Controle", rep_grupoControle())),
-
-          HTML("<i>Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
-
-
-        ),
-        easyClose = TRUE,
-        footer    = NULL
-      )
-    )
-  })
-
-
-
-  rep_grupoControle <- reactive({
-    ifelse(is.null(input$rep_grupoControle), "Controle", input$rep_grupoControle)
-  })
-
-  rep_grupoTratamento <- reactive({
-    ifelse(is.null(input$rep_grupoTratamento), "Tratamento", input$rep_grupoTratamento)
-  })
-
-  rep_nome_desfecho <- reactive({
-    ifelse(is.null(input$rep_nome_desfecho), "Y", input$rep_nome_desfecho)
-  })
-
-
-
-  output$rep_formula1 <- renderUI({
-    withMathJax(
-      paste0("$$H_0: \\mu_{", rep_grupoTratamento(), "} = \\mu_{", rep_grupoControle(), "} $$"))
-  })
-
-  output$rep_formula2 <- renderUI({
-    withMathJax(
-      paste0("$$H_1: \\mu_{", rep_grupoTratamento(), "} \\neq \\mu_{", rep_grupoControle(), "} $$"))
-  })
-
-
-  observeEvent(input$rep_n_tempos, {
-      shinyFeedback::hideFeedback("rep_n_tempos")
-
-      if(is.na(input$rep_n_tempos)){
-        shinyFeedback::showFeedbackWarning(
-          inputId = "rep_n_tempos",
-          text = "Deve ser fornecido um valor.",
-          color = "red"
-        )
-      } else if (input$rep_n_tempos < 2) {
-        shinyFeedback::showFeedbackWarning(
-          inputId = "rep_n_tempos",
-          text = "Devem haver pelo menos 2 momentos.",
-          color = "red"
-        )
-      } else if(input$rep_n_tempos%%1 != 0){
-        shinyFeedback::showFeedbackWarning(
-          inputId = "rep_n_tempos",
-          text = "Deve ser um número inteiro positivo.",
-          color = "red"
-        )
-      }
-    })
-
-
-
-  eval(parse(text = warning_numero_positivo("rep_sigma1")))
-  eval(parse(text = warning_numero_positivo("rep_sigma2")))
-  eval(parse(text = warning_numero_positivo("rep_ratio")))
-
-  eval(parse(text = warning_prop("rep_ar1_rho1", entre0e1 = TRUE)))
-  eval(parse(text = warning_prop("rep_ar1_rho2", entre0e1 = TRUE)))
-
-  eval(parse(text = warning_prop("rep_power")))
-  eval(parse(text = warning_prop("rep_sig")))
-  eval(parse(text = warning_perdas("rep_perdas_recusa")))
-
-
-
-
-
-
-
-  # Matriz de correlacao do grupo tratamento
-
-  correlation_R1 <- reactiveValues(mcor = data.frame(a = 1))
-
-  observeEvent(input$rep_n_tempos, {
-
-    req(!is.na(input$rep_n_tempos))
-    req(input$rep_n_tempos%%1 == 0 & input$rep_n_tempos > 1)
-
-    # Cria uma matriz AR1 inicial
-    tempos <- ifelse(is.null(input$rep_n_tempos), 4, input$rep_n_tempos)
-    exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
-    M_correlation <- as.data.frame(0.9^exponent)
-    colnames(M_correlation) <- paste0("Momento ", 1:tempos)
-    rownames(M_correlation) <- paste0("Momento ", 1:tempos)
-    correlation_R1$mcor <- M_correlation
-  })
-
-
-
-
-
-
-
-  output$rep_cor_grupo1 <- DT::renderDT({
-    temp <- input$rep_cor_grupo1_cell_edit
-    DT::datatable(correlation_R1$mcor,
-                  editable = "cell",
-                  extensions = c('FixedColumns'),
-                  rownames   = TRUE,
-                  filter     = "none",
-                  options    = list(autoWidth = FALSE,
-                                    searching = FALSE,
-                                    ordering  = FALSE,
-                                    pageLength = 15,
-                                    dom = 't',
-                                    columnDefs = list(list(className = 'dt-center', targets = "_all"))))
-  })
-
-
-
-
-
-  observeEvent(input$rep_cor_grupo1_cell_edit, {
-    cell <- input$rep_cor_grupo1_cell_edit
-    newdf <- correlation_R1$mcor
-    new_value <- cell$value %>%
-      as.character() %>%
-      str_replace(",", ".") %>%
-      gsub("[^0-9.-]", "", .) %>%
-      as.numeric()
-
-    newdf[cell$row, cell$col] <- new_value
-    newdf[cell$col, cell$row] <- new_value
-
-    correlation_R1$mcor <- newdf
-  })
-
-
-
-
-
-
-
-  rep_problemas_matriz_correlacao1 <- reactive({
-    problemas <- ""
-
-    if(any(is.na(correlation_R1$mcor))){
-      problemas <- paste0('<font color = "red"><b>Todas as células devem ser preenchidas.</b></font><br/>')
-    } else if(any(abs(correlation_R1$mcor) > 1)){
-      problemas <- paste0('<font color = "red"><b>Todas as correlações devem estar entre -1 e 1.</b></font><br/>')
-    } else if(any(abs(correlation_R1$mcor) > 1)){
-      problemas <- paste0('<font color = "red"><b>Os valores da diagonal devem ser igual a 1.</b></font><br/>')
-    }
-    problemas
-  })
-
-
-
-
-
-
-
-
-  # Matriz de correlacao do grupo Controle
-
-  correlation_R2 <- reactiveValues(mcor = data.frame(a = 1))
-
-  observeEvent(input$rep_n_tempos, {
-
-    req(!is.na(input$rep_n_tempos))
-    req(input$rep_n_tempos%%1 == 0 & input$rep_n_tempos > 1)
-    # Cria uma matriz AR1 inicial
-    tempos <- ifelse(is.null(input$rep_n_tempos), 4, input$rep_n_tempos)
-    exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
-    M_correlation <- as.data.frame(0.9^exponent)
-    colnames(M_correlation) <- paste0("Momento ", 1:tempos)
-    rownames(M_correlation) <- paste0("Momento ", 1:tempos)
-    correlation_R2$mcor <- M_correlation
-  })
-
-
-
-
-
-
-
-  output$rep_cor_grupo2 <- DT::renderDT({
-    temp <- input$rep_cor_grupo2_cell_edit
-    DT::datatable(correlation_R2$mcor,
-                  editable = "cell",
-                  extensions = c('FixedColumns'),
-                  rownames   = TRUE,
-                  filter     = "none",
-                  options    = list(autoWidth = FALSE,
-                                    searching = FALSE,
-                                    ordering  = FALSE,
-                                    pageLength = 15,
-                                    dom = 't',
-                                    columnDefs = list(list(className = 'dt-center', targets = "_all"))))
-  })
-
-
-
-
-
-  observeEvent(input$rep_cor_grupo2_cell_edit, {
-    cell <- input$rep_cor_grupo2_cell_edit
-    newdf <- correlation_R2$mcor
-    new_value <- cell$value %>%
-      as.character() %>%
-      str_replace(",", ".") %>%
-      gsub("[^0-9.-]", "", .) %>%
-      as.numeric()
-
-    newdf[cell$row, cell$col] <- new_value
-    newdf[cell$col, cell$row] <- new_value
-
-    correlation_R2$mcor <- newdf
-  })
-
-
-
-
-
-
-
-  rep_problemas_matriz_correlacao2 <- reactive({
-    problemas <- ""
-
-    if(any(is.na(correlation_R2$mcor))){
-      problemas <- paste0('<font color = "red"><b>Todas as células devem ser preenchidas.</b></font><br/>')
-    } else if(any(abs(correlation_R2$mcor) > 1)){
-      problemas <- paste0('<font color = "red"><b>Todas as correlações devem estar entre -1 e 1.</b></font><br/>')
-    } else if(any(abs(correlation_R2$mcor) > 1)){
-      problemas <- paste0('<font color = "red"><b>Os valores da diagonal devem ser igual a 1.</b></font><br/>')
-    }
-    problemas
-  })
-
-
-
-
-  output$rep_print_matriz_cor <- renderUI({
-    fluidPage(fluidRow(wellPanel(
-
-      # Tratamento
-      if(rep_problemas_matriz_correlacao1() != ""){
-        HTML(paste0('<font size = "+0.1"><font color = "red">', "<b>Matriz de correlação do grupo ", rep_grupoTratamento(), ":</b>", '</font></font><br/>'))
-      } else{
-        HTML(paste0("<b>Matriz de correlação do grupo ", rep_grupoTratamento()), ":</b>")
-      },
-
-      DT::dataTableOutput("rep_cor_grupo1"),
-
-      if(rep_problemas_matriz_correlacao1() != ""){
-        HTML(rep_problemas_matriz_correlacao1())
-      },
-
-
-      br(), br(),
-      # Controle
-      if(rep_problemas_matriz_correlacao2() != ""){
-        HTML(paste0('<font size = "+0.1"><font color = "red">', "<b>Matriz de correlação do grupo ", rep_grupoTratamento(), ":</b>", '</font></font><br/>'))
-      } else{
-        HTML(paste0("<b>Matriz de correlação do grupo ", rep_grupoControle()), ":</b>")
-      },
-
-      DT::dataTableOutput("rep_cor_grupo2"),
-
-      if(rep_problemas_matriz_correlacao2() != ""){
-        HTML(rep_problemas_matriz_correlacao2())
-      },
-
-
-
-
-      br(), br()
-    )))
-  })
-
-
-
-  output$rep_retencao1 <- renderUI({
-    len <- as.integer(input$rep_n_tempos)
-    lapply(1:len, function(i) {
-      div(
-        numericInput(
-          inputId = paste0("retencao1_", i),
-          label = paste0("Momento ", i),
-          value = 100 + 1 - i
-        )
-      )
-    })
-  })
-
-
-  output$rep_retencao2 <- renderUI({
-    len <- as.integer(input$rep_n_tempos)
-    lapply(1:len, function(i) {
-      div(
-        numericInput(
-          inputId = paste0("retencao2_", i),
-          label = paste0("Momento ", i),
-          value = 100 + 1 - i
-        )
-      )
-    })
-  })
-
-  observe({
-    req(!is.null(input$rep_n_tempos))
-    req(!is.na(input$rep_n_tempos))
-
-    len <- as.integer(input$rep_n_tempos)
-
-    req(!is.null(input[[paste0("retencao1_", len)]]))
-
-    lapply(1:len, function(i) {
-      shinyFeedback::hideFeedback(paste0("retencao1_", i))
-      if(is.na(input[[paste0("retencao1_", i)]])){
-        shinyFeedback::showFeedbackWarning(
-          inputId = paste0("retencao1_", i),
-          text = "Deve ser fornecido um valor.",
-          color = "red"
-        )
-      } else if(input[[paste0("retencao1_", i)]] > 100){
-        shinyFeedback::showFeedbackWarning(
-          inputId = paste0("retencao1_", i),
-          text = "Deve ser fornecido um valor menor do que 100%",
-          color = "red"
-        )
-      } else if(input[[paste0("retencao1_", i)]] < 0){
-        shinyFeedback::showFeedbackWarning(
-          inputId = paste0("retencao1_", i),
-          text = "Deve ser fornecido um valor maior do que 0%",
-          color = "red"
-        )
-      }
-    })
-  })
-
-
-  observe({
-    req(!is.null(input$rep_n_tempos))
-    req(!is.na(input$rep_n_tempos))
-
-    len <- as.integer(input$rep_n_tempos)
-
-    req(!is.null(input[[paste0("retencao2_", len)]]))
-
-    lapply(1:len, function(i) {
-      shinyFeedback::hideFeedback(paste0("retencao2_", i))
-      if(is.na(input[[paste0("retencao2_", i)]])){
-        shinyFeedback::showFeedbackWarning(
-          inputId = paste0("retencao2_", i),
-          text = "Deve ser fornecido um valor.",
-          color = "red"
-        )
-      } else if(input[[paste0("retencao2_", i)]] > 100){
-        shinyFeedback::showFeedbackWarning(
-          inputId = paste0("retencao2_", i),
-          text = "Deve ser fornecido um valor menor do que 100%",
-          color = "red"
-        )
-      } else if(input[[paste0("retencao2_", i)]] <= 0){
-        shinyFeedback::showFeedbackWarning(
-          inputId = paste0("retencao2_", i),
-          text = "Deve ser fornecido um valor maior do que 0%",
-          color = "red"
-        )
-      }
-    })
-  })
-
-
-  output$medidas_repetidas_ui_sided <- renderUI({
-
-    fluidPage(fluidRow(
-      sidebarLayout(
-        sidebarPanel(
-          wellPanel(
-            HTML("<b><font size = '2.8'>Hipóteses a serem testadas*</font></b>"),
-            uiOutput("rep_formula1"),
-            uiOutput("rep_formula2"),
-            HTML("<i><font size = '2.8'>*Resposta média no último tempo</font></i>"),
-          ),
-
-          actionLink("show_th_rep", "Mudar nomes"), br(), br(),
-
-          numericInput( "rep_n_tempos",
-                        "Número de momentos a ser avaliado",
-                        value = 4,
-                        min = 2,
-                        max = Inf,
-                        step = 1
-          ),
-          # uiOutput("rep_n_temposUi"),
-
-          # uiOutput("rep_cor_matriz"),
-          #
-          # column(6, uiOutput("selects2")),
-
-          numericInput( "rep_dif_medias",
-                        paste0("Diferença do ", rep_nome_desfecho(), " a ser detectada no último tempo de avaliação: (Média do ", rep_grupoTratamento(),
-                               ") - (Média do grupo ", rep_grupoControle(), ")"),
-                        value = 0.5,
-                        min = -Inf,
-                        max = Inf,
-                        step = .5
-          ) %>% .help_buttom(body = paste0("É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico) no último tempo de internação.", .txt_definido_pesquisador)),
-
-          # Desvio padrao
-          HTML(paste0("<b><font size = '2.95'>Desvio padrão esperado de ", rep_nome_desfecho(), " no grupo</font></b><br>")),
-          div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-              numericInput( "rep_sigma1",
-                            rep_grupoTratamento(),
-                            value = 1,
-                            min = 0,
-                            max = Inf,
-                            step = 1
-              )
-          ),
-          div(style="display: inline-block;vertical-align:top; width: 49%;",
-              numericInput( "rep_sigma2",
-                            rep_grupoControle(),
-                            value = 1,
-                            min = 0,
-                            max = Inf,
-                            step = 1
-              ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
-          ),
-
-          wellPanel(
-
-            selectInput('rep_tipo_matriz_cor',
-                        "Selecione o tipo de matriz de correlação",
-                        choices = c("AR(1)",
-                                    "Componente permutável",
-                                    "Não estruturada"),
-                        selected = 'Não estruturada'
-            ),
-
-            conditionalPanel("input.rep_tipo_matriz_cor == 'Não estruturada'",
-                             HTML("<i><b>ATENÇÃO!</b> Edite as matrizes de correlação no painel principal ao lado. As matrizes são editáveis, basta clicar duas vezes sobre a célula --> </i><br><br>")
-            ),
-
-            conditionalPanel("input.rep_tipo_matriz_cor == 'AR(1)'",
-                             HTML(paste0("<b><font size = '2.95'>Parâmetro autorregressivo no grupo</font></b><br>")),
-                             div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                                 numericInput( "rep_ar1_rho1",
-                                               rep_grupoTratamento(),
-                                               value = 0.4,
-                                               min = 0,
-                                               max = 1,
-                                               step = .1
-                                 )
-                             ),
-                             div(style="display: inline-block;vertical-align:top; width: 49%;",
-                                 numericInput( "rep_ar1_rho2",
-                                               rep_grupoControle(),
-                                               value = 0.2,
-                                               min = 0,
-                                               max = 1,
-                                               step = .1
-                                 )
-                             )
-            ),
-
-            conditionalPanel("input.rep_tipo_matriz_cor == 'Componente permutável'",
-                             HTML(paste0("<b><font size = '2.95'>Valor da correlação entre os diferentes momentos no grupo</font></b><br>")),
-                             div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                                 numericInput( "rep_cs_rho1",
-                                               rep_grupoTratamento(),
-                                               value = 0.7,
-                                               min = -1,
-                                               max = 1,
-                                               step = .1
-                                 )
-                             ),
-                             div(style="display: inline-block;vertical-align:top; width: 49%;",
-                                 numericInput( "rep_cs_rho2",
-                                               rep_grupoControle(),
-                                               value = 0.7,
-                                               min = -1,
-                                               max = 1,
-                                               step = .1
-                                 )
-                             )
-            )
-          ),
-
-
-
-
-          # Retencao
-          # HTML('<hr style="color: black;">'),
-          # br(),
-          wellPanel(
-            HTML(paste0("<b>Retenção esperada (%) no grupo</b><br><br>")),
-            fluidPage(fluidRow(
-              div(style="display: inline-block;vertical-align:top; width: 49%;",
-                  wellPanel(
-                    HTML(paste0("<b>", rep_grupoTratamento(), ":</b>")),
-                    br(), br(),
-                    uiOutput("rep_retencao1")
-                  )),
-              div(style="display: inline-block;vertical-align:top; width: 49%;", wellPanel(
-                HTML(paste0("<b>", rep_grupoControle(), ":</b>")),
-                br(), br(),
-                uiOutput("rep_retencao2")
-              ))
-            ))
-          ),
-
-
-          # HTML('<hr style="color: black;">'),
-          # HTML(paste0("<b><font size = '2.95'>Retenção esperada (%) no grupo</font></b><br>")),
-          # div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-          #     textInput( "rep_retencao1",
-          #                rep_grupoTratamento(),
-          #                value = "100, 90, 80, 70")
-          # ),
-          # div(style="display: inline-block;vertical-align:top; width: 49%;",
-          #     textInput( "rep_retencao2",
-          #                   rep_grupoControle(),
-          #                   value = "100, 90, 80, 70") %>%
-          #       .help_buttom(body = "Retenção esperada dos grupos (% de sujeitos que ainda estão no estudo em dado ponto no tempo",
-          #                   title = "Retenção esperada")
-          # ),
-
-          fluidPage(fluidRow(
-
-            numericInput( "rep_ratio",
-                          paste0("Balanceamento (", rep_grupoTratamento(), ":", rep_grupoControle(), ")"),
-                          value = 1,
-                          min = 0,
-                          max = Inf,
-                          step = 0.5
-            ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento")
-          )),
-
-
-          numericInput( "rep_power",
-                        "Poder (%)",
-                        value = 80,
-                        min = 0,
-                        max = 100,
-                        step = 1
-          ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
-          numericInput( "rep_sig",
-                        "Nível de significância (%)",
-                        value = 5,
-                        min = 0,
-                        max = 100,
-                        step = 1
-          ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
-          numericInput( "rep_perdas_recusa",
-                        "Perdas/ Recusa (%)",
-                        value = 10,
-                        min = 0,
-                        max = 100,
-                        step = 1
-          ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
-        ),
-
-        mainPanel(
-          conditionalPanel("input.rep_tipo_matriz_cor == 'Não estruturada'",
-                           uiOutput("rep_print_matriz_cor") %>%
-                             shinycssloaders::withSpinner(type = 5),
-
-          ),
-          shinycssloaders::withSpinner(htmlOutput("rep_outout_text"), type = 5),
-          shinycssloaders::withSpinner(uiOutput("rep_corr_matrix_out"), type = 5),
-          shinycssloaders::withSpinner(htmlOutput("rep_out_codigo"), type = 5),
-          uiOutput("cenarios_medidas_rep_thUi")
-
-        )
-      )
-    ))
-  })
-
-
-
-
-  # Aqui eh definido a matriz que sera utilizada no calculo -----.
-
-  correlation_Ra <- reactive({
-
-    if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      correlation_Ra_v <- unlist(c(correlation_R1$mcor))
-
-    } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
-      tempos <- input$rep_n_tempos
-      exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
-      correlation_Ra_v <- c(input$rep_ar1_rho1^exponent)
-    } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
-      tempos <- input$rep_n_tempos
-      exponent <- matrix(1, nrow = tempos, ncol = tempos, byrow = TRUE)
-      diag(exponent) <- 0
-      correlation_Ra_v <- c(input$rep_cs_rho1^exponent)
-    }
-    correlation_Ra_v
-  })
-
-  correlation_Rb <- reactive({
-    if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      correlation_Rb_v <- unlist(c(correlation_R2$mcor))
-
-    } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
-      tempos <- input$rep_n_tempos
-      exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
-      correlation_Rb_v <- c(input$rep_ar1_rho2^exponent)
-    } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
-      tempos <- input$rep_n_tempos
-      exponent <- matrix(1, nrow = tempos, ncol = tempos, byrow = TRUE)
-      diag(exponent) <- 0
-      correlation_Rb_v <- c(input$rep_cs_rho2^exponent)
-    }
-
-    correlation_Rb_v
-  })
-
-
-
-
-
-  rep_retencao_A <- reactive({
-    req(!is.null(input$retencao1_1))
-    lapply(1:input$rep_n_tempos, function(i) {
-      input[[paste0("retencao1_", i)]]
-    }) %>% unlist()
-  })
-
-  rep_retencao_B <- reactive({
-    req(!is.null(input$retencao2_1))
-
-    lapply(1:input$rep_n_tempos, function(i) {
-      input[[paste0("retencao2_", i)]]
-    }) %>% unlist()
-  })
-
-
-
-
-
-  rep_n_calc <- reactive({
-    req(!is.null(input$rep_n_tempos))
-    req(rep_problemas_matriz_correlacao1() == "")
-
-    n <- longpower::power.mmrm(
-      Ra = matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE),
-      ra = rep_retencao_A()/100,
-      sigmaa = input$rep_sigma1,
-      Rb = matrix(data = correlation_Rb(), nrow = input$rep_n_tempos, byrow = TRUE),
-      rb = rep_retencao_B()/100,
-      sigmab = input$rep_sigma2,
-      delta = input$rep_dif_medias,
-      lambda = input$rep_ratio,
-      sig.level = input$rep_sig/100,
-      power = input$rep_power/100
-    )
-
-    validate(need(!is.na(n$n1), 'Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br.'))
-    n
-  })
-
-
-  rep_erro_inputs <- reactive({
-    req(!is.null(input$rep_n_tempos))
-
-    input$rep_n_tempos != sqrt(length(correlation_Ra())) |
-      input$rep_n_tempos != sqrt(length(correlation_Rb())) |
-      !all(diff(rep_retencao_A()) <= 0) | !all(rep_retencao_A() > 0) | !all(rep_retencao_A() <= 100) |
-      !all(diff(rep_retencao_B()) <= 0) | !all(rep_retencao_B() > 0) | !all(rep_retencao_B() <= 100) |
-      input$rep_sigma1 <= 0 |
-      input$rep_sigma2 <= 0 |
-      input$rep_ratio <= 0 |
-      input$rep_sig <= 0 | input$rep_sig >= 100 |
-      input$rep_power <= 0 | input$rep_power >= 100 |
-      input$rep_ar1_rho2 <= 0 | input$rep_ar1_rho2 >= 1 |
-      rep_problemas_matriz_correlacao1() != "" |
-      input$rep_n_tempos%%1 != 0 | input$rep_n_tempos < 1
-
-  })
-
-
-  eval(parse(text = warning_inteiro("rep_n_tempos")))
-
-
-  # Render output ----
-
-
-  output$rep_outout_text <- renderText({
-
-    validate(need(!rep_erro_inputs(), "Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br."))
-
-    n  <- rep_n_calc()
-    n1 <- ceiling(n$n1)
-    n2 <- ceiling(n$n2)
-    n  <- n1 + n2
-
-    nperdas1 <- n_perdas(n1, input$rep_perdas_recusa)
-    nperdas2 <- n_perdas(n2, input$rep_perdas_recusa)
-
-    retencaoA <- paste0(rep_retencao_A(), "%", collapse = ", ") %>%
-      stringi::stri_replace_last_fixed(",", " e ") %>%
-      stringr::str_trim() %>% stringr::str_squish()
-
-    retencaoB <- paste0(rep_retencao_B(), "%", collapse = ", ") %>%
-      stringi::stri_replace_last_fixed(",", " e ") %>%
-      stringr::str_trim() %>% stringr::str_squish()
-
-    momentos <- paste0(1:input$rep_n_tempos, collapse = ", ") %>%
-      stringi::stri_replace_last_fixed(",", " e ") %>%
-      stringr::str_trim() %>% stringr::str_squish()
-
-    paste0(
-      "<b><font size = '5'>Tamanho amostral calculado: ", n, " (<i>", n1, " no grupo ", rep_grupoTratamento(),
-      " e ", n2, " no grupo ", rep_grupoControle(),"</i>)",
-      "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
-
-      "Tendo em vista um estudo longitudinal que avaliará o (a) <b>", rep_nome_desfecho(), "</b> entre os grupos ", rep_grupoTratamento(), " e ", rep_grupoControle(),
-      " em <b>", input$rep_n_tempos, "</b> momentos, ",
-      "foi calculado o tamanho de amostra para detectar diferenças na resposta média de <b>", rep_nome_desfecho(), "</b> entre esses grupos no tempo final (momento ", input$rep_n_tempos,
-      "), tendo uma diferença de <b>", input$rep_dif_medias, " u.m.</b> como relevante para o estudo. ",
-
-      "Para isso foi utilizado a ", .txt_citacao_tap, ". ",
-
-      "Considerando os seguintes valores esperados para o grupo ", rep_grupoControle(), ":",
-
-      "<ul>", # inicio da lista
-      "<li> desvio padrão de <b>", input$rep_sigma2, " u.m.</b>,</li>",
-      "<li> retenção de ", retencaoB, " nos momentos ", momentos,", respectivamente,</li>",
-
-      if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      paste0("<li> matriz de correlação não estruturada (definida abaixo),</li>")
-      } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
-               input$rep_ar1_rho2, " (definida abaixo),</li>")
-      } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
-        paste0("<li> matriz de correlação permutável com correlação ",
-               input$rep_cs_rho2, " (definida abaixo),</li>")
-      },
-
-
-      "</ul>",
-
-      "e para o grupo ", rep_grupoTratamento(), " (dados de Fulano (1900)):",
-      "<ul>", # inicio da lista
-      "<li> desvio padrão de <b>", input$rep_sigma1, " u.m.</b>,</li>",
-      "<li> retenção de ", retencaoA, " nos momentos ", momentos,", respectivamente,</li>",
-
-      if(input$rep_tipo_matriz_cor == 'Não estruturada'){
-      "<li> matriz de correlação não estruturada (definida abaixo),</li>"
-      } else if(input$rep_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
-               input$rep_ar1_rho1, " (definida abaixo),</li>")
-      } else if(input$rep_tipo_matriz_cor == 'Componente permutável'){
-        paste0("<li> matriz de correlação permutável com correlação ",
-               input$rep_cs_rho1, " (definida abaixo),</li>")
-      },
-
-
-      "</ul>",
-
-      "poder de <b>", input$rep_power, "%</b> ",
-      " e nível de significância de <b>", input$rep_sig, "%</b>, ",
-
-
-      ifelse(input$rep_ratio == 1,
-             paste0(
-               "chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> em cada grupo.",
-               " Acrescentando <b>", input$rep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
-               "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " em cada grupo)."
-             ),
-             paste0(
-               "chegou-se ao tamanho de amostra total de <b>", n , "</b> sujeitos, sendo <b>", n1, "</b> no ", rep_grupoTratamento(), " e <b>", n2, "</b> no ", th2mean_grupoControle(), ".",
-               " Acrescentando <b>", input$rep_perdas_recusa, "%</b> para possíveis perdas e recusas o tamanho de amostra ",
-               "deverá ser <b>", nperdas1 + nperdas2, "</b> (", nperdas1, " no ", rep_grupoTratamento(), " e ", nperdas2, " no ", rep_grupoControle(), ")."
-             )
-      ),
-      "<br>", "<br>"
-    )
-
-  })
-
-
-
-
-  output$rep_corr_matrix_out <- renderUI({
-
-    req(!rep_erro_inputs())
-
-    fluidPage(
-      HTML(paste0("Matriz de correlação do grupo ", rep_grupoTratamento(), ":<br>")),
-      renderTable({
-        df_ <- matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE) %>%
-          as.data.frame()
-
-        rownames(df_) <- paste0("Momento ", 1:input$rep_n_tempos)
-        colnames(df_) <- paste0("Momento ", 1:input$rep_n_tempos)
-        df_
-      },
-      rownames = TRUE,
-      colnames = TRUE
-      ),
-
-      HTML(paste0("Matriz de correlação do grupo ", rep_grupoControle(), ":<br>")),      renderTable({
-        df2_ <- matrix(data = correlation_Rb(), nrow = input$rep_n_tempos, byrow = TRUE) %>%
-          as.data.frame()
-
-        rownames(df2_) <- paste0("Momento ", 1:input$rep_n_tempos)
-        colnames(df2_) <- paste0("Momento ", 1:input$rep_n_tempos)
-        df2_
-      },
-      rownames = TRUE,
-      colnames = TRUE
-      )
-
-    )
-  })
-
-
-  output$rep_out_codigo <- renderText({
-
-    req(!rep_erro_inputs())
-
-    code <- paste0("longpower::power.mmrm(",
-                   "Ra = Ra, ",
-                   "ra = c(", paste0(rep_retencao_A(), collapse = ", "), ")/100, ",
-                   "sigmaa = ", input$rep_sigma1,  ", ",
-                   "Rb = Rb, ",
-                   "rb = c(", paste0(rep_retencao_B(), collapse = ", "), ")/100, ",
-                   "sigmab = ", input$rep_sigma2, ", ",
-                   "delta = ", input$rep_dif_medias, ", ",
-                   "lambda = ", input$rep_ratio, ", ",
-                   "sig.level = ", input$rep_sig, "/100, ",
-                   "power = ", input$rep_power, "/100)"
-    )
-
-
-    paste0(
-      .txt_referencia_tap,
-
-      "</br></br>",
-      "<i>Comando R utilizado:</i><br>",
-      "<p style=\"font-family:'Courier New';font-size:100% \">",
-      # Ra
-      code(paste0("Ra <- matrix(data = c(", paste0(correlation_Ra(), collapse = ", "),
-                  "), nrow = ", input$rep_n_tempos, ", byrow = TRUE)")),
-      "<br>",
-      # Rb
-      code(paste0("Rb <- matrix(data = c(", paste0(correlation_Rb(), collapse = ", "),
-                  "), nrow = ", input$rep_n_tempos, ", byrow = TRUE)")),
-      "<br>",
-      code(code),
-      "</p>"
-    )
-
-  })
-
-
-  ## Cenarios ----
-
-  output$cenarios_medidas_rep_thUi <- renderUI({
-    req(!rep_erro_inputs())
-
-
-    if(input$rep_dif_medias > 0){
-      dif_start <- input$rep_dif_medias
-      dif_end  <- input$rep_dif_medias + 2
-      dif_by   <- 0.4
-    } else{
-      dif_start <- input$rep_dif_medias - 2
-      dif_end  <- input$rep_dif_medias
-      dif_by   <- 0.4
-    }
-
-    fluidPage(fluidRow(
-
-      br(),
-      HTML('<hr style="color: black;">'),
-      br(),br(),
-
-      titlePanel("Construção de cenários"),
-      br(),
-
-      wellPanel(paste0(
-        "Utilize os argumentos abaixo para construir diferentes cenários. ",
-        "Você pode definir um intervalo de diferença a ser detectada no último tempo de avaliação e especificar diferentes valores para o desvio padrão do grupo ", rep_grupoTratamento(), ". ",
-        "Demais informações serão recuperadas do painel lateral.")),
-
-      HTML("<b>Defina a sequência de valores para a diferença a ser detectada no último tempo de avaliação:</b>"),
-      br(),
-      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
-          numericInput("rep_th_from", "Mínimo", value = dif_start, step = 1)
-      ),
-      div(style="display: inline-block;vertical-align:top; width: 80px;",
-          numericInput("rep_th_to", "Máximo", value = dif_end, step = 1)
-      ),
-      div(style="display: inline-block;vertical-align:top; width: 80px;",
-          numericInput("rep_th_by", "Intervalo", value = dif_by, min = 0, step = 0.5) %>%
-            .help_buttom(body = "Defina a sequência de margem de erro absoluta. Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
-                         title = "Sequência da margem de erro absoluta")
-      ),
-
-      fluidRow(
-        column(6,
-               textInput(inputId = "rep_sd_plot",
-                         label   = paste0("Digite valores de desvio padrão (DP) do grupo ", rep_grupoTratamento(), " para fazer o gráfico:"),
-                         value   = paste0(c(input$rep_sigma1, input$rep_sigma1 + 0.2, input$rep_sigma1 + 0.5), collapse = ", "),
-                         width   = "100%") %>%
-                 .help_buttom(body = "Defina os valores de desvio padrão.
-                                                      Esses valores serão utilizados para criar diferentes linhas no gráfico.
-                                                      Separe os valores por vírgula ',' e utilize ponto '.' como decimal.")
-        )
-      ),
-
-      shinycssloaders::withSpinner(plotly::plotlyOutput("rep_th_plot", width = "80%"), type = 5),
-      br(), br(),
-      downloadButton("download_rep_th_tab","Download tabela"),
-      shinycssloaders::withSpinner(DT::dataTableOutput("rep_th_tab", width = "100%"), type = 5)
-
-    ))
-
-  })
-
-
-  eval(parse(text = check_text_input_to_vector("rep_sd_plot")))
-
-  tab_rep_th_cenarios <- reactive({
-
-    desvios_plot <- text_input_to_vector(input$rep_sd_plot)
-
-    req(length(desvios_plot) > 0)
-
-    grid <- expand.grid(`Diferença a ser detectada` = seq(from = input$rep_th_from, to = input$rep_th_to, by = input$rep_th_by),
-                        `Desvio padrão 1` = desvios_plot,
-                        `Desvio padrão 2` = input$rep_sigma2,
-                        `Nível de significância (%)` = input$rep_sig,
-                        `Poder (%)` = input$rep_power,
-                        `Balanceamento` = input$rep_ratio)
-
-    grid_n <- grid %$%
-      purrr::pmap_dfr(
-        .l = list(`Diferença a ser detectada`,
-                  `Desvio padrão 1`,
-                  `Desvio padrão 2`,
-                  `Nível de significância (%)`,
-                  `Poder (%)`,
-                  `Balanceamento`),
-        .f = function(delta, sigmaa, sigmab, sig.level, power, lambda){
-          tryCatch({
-            n <- longpower::power.mmrm(
-              Ra = matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE),
-              ra = rep_retencao_A()/100,
-              sigmaa = sigmaa,
-              Rb = matrix(data = correlation_Rb(), nrow = input$rep_n_tempos, byrow = TRUE),
-              rb = rep_retencao_B()/100,
-              sigmab = sigmab,
-              delta = delta,
-              lambda = lambda,
-              sig.level = sig.level/100,
-              power = power/100
-            )
-
-            tibble(`n Tratamento` = ceiling(n$n1), `n Controle` = ceiling(n$n2))
-          },
-          warning = function(warning_condition) { NA },
-          error = function(error_condition) { NA })
-        })
-
-    bind_cols(grid, grid_n) %>%
-      mutate(`Tamanho da amostra` = `n Tratamento` + `n Controle`,
-             `Matriz correlação Tratamento` = paste0("matrix(data = c(", paste0(correlation_Ra(), collapse = ", "),"), nrow = ", input$rep_n_tempos, ", byrow = TRUE)"),
-             `Matriz correlação Controle` = paste0("matrix(data = c(", paste0(correlation_Rb(), collapse = ", "),"), nrow = ", input$rep_n_tempos, ", byrow = TRUE)")
-             )
-
-  })
-
-
-
-  output$rep_th_plot <- plotly::renderPlotly({
-
-    req(!is.null(tab_rep_th_cenarios()))
-
-    g1 <- tab_rep_th_cenarios() %>%
-      mutate(DP = factor(`Desvio padrão 1`)) %>%
-      ggplot(aes(x = `Diferença a ser detectada`,
-                 y = `Tamanho da amostra`,
-                 color = DP,
-                 `n Tratamento` = `n Tratamento`,
-                 `n Controle` = `n Controle`))+
-      geom_line() +
-      geom_point() +
-      scale_x_continuous(breaks = seq(from = input$rep_th_from, to = input$rep_th_to, by = input$rep_th_by)) +
-      xlab("Diferença a ser detectada") +
-      ylab("Tamanho total da amostra*") +
-      theme_bw() +
-      theme(axis.text = element_text(colour = "black")) +
-      scale_color_brewer(palette = "Set1")
-
-    plotly::ggplotly(g1, tooltip = c("x", "colour", "y", "n Tratamento", "n Controle")) %>%
-      plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
-                                        showarrow = F, xref='paper', yref='paper',
-                                        xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                        font=list(size=10)))
-  })
-
-
-
-  output$rep_th_tab <- DT::renderDataTable({
-
-    req(!is.null(tab_rep_th_cenarios()))
-
-    tab_rep_th_cenarios() %>%
-      DT::datatable(#extensions = c('FixedColumns'),
-                    rownames   = FALSE,
-                    filter     = "none",
-                    class = "display nowrap",
-                    options    = list(pageLength = 10,
-                                      scrollX = TRUE,
-                                      scrollY = TRUE,
-                                      searching = FALSE,
-                                      # fixedColumns = list(leftColumns = 1),
-                                      dom = 'B<"dwnld">frtip'))
-  })
-
-
-  output$download_rep_th_tab <- downloadHandler(
-    filename = function() { "Cenarios_tamanho_amostra_medidas_repetidas.xlsx"},
-    content = function(file) {writexl::write_xlsx(tab_rep_th_cenarios(), path = file)}
-  )
-
-
-
-
-
-
-
-
-
-  # Poder ----
-
-  observeEvent(input$show_th_rep_poder, {
-    showModal(
-      modalDialog(
-        title = "Ajustes",
-        fluidPage(
-
-          HTML("<b>Preencha os campos abaixo de acordo com seu estudo para que sirvam de guia no preenchimento dos demais campos</b>."),
-          br(), br(),
-          textInput(inputId = "rep_poder_nome_desfecho",
-                    label   = "Descreva o nome do desfecho",
-                    value   = ifelse(input$show_th_rep_poder == 0, "Y", rep_poder_nome_desfecho())),
-          HTML(paste0("<i>", str_remove_all(.txt_desfecho, "<br><br>"), "</i>")),
-          br(), br(),
-          textInput(inputId = "rep_poder_grupoTratamento",
-                    label   = "Descreva um nome para o grupo Tratamento",
-                    value   = ifelse(input$show_th_rep_poder == 0, "Tratamento", rep_poder_grupoTratamento())),
-
-          HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamadado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
-
-          textInput(inputId = "rep_poder_grupoControle",
-                    label   = "Descreva um nome para o grupo Controle",
-                    value   = ifelse(input$show_th_rep_poder == 0, "Controle", rep_poder_grupoControle())),
-
-          HTML("<i>Em alguns estudos o grupo Controle também pode ser chamadado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
-
-
-        ),
-        easyClose = TRUE,
-        footer    = NULL
-      )
-    )
-  })
-
-
-
-  rep_poder_grupoControle <- reactive({
-    ifelse(is.null(input$rep_poder_grupoControle), "Controle", input$rep_poder_grupoControle)
-  })
-
-  rep_poder_grupoTratamento <- reactive({
-    ifelse(is.null(input$rep_poder_grupoTratamento), "Tratamento", input$rep_poder_grupoTratamento)
-  })
-
-  rep_poder_nome_desfecho <- reactive({
-    ifelse(is.null(input$rep_poder_nome_desfecho), "Y", input$rep_poder_nome_desfecho)
-  })
-
-
-
-  output$rep_poder_formula1 <- renderUI({
-    withMathJax(
-      paste0("$$H_0: \\mu_{", rep_poder_grupoTratamento(), "} = \\mu_{", rep_poder_grupoControle(), "} $$"))
-  })
-
-  output$rep_poder_formula2 <- renderUI({
-    withMathJax(
-      paste0("$$H_1: \\mu_{", rep_poder_grupoTratamento(), "} \\neq \\mu_{", rep_poder_grupoControle(), "} $$"))
-  })
-
-
-
-  eval(parse(text = warning_numero_positivo("rep_poder_sigma1")))
-  eval(parse(text = warning_numero_positivo("rep_poder_sigma2")))
-  eval(parse(text = warning_numero_positivo("rep_poder_ratio")))
-
-  eval(parse(text = warning_prop("rep_poder_ar1_rho1", entre0e1 = TRUE)))
-  eval(parse(text = warning_prop("rep_poder_ar1_rho2", entre0e1 = TRUE)))
-  eval(parse(text = warning_prop("rep_poder_sig")))
-  eval(parse(text = warning_perdas("rep_poder_perdas_recusa")))
-
-  eval(parse(text = warning_inteiro("rep_poder_n1")))
-  eval(parse(text = warning_inteiro("rep_poder_n2")))
-
-
-  output$medidas_repetidas_ui_sided_poder <- renderUI({
-
-    fluidPage(
-      sidebarLayout(
-        sidebarPanel(
-          wellPanel(
-            HTML("<b><font size = '2.8'>Hipóteses a serem testadas*</font></b>"),
-            uiOutput("rep_poder_formula1"),
-            uiOutput("rep_poder_formula2"),
-            HTML("<i><font size = '2.8'>*Resposta média no último tempo</font></i>"),
-          ),
-
-          actionLink("show_th_rep_poder", "Mudar nomes"), br(), br(),
-
-          numericInput( "rep_poder_n_tempos",
-                        "Número de momentos a ser avaliado",
-                        value = 4,
-                        min = 2,
-                        max = Inf,
-                        step = 1
-          ),
-
-          # Tamanho amostral
-          HTML(paste0("<b><font size = '2.95'>Tamanho amostral, no último momento, do grupo</font></b><br>")),
-          div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-              numericInput( "rep_poder_n1",
-                            rep_poder_grupoTratamento(),
-                            value = 95,
-                            min = 0,
-                            max = Inf,
-                            step = 1)
-          ),
-          div(style="display: inline-block;vertical-align:top; width: 49%;",
-              numericInput( "rep_poder_n2",
-                            rep_poder_grupoControle(),
-                            value = 80,
-                            min = 0,
-                            max = Inf,
-                            step = 1)
-          ),
-
-          numericInput( "rep_poder_dif_medias",
-                        paste0("Diferença do ", rep_poder_nome_desfecho(), " a ser detectada no último tempo de avaliação: (Média do ", rep_poder_grupoTratamento(),
-                               ") - (Média do grupo ", rep_poder_grupoControle(), ")"),
-                        value = 0.5,
-                        min = -Inf,
-                        max = Inf,
-                        step = .5
-          ) %>% .help_buttom(body = " É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico) no último tempo de internação."),
-
-
-          selectInput('rep_poder_tipo_matriz_cor',
-                      "Selecione o tipo de matriz de correlação",
-                      choices = c("AR(1)", "Não estruturada"),
-                      selected = 'Não estruturada'
-          ),
-
-          conditionalPanel("input.rep_poder_tipo_matriz_cor == 'Não estruturada'",
-
-                           textAreaInput(inputId = "rep_poder_Ra",
-                                         label  = paste0("Matriz de correlação do grupo ", rep_poder_grupoTratamento()),
-                                         value   = "
-1.00, 0.25, 0.25, 0.25,
-0.25, 1.00, 0.25, 0.25,
-0.25, 0.25, 1.00, 0.25,
-0.25, 0.25, 0.25, 1.00
-  ",
-                                         rows = 4
-
-                           ) %>% .help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_poder_grupoTratamento())),
-
-                           textAreaInput(inputId = "rep_poder_Rb",
-                                         label  = paste0("Matriz de correlação do grupo ", rep_poder_grupoControle()),
-                                         value   = "
-1.00, 0.25, 0.25, 0.25,
-0.25, 1.00, 0.25, 0.25,
-0.25, 0.25, 1.00, 0.25,
-0.25, 0.25, 0.25, 1.00
-  ",
-                                         rows = 4
-
-                           ) %>% .help_buttom(body = paste0("Entre com as matriz de correlação do grupo ", rep_poder_grupoControle())),
-
-          ),
-
-          conditionalPanel("input.rep_poder_tipo_matriz_cor == 'AR(1)'",
-
-                           # Parâmetro autorregressivo
-                           HTML(paste0("<b><font size = '2.95'>Parâmetro autorregressivo no grupo</font></b><br>")),
-                           div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                               numericInput( "rep_poder_ar1_rho1",
-                                             rep_poder_grupoTratamento(),
-                                             value = 0.4,
-                                             min = 0,
-                                             max = 1,
-                                             step = .1
-                               )
-                           ),
-                           div(style="display: inline-block;vertical-align:top; width: 49%;",
-                               numericInput( "rep_poder_ar1_rho2",
-                                             rep_poder_grupoControle(),
-                                             value = 0.2,
-                                             min = 0,
-                                             max = 1,
-                                             step = .1
-                               )
-                           )
-          ),
-
-
-          # Desvio padrao
-          HTML(paste0("<b><font size = '2.95'>Desvio padrão esperado de ", rep_poder_nome_desfecho(), " no grupo</font></b><br>")),
-          div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-              numericInput( "rep_poder_sigma1",
-                            rep_poder_grupoTratamento(),
-                            value = 1,
-                            min = 0,
-                            max = Inf,
-                            step = 1
-              )
-          ),
-          div(style="display: inline-block;vertical-align:top; width: 49%;",
-              numericInput( "rep_poder_sigma2",
-                            rep_poder_grupoControle(),
-                            value = 1,
-                            min = 0,
-                            max = Inf,
-                            step = 1
-              ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
-          ),
-
-
-          # Retencao
-          HTML(paste0("<b><font size = '2.95'>Retenção esperada (%) no grupo</font></b><br>")),
-          div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-              textInput( "rep_poder_retencao1",
-                         rep_poder_grupoTratamento(),
-                         value = "100, 90, 80, 70")
-          ),
-          div(style="display: inline-block;vertical-align:top; width: 49%;",
-              textInput( "rep_poder_retencao2",
-                         rep_poder_grupoControle(),
-                         value = "100, 90, 80, 70") %>%
-                .help_buttom(body = "Retenção esperada dos grupos (% de sujeitos que ainda estão no estudo em dado ponto no tempo",
-                            title = "Retenção esperada")
-          ),
-
-          # numericInput( "rep_poder_ratio",
-          #               paste0("Balanceamento (", rep_poder_grupoTratamento(), ":", rep_poder_grupoControle(), ")"),
-          #               value = 1,
-          #               min = 0,
-          #               max = Inf,
-          #               step = 0.5
-          # ) %>% .help_buttom(
-          #   paste0("Nº de ", rep_poder_grupoControle(), " para cada ", rep_poder_grupoTratamento(), ". Se colocar o valor 2, será calculado um tamanho de amostra ",
-          #          "tal que será necessário 2 ", rep_poder_grupoControle(), " para cada ", rep_poder_grupoTratamento(), " Se colocar o valor 0.5, ",
-          #          "será calculado um tamanho de amostra ",
-          #          "tal que será necessário 2 ", rep_poder_grupoTratamento(), " para cada ", rep_poder_grupoControle(), ".")
-          # ),
-
-
-          # numericInput( "rep_poder_power",
-          #               "Poder (%)",
-          #               value = 80,
-          #               min = 0,
-          #               max = 100,
-          #               step = 1
-          # ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
-          numericInput( "rep_poder_sig",
-                        "Nível de significância (%)",
-                        value = 5,
-                        min = 0,
-                        max = 100,
-                        step = 1
-          ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)")
-          # numericInput( "rep_poder_perdas_recusa",
-          #               "Perdas/ Recusa (%)",
-          #               value = 10,
-          #               min = 0,
-          #               max = 100,
-          #               step = 1
-          # ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
-        ),
-
-        mainPanel(
-          shinycssloaders::withSpinner(htmlOutput("rep_poder_outout_text"), type = 5),
-          shinycssloaders::withSpinner(uiOutput("rep_poder_corr_matrix_out"), type = 5),
-          shinycssloaders::withSpinner(htmlOutput("rep_poder_out_codigo"), type = 5)
-
-        )
-      )
-    )
-  })
-
-
-
-  correlation_rep_power_Ra <- reactive({
-
-    if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
-      correlation_rep_power_Ra_v <- text_input_to_vector(input$rep_poder_Ra)
-
-    } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
-      tempos <- input$rep_poder_n_tempos
-      exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
-      correlation_rep_power_Ra_v <- c(input$rep_poder_ar1_rho1^exponent)
-    }
-    correlation_rep_power_Ra_v
-  })
-
-  correlation_rep_power_Rb <- reactive({
-    if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
-      correlation_rep_power_Rb_v <- text_input_to_vector(input$rep_poder_Rb)
-
-    } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
-      tempos <- input$rep_poder_n_tempos
-      exponent <- abs(matrix(1:tempos - 1, nrow = tempos, ncol = tempos, byrow = TRUE) - (1:tempos - 1))
-      correlation_rep_power_Rb_v <- c(input$rep_poder_ar1_rho2^exponent)
-    }
-
-    correlation_rep_power_Rb_v
-  })
-
-
-
-
-
-  rep_poder_retencao_A <- reactive({
-    text_input_to_vector(input$rep_poder_retencao1)
-  })
-
-  rep_poder_retencao_B <- reactive({
-    text_input_to_vector(input$rep_poder_retencao2)
-  })
-
-
-  observeEvent(c(input$rep_poder_retencao1, input$rep_poder_n_tempos), {
-    if(length(rep_poder_retencao_A()) != input$rep_poder_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_retencao1",
-        text = paste0("Deve ser fornecido ", input$rep_poder_n_tempos, " valores."),
-        color = "red")
-    } else if(!all(diff(rep_poder_retencao_A()) <= 0) ){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_retencao1",
-        text = "A sequência deve ser descendente",
-        color = "red")
-    } else if(!all(rep_poder_retencao_A() > 0) | !all(rep_poder_retencao_A() <= 100)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_retencao1",
-        text = "Todos valores devem estar entre 0% e 100%.",
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_poder_retencao1")
-    }
-  })
-
-  observeEvent(c(input$rep_poder_retencao2, input$rep_poder_n_tempos), {
-    if(length(rep_poder_retencao_B()) != input$rep_poder_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_retencao2",
-        text = paste0("Deve ser fornecido ", input$rep_poder_n_tempos, " valores."),
-        color = "red")
-    } else if(!all(diff(rep_poder_retencao_B()) <= 0)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_retencao2",
-        text = "A sequência deve ser descendente",
-        color = "red")
-    } else if(!all(rep_poder_retencao_B() > 0) | !all(rep_poder_retencao_B() <= 100)){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_retencao2",
-        text = "Todos valores devem estar entre 0% e 100%.",
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_poder_retencao2")
-    }
-  })
-
-
-  observeEvent(c(input$rep_poder_Ra, input$rep_poder_n_tempos), {
-    if(sqrt(length(correlation_rep_power_Ra())) != input$rep_poder_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_Ra",
-        text = paste0("Deve ser fornecido uma matriz ", input$rep_poder_n_tempos, " x ", input$rep_poder_n_tempos, "."),
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_poder_Ra")
-    }
-  })
-
-  observeEvent(c(input$rep_poder_Rb, input$rep_poder_n_tempos), {
-    if(sqrt(length(correlation_rep_power_Rb())) != input$rep_poder_n_tempos){
-      shinyFeedback::showFeedbackWarning(
-        inputId = "rep_poder_Rb",
-        text = paste0("Deve ser fornecido uma matriz ", input$rep_poder_n_tempos, " x ", input$rep_poder_n_tempos, "."),
-        color = "red")
-    } else {
-      shinyFeedback::hideFeedback("rep_poder_Rb")
-    }
-  })
-
-
-
-  rep_poder_n_calc <- reactive({
-
-    N <- input$rep_poder_n1 + input$rep_poder_n2
-    lambda <- input$rep_poder_n1/ input$rep_poder_n2
-
-
-    n <- longpower::power.mmrm(
-      N = N,
-      Ra = matrix(data = correlation_rep_power_Ra(), nrow = input$rep_poder_n_tempos, byrow = TRUE),
-      ra = rep_poder_retencao_A()/100,
-      sigmaa = input$rep_poder_sigma1,
-      Rb = matrix(data = correlation_rep_power_Rb(), nrow = input$rep_poder_n_tempos, byrow = TRUE),
-      rb = rep_poder_retencao_B()/100,
-      sigmab = input$rep_poder_sigma2,
-      delta = input$rep_poder_dif_medias,
-      lambda = lambda,
-      sig.level = input$rep_poder_sig/100,
-    )
-
-    validate(need(!is.na(n$power), 'Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br.'))
-    n
-  })
-
-
-  rep_poder_erro_inputs <- reactive({
-
-    input$rep_poder_n_tempos != sqrt(length(correlation_rep_power_Ra())) |
-      input$rep_poder_n_tempos != sqrt(length(correlation_rep_power_Rb())) |
-      !all(diff(rep_poder_retencao_A()) <= 0) | !all(rep_poder_retencao_A() > 0) | !all(rep_poder_retencao_A() <= 100) |
-      !all(diff(rep_poder_retencao_B()) <= 0) | !all(rep_poder_retencao_B() > 0) | !all(rep_poder_retencao_B() <= 100) |
-      input$rep_poder_sigma1 <= 0 |
-      input$rep_poder_sigma2 <= 0 |
-      # input$rep_poder_ratio <= 0 |
-      input$rep_poder_sig <= 0 | input$rep_poder_sig >= 100 |
-      # input$rep_poder_power <= 0 | input$rep_poder_power >= 100 |
-      input$rep_poder_ar1_rho2 <= 0 | input$rep_poder_ar1_rho2 >= 1
-
-  })
-
-
-  # Render output ----
-
-
-  output$rep_poder_outout_text <- renderText({
-
-    validate(need(!rep_poder_erro_inputs(), "Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br."))
-
-    poder  <- rep_poder_n_calc()
-    poder <- round(poder$power*100, 1)
-
-    retencaoA <- paste0(rep_poder_retencao_A(), "%", collapse = ", ") %>%
-      stringi::stri_replace_last_fixed(",", " e ") %>%
-      stringr::str_trim() %>% stringr::str_squish()
-
-    retencaoB <- paste0(rep_poder_retencao_B(), "%", collapse = ", ") %>%
-      stringi::stri_replace_last_fixed(",", " e ") %>%
-      stringr::str_trim() %>% stringr::str_squish()
-
-    momentos <- paste0(1:input$rep_poder_n_tempos, collapse = ", ") %>%
-      stringi::stri_replace_last_fixed(",", " e ") %>%
-      stringr::str_trim() %>% stringr::str_squish()
-
-    paste0(
-      "<b><font size = '5'>Poder calculado: ", poder, "%",
-      "</font></b></br></br><i>Sugestão de texto:</i></br></br>",
-
-      "Tendo em vista um estudo longitudinal que avaliará o (a) <b>", rep_poder_nome_desfecho(), "</b> entre os grupos ", rep_poder_grupoTratamento(), " e ", rep_poder_grupoControle(),
-      " em <b>", input$rep_poder_n_tempos, "</b> momentos, ",
-      "foi calculado o poder do teste para detectar diferenças na resposta média de <b>", rep_poder_nome_desfecho(), "</b> entre esses grupos no tempo final (momento ", input$rep_poder_n_tempos,
-      "), tendo uma diferença de <b>", input$rep_poder_dif_medias, " u.m.</b> como relevante para o estudo. ",
-
-      "Para isso foi utilizado a ", .txt_citacao_tap, ". ",
-
-      "Considerando os seguintes valores para o grupo ", rep_poder_grupoControle(), ":",
-
-      "<ul>", # inicio da lista
-      "<li> desvio padrão de <b>", input$rep_poder_sigma2, " u.m.</b>,</li>",
-      "<li> retenção de ", retencaoB, " nos momentos ", momentos,", respectivamente,</li>",
-      "<li> tamanho amostral de <b>", input$rep_poder_n2, "</b> no momento ", input$rep_poder_n_tempos, ",</li>",
-
-
-
-      if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
-        "<li> matriz de correlação definida abaixo como Rb,</li>"
-      } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
-               input$rep_poder_ar1_rho2, " (matriz de correlação Rb definida abaixo),</li>")
-      },
-
-      "</ul>",
-
-      "e para o grupo ", rep_poder_grupoTratamento(), " (dados de Fulano (1900)):",
-      "<ul>", # inicio da lista
-      "<li> desvio padrão de <b>", input$rep_poder_sigma1, " u.m.</b>,</li>",
-      "<li> retenção de ", retencaoA, " nos momentos ", momentos,", respectivamente,</li>",
-      "<li> tamanho amostral de <b>", input$rep_poder_n1, "</b> no momento ", input$rep_poder_n_tempos, ",</li>",
-
-
-      if(input$rep_poder_tipo_matriz_cor == 'Não estruturada'){
-        "<li> matriz de correlação definida abaixo,</li>"
-      } else if(input$rep_poder_tipo_matriz_cor == 'AR(1)'){
-        paste0("<li> matriz de correlação autorregressiva de parâmetro ",
-               input$rep_poder_ar1_rho1, " (matriz de correlação definida abaixo),</li>")
-      },
-
-
-      "</ul>",
-
-      " e nível de significância de <b>", input$rep_poder_sig, "%</b>, ",
-      "chegou-se ao poder de <b>", poder , "%</b>.",
-      "<br>", "<br>"
-    )
-
-  })
-
-
-  output$rep_poder_corr_matrix_out <- renderUI({
-
-    req(!rep_poder_erro_inputs())
-
-    fluidPage(
-      HTML("Matriz de correlação Ra:<br>"),
-      renderTable({
-        df_ <- matrix(data = correlation_rep_power_Ra(), nrow = input$rep_poder_n_tempos, byrow = TRUE) %>%
-          as.data.frame()
-
-        rownames(df_) <- paste0("T", 1:input$rep_poder_n_tempos)
-        colnames(df_) <- paste0("T", 1:input$rep_poder_n_tempos)
-        df_
-      },
-      rownames = TRUE,
-      colnames = TRUE
-      ),
-
-      HTML("<br>Matriz de correlação Rb:<br>"),
-      renderTable({
-        df2_ <- matrix(data = correlation_rep_power_Rb(), nrow = input$rep_poder_n_tempos, byrow = TRUE) %>%
-          as.data.frame()
-
-        rownames(df2_) <- paste0("T", 1:input$rep_poder_n_tempos)
-        colnames(df2_) <- paste0("T", 1:input$rep_poder_n_tempos)
-        df2_
-      },
-      rownames = TRUE,
-      colnames = TRUE
-      )
-
-    )
-  })
-
-
-  output$rep_poder_out_codigo <- renderText({
-
-    req(!rep_poder_erro_inputs())
-
-    code <- paste0("longpower::power.mmrm(",
-                   "N = ", input$rep_poder_n1 + input$rep_poder_n2, ", ",
-                   "Ra = Ra, ",
-                   "ra = c(", paste0(rep_poder_retencao_A(), collapse = ", "), ")/100, ",
-                   "sigmaa = ", input$rep_poder_sigma1,  ", ",
-                   "Rb = Rb, ",
-                   "rb = c(", paste0(rep_poder_retencao_B(), collapse = ", "), ")/100, ",
-                   "sigmab = ", input$rep_poder_sigma2, ", ",
-                   "delta = ", input$rep_poder_dif_medias, ", ",
-                   "lambda = ", input$rep_poder_n1/ input$rep_poder_n2, ", ",
-                   "sig.level = ", input$rep_poder_sig, "/100)"
-    )
-
-
-    paste0(
-      .txt_referencia_tap,
-
-      "</br></br>",
-      "<i>Comando R utilizado:</i><br>",
-      "<p style=\"font-family:'Courier New';font-size:100% \">",
-      # Ra
-      code(paste0("Ra <- matrix(data = c(", paste0(correlation_rep_power_Ra(), collapse = ", "),
-                  "), nrow = ", input$rep_poder_n_tempos, ", byrow = TRUE)")),
-      "<br>",
-      # Rb
-      code(paste0("Rb <- matrix(data = c(", paste0(correlation_rep_power_Rb(), collapse = ", "),
-                  "), nrow = ", input$rep_poder_n_tempos, ", byrow = TRUE)")),
-      "<br>",
-      code(code),
-      "</p>"
-    )
-
-  })
 
 
 
@@ -9249,11 +7982,21 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
                 Coeficiente = input$r_r_coeficiente,
                 stringsAsFactors = FALSE) %>%
 
-      mutate(n = mapply(n_est_corr,
-                        `Nível de confiança (%)`,
-                        `Correlação`,
-                        precisao,
-                        Coeficiente) %>% ceiling) %>%
+      mutate(n = mapply(
+        FUN = function(conf, cor, w, method) {
+          n <- presize::prec_cor(
+            r = cor,
+            conf.width = w,
+            conf.level = conf/100,
+            method = method
+          )
+
+          return(n$n)
+        },
+        `Nível de confiança (%)`,
+        `Correlação`,
+        precisao,
+        Coeficiente) %>% ceiling) %>%
 
       mutate(`n + perdas/ recusas` = n_perdas(n, input$corr_TH_perdas_recusa_est),
              `Amplitude do intervalo` = factor(precisao),
@@ -10399,7 +9142,29 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
     df_n <- df_grid %>%
       rename(RR = HR, power = `Poder (%)`, alpha = `Nível de significância (%)`, k = `Balanço`) %$%
       purrr::pmap_dfr(.l = list(power, k, pE, pC, RR, alpha),
-                      .f = n_cox_th)
+                      .f = function(power, k, pE, pC, RR, alpha){
+
+                        n <- tryCatch({
+                          powerSurvEpi::ssizeCT.default(
+                            k = k,
+                            pE = pE/100,
+                            pC = pC/100,
+                            RR = RR,
+                            alpha = alpha/100,
+                            power = power/100)
+                        },
+                        warning = function(warning_condition) { NA },
+                        error = function(error_condition) { NA })
+
+                        if(is.numeric(n)){
+                          df_ <- data.frame(n_trat = n[1], n_control = n[2])
+                        } else{
+                          df_ <- data.frame(n_trat = NA, n_control = NA)
+                        }
+
+                        return(df_)
+                      }
+      )
 
     bind_cols(df_grid, df_n) %>%
       mutate(n = n_trat + n_control)
@@ -10707,7 +9472,17 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
 
 
 
+  # aba_obter_correlacao ----
 
+  output$correlacao_outras_ferramentas <- renderText({
+    correlacao <- (input$outras_ferr_correlacaoA^2 + input$outras_ferr_correlacaoB^2 - input$outras_ferr_correlacaoAeB^2)/
+      (2*input$outras_ferr_correlacaoA*input$outras_ferr_correlacaoB)
+
+
+    paste0("<b><font size = '5'>",
+           "<i>Correlação<sub>AeB</sub></i> = ", round(correlacao, 4),
+           "<br><br>")
+  })
 
 
 
@@ -10889,7 +9664,16 @@ ods text= '*Rotina desenvolvida pela ferramenta PSS.Health: https://hcpa-unidade
     df_n <- df_grid %>%
       rename(auc = AUC, power = `Poder (%)`, sig.level = `Nível de significância (%)`, kappaa = `Balanço`) %$%
       purrr::pmap_dfr(.l = list(auc, power, sig.level, kappaa),
-                      .f = auc_th_n)
+                      .f = function(auc, power, sig.level, kappaa){
+
+                        n_p <- pROC::power.roc.test(auc = auc, sig.level = sig.level/100, power = power/100, kappa = kappaa)
+                        n_casos <- ceiling(n_p$ncases)
+                        n_control <- ceiling(n_p$ncontrols)
+
+                        tibble(n_casos = n_casos, n_control = n_control)
+                      }
+      )
+
 
     bind_cols(df_grid, df_n) %>%
       mutate(n = n_casos + n_control)

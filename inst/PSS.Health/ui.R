@@ -11,9 +11,9 @@ aba_estimacao_uma_media <- tabPanel(
   titlePanel("Uma média"),
   wellPanel(
     # includeMarkdown(file.path("Markdown", "Caput_estimar_uma_media.Rmd")),
-    "Um estudo pode ter como objetivo estimar ou testar o valor médio de uma variável quantitativa referente à população de interesse. "
-    # 'Mais detalhes sobre o uso dessa aba em ',
-    # HTML('<b><a href="https://seer.ufrgs.br/hcpa/article/view/109542/pdf" target="_blank">Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde</a></b>')
+    "Um estudo pode ter como objetivo estimar ou testar o valor médio de uma variável quantitativa referente à população de interesse. ",
+    'Mais detalhes sobre o uso dessa aba em ',
+    HTML('<b><a https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')
   ),
   tabsetPanel(
     tabPanel("Estimar",
@@ -62,7 +62,7 @@ aba_estimacao_uma_media <- tabPanel(
                ) # Fecha main panel
              ),
 
-             HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+             rodape
     ),
 
 
@@ -188,7 +188,9 @@ aba_estimacao_uma_prop <- tabPanel(
                       o parâmetro de interesse é a proporção de ocorrência das categorias de resposta
                       destas variáveis. No caso de se estimar uma proporção, o motivo principal de se
                       calcular o tamanho da amostra é garantir uma determinada precisão na estimativa
-                      que será obtida."),
+                      que será obtida. ",
+            'Mais detalhes sobre o uso dessa aba em ',
+            HTML('<b><a https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')),
 
   tabsetPanel(
     tabPanel("Estimar",
@@ -311,7 +313,7 @@ aba_estimacao_uma_prop <- tabPanel(
                  checkboxInput("prop_1th_approx", "Calcular utilizando a aproximação pela normal", value = FALSE
                  ) %>% .help_buttom(body = paste0("Calcular utilizando a aproximação pela normal?
                                    Se esta opção estiver desmarcada será utilizado o método exato.",
-                                                  .txt_definido_pesquisador)
+                                   .txt_definido_pesquisador)
                  ),
 
                  conditionalPanel("input.prop_1th_approx == true",
@@ -383,7 +385,7 @@ aba_estimacao_uma_prop <- tabPanel(
   ),
 
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -465,7 +467,7 @@ aba_estimacao_Cronbach <- tabPanel("Cronbach",
                                      )
                                    ),
 
-                                   HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+                                   rodape
 )
 
 
@@ -504,45 +506,47 @@ aba_TH_duas_amostra_media <- tabPanel(
                  actionLink("show_th_2mean", "Mudar nomes"),
                  br(), br(),
 
-                 checkboxInput("th2_mean_cohen", "Calcular usando o d de Cohen", value = FALSE),
-                 # %>% .help_buttom(body = "Clique aqui para usar d de Cohen ao invés das diferenças e desvio padrão."),
-                 conditionalPanel(condition = "input.th2_mean_cohen == true",
+                 wellPanel(
+                   checkboxInput("th2_mean_cohen", "Calcular usando o d de Cohen", value = FALSE),
+                   # %>% .help_buttom(body = "Clique aqui para usar d de Cohen ao invés das diferenças e desvio padrão."),
+                   conditionalPanel(condition = "input.th2_mean_cohen == true",
 
-                                  # HTML("<i>Você também pode calcular o d de Cohen na aba 'Outras ferramentas' --> 'd de Cohen'</i><br>"),
-                                  # br(),
-                                  numericInput( "cohen_TH2_mean_pwr",
-                                                "Tamanho do efeito (d de Cohen)",
-                                                value = 0.4,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 0.1) %>%
-                                    shinyhelper::helper(type = "markdown",
-                                                        title = "Tamanho de efeito d",
-                                                        content = "Effect_size_d_Cohen",
-                                                        buttonLabel = "Fechar",
-                                                        fade = TRUE,
-                                                        colour = "#006338",
-                                                        size = "l"),
-                                  # actionLink("show_d_cohen", "O que é o d de Cohen?"),
-                                  # br(), br(),
-                                  # ) %>% shinyhelper::helper(
-                                  #   type = "markdown",
-                                  #   title = "D de Cohen",
-                                  #   content = "D_de_cohen.Rmd",
-                                  #   buttonLabel = "Fechar",
-                                  #   fade = TRUE,
-                                  #   size = "l"),
+                                    # HTML("<i>Você também pode calcular o d de Cohen na aba 'Outras ferramentas' --> 'd de Cohen'</i><br>"),
+                                    # br(),
+                                    numericInput( "cohen_TH2_mean_pwr",
+                                                  "Tamanho do efeito (d de Cohen)",
+                                                  value = 0.4,
+                                                  min = 0,
+                                                  max = Inf,
+                                                  step = 0.1) %>%
+                                      shinyhelper::helper(type = "markdown",
+                                                          title = "Tamanho de efeito d",
+                                                          content = "Effect_size_d_Cohen",
+                                                          buttonLabel = "Fechar",
+                                                          fade = TRUE,
+                                                          colour = "#006338",
+                                                          size = "l"),
+                                    # actionLink("show_d_cohen", "O que é o d de Cohen?"),
+                                    # br(), br(),
+                                    # ) %>% shinyhelper::helper(
+                                    #   type = "markdown",
+                                    #   title = "D de Cohen",
+                                    #   content = "D_de_cohen.Rmd",
+                                    #   buttonLabel = "Fechar",
+                                    #   fade = TRUE,
+                                    #   size = "l"),
 
 
-                                  # actionLink("show_d_cohen",
-                                  #            "Você também pode calcular a d de Cohen em 'Outras ferramentas' --> 'd de Cohen'"
-                                  #            ),
-                                  # br()
+                                    # actionLink("show_d_cohen",
+                                    #            "Você também pode calcular a d de Cohen em 'Outras ferramentas' --> 'd de Cohen'"
+                                    #            ),
+                                    # br()
 
+                   ),
+
+                   conditionalPanel(condition = "input.th2_mean_cohen == false",
+                                    uiOutput("mean2Ui"))
                  ),
-
-                 conditionalPanel(condition = "input.th2_mean_cohen == false",
-                                  uiOutput("mean2Ui")),
                  numericInput( "power_TH2_mean_pwr",
                                "Poder (%)",
                                value = 80,
@@ -579,6 +583,113 @@ aba_TH_duas_amostra_media <- tabPanel(
                  ###  CENARIOS  ####.
 
                  uiOutput("cenarios_duas_medias_thUi")
+               )
+             )
+    ),
+
+
+    tabPanel("Poder",
+             sidebarLayout(
+               sidebarPanel(
+
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   uiOutput("poder_th2_mean_formula1"),
+                   uiOutput("poder_th2_mean_formula2")
+                 ),
+
+                 wellPanel(
+                   checkboxInput("th2_pwr_mean_cohen", "Usar d de Cohen", value = FALSE),
+                   conditionalPanel(condition = "input.th2_pwr_mean_cohen == true",
+
+                                    numericInput( "cohen_TH2_mean_pwr_poder",
+                                                  "Tamanho do efeito (d de Cohen)",
+                                                  value = 0.4,
+                                                  min = 0,
+                                                  max = Inf,
+                                                  step = 0.1) %>%
+                                      shinyhelper::helper(type = "markdown",
+                                                          title = "Tamanho de efeito d",
+                                                          content = "Effect_size_d_Cohen",
+                                                          buttonLabel = "Fechar",
+                                                          fade = TRUE,
+                                                          colour = "#006338",
+                                                          size = "l")
+                   ),
+
+                   conditionalPanel(condition = "input.th2_pwr_mean_cohen == false",
+                                    numericInput( "poder_TH2_mean_margin",
+                                                  "Diferença a ser detectada (Grupo A - Grupo B)",
+                                                  value = 1,
+                                                  min = -Inf,
+                                                  max = Inf,
+                                                  step = .5
+                                    ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada"),
+
+                                    HTML(paste0("<b><font size = '2.95'>Desvio padrão do</font></b><br>")),
+                                    div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                                        numericInput( "poder_sigma1_TH2_mean_pwr",
+                                                      "Grupo A",
+                                                      value = 1.2,
+                                                      min = 0,
+                                                      max = Inf,
+                                                      step = 1
+                                        )
+                                    ),
+                                    div(style = "display: inline-block;vertical-align:top; width: 49%;",
+                                        numericInput( "poder_sigma2_TH2_mean_pwr",
+                                                      "Grupo B",
+                                                      value = 1.5,
+                                                      min = 0,
+                                                      max = Inf,
+                                                      step = 1
+                                        ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
+                                    )
+                   )
+                 ),
+
+
+                 HTML(paste0("<b><font size = '2.95'>Tamanho amostral do </font></b><br>")),
+                 div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                     numericInput( "poder_n1_TH2_mean_pwr",
+                                   "Grupo A",
+                                   value = 30,
+                                   min = 2,
+                                   max = Inf,
+                                   step = 1
+                     )
+                 ),
+                 div(style = "display: inline-block;vertical-align:top; width: 49%;",
+                     numericInput( "poder_n2_TH2_mean_pwr",
+                                   "Grupo B",
+                                   value = 45,
+                                   min = 2,
+                                   max = Inf,
+                                   step = 1
+                     ) %>% .help_buttom(body = "Tamanho amostral", title = "Tamanho amostral")
+                 ),
+
+                 numericInput( "poder_sig_TH2_mean_pwr",
+                               "Nível de significância (%)",
+                               value = 5,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+                 selectInput('poder_alternative_TH2_mean_pwr',
+                             'Tipo de teste de acordo com hipótese alternativa:',
+                             choices = c("Bilateral" = "two.sided", "Unilateral" = "one.sided"),
+                             selected = 'two.sided'
+                 ) %>% .help_buttom(body = .txt_h1),
+                 # selectInput('poder_alternative_TH2_mean_pwr',
+                 #             'Tipo de teste de acordo com hipótese alternativa',
+                 #             choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less'),
+                 #             selected = 'two.sided'
+                 # ) %>% .help_buttom(body = .txt_h1)
+               ),
+
+               mainPanel(
+                 shinycssloaders::withSpinner(htmlOutput("THmean2_power"), type = 5)
                )
              )
     ),
@@ -623,125 +734,10 @@ aba_TH_duas_amostra_media <- tabPanel(
                  shinycssloaders::withSpinner(htmlOutput("THmean2_est"), type = 5)
                )
              )
-    ),
-
-
-    tabPanel("Poder",
-             sidebarLayout(
-               sidebarPanel(
-
-                 wellPanel(
-                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
-                   uiOutput("poder_th2_mean_formula1"),
-                   uiOutput("poder_th2_mean_formula2")
-                 ),
-
-                 checkboxInput("th2_pwr_mean_cohen", "Usar d de Cohen", value = FALSE),
-                 conditionalPanel(condition = "input.th2_pwr_mean_cohen == true",
-
-                                  numericInput( "cohen_TH2_mean_pwr_poder",
-                                                "Tamanho do efeito (d de Cohen)",
-                                                value = 0.4,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 0.1) %>%
-                                    shinyhelper::helper(type = "markdown",
-                                                        title = "Tamanho de efeito d",
-                                                        content = "Effect_size_d_Cohen",
-                                                        buttonLabel = "Fechar",
-                                                        fade = TRUE,
-                                                        colour = "#006338",
-                                                        size = "l")
-                 ),
-
-                 conditionalPanel(condition = "input.th2_pwr_mean_cohen == false",
-                                  numericInput( "poder_TH2_mean_margin",
-                                                "Diferença a ser detectada (Grupo A - Grupo B)",
-                                                value = 1,
-                                                min = -Inf,
-                                                max = Inf,
-                                                step = .5
-                                  ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada"),
-
-                                  HTML(paste0("<b><font size = '2.95'>Desvio padrão do</font></b><br>")),
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                                      numericInput( "poder_sigma1_TH2_mean_pwr",
-                                                    "Grupo A",
-                                                    value = 1.2,
-                                                    min = 0,
-                                                    max = Inf,
-                                                    step = 1
-                                      )
-                                  ),
-                                  div(style="display: inline-block;vertical-align:top; width: 49%;",
-                                      numericInput( "poder_sigma2_TH2_mean_pwr",
-                                                    "Grupo B",
-                                                    value = 1.5,
-                                                    min = 0,
-                                                    max = Inf,
-                                                    step = 1
-                                      ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
-                                  )
-
-                 ),
-
-
-                 HTML(paste0("<b><font size = '2.95'>Tamanho amostral do </font></b><br>")),
-                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                     numericInput( "poder_n1_TH2_mean_pwr",
-                                   "Grupo A",
-                                   value = 30,
-                                   min = 2,
-                                   max = Inf,
-                                   step = 1
-                     )
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 49%;",
-                     numericInput( "poder_n2_TH2_mean_pwr",
-                                   "Grupo B",
-                                   value = 45,
-                                   min = 2,
-                                   max = Inf,
-                                   step = 1
-                     ) %>% .help_buttom(body = "Tamanho amostral", title = "Tamanho amostral")
-                 ),
-
-                 # numericInput( "poder_n2_TH2_mean_pwr",
-                 #               "Qual o n de cada grupo?",
-                 #               value = 25,
-                 #               min = 1,
-                 #               max = Inf,
-                 #               step = 1
-                 # ) %>% .help_buttom(body = "Qual o n de cada grupo. É assumido grupos de mesmo tamanho"),
-
-                 numericInput( "poder_sig_TH2_mean_pwr",
-                               "Nível de significância (%)",
-                               value = 5,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
-                 selectInput('poder_alternative_TH2_mean_pwr',
-                             'Tipo de teste de acordo com hipótese alternativa:',
-                             choices = c("Bilateral" = "two.sided", "Unilateral" = "one.sided"),
-                             selected = 'two.sided'
-                 ) %>% .help_buttom(body = .txt_h1),
-                 # selectInput('poder_alternative_TH2_mean_pwr',
-                 #             'Tipo de teste de acordo com hipótese alternativa',
-                 #             choices = c('Bilateral' = 'two.sided','Unilateral Superior' = 'greater','Unilateral Inferior' =  'less'),
-                 #             selected = 'two.sided'
-                 # ) %>% .help_buttom(body = .txt_h1)
-               )
-               ,
-
-               mainPanel(
-                 shinycssloaders::withSpinner(htmlOutput("THmean2_power"), type = 5)
-               )
-             )
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -763,38 +759,41 @@ aba_TH_duas_amostra_prop <- tabPanel(
     tabPanel("Testar",
              sidebarLayout(
                sidebarPanel(
-                 # wellPanel(
-                 HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
-                 uiOutput("th2_prop_formula1"),
-                 uiOutput("th2_prop_formula2"),
-                 # ),
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   uiOutput("th2_prop_formula1"),
+                   uiOutput("th2_prop_formula2"),
+                 ),
 
                  actionLink("show_th_2prop", "Mudar nomes"),
                  br(), br(),
 
                  uiOutput("perc_controle_testar"),
-                 uiOutput("prop2_estatistica_BUi"),
 
-                 conditionalPanel(condition = 'input.prop2_estatistica_B == "percent"',
-                                  uiOutput("perc_tratamento_testar")
-                 ),
-                 conditionalPanel(condition = 'input.prop2_estatistica_B == "ratio"',
-                                  numericInput( "p2_TH_ratio",
-                                                "Risco relativo/ Razão de prevalências",
-                                                value = 2,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 0.1
-                                  )  %>% .help_buttom(body = .txt_risco_relativo, title = "Risco relativo/ Razão de prevalências")
-                 ),
-                 conditionalPanel(condition = 'input.prop2_estatistica_B == "odds"',
-                                  numericInput( "p2_TH_odds",
-                                                "Razão de chance",
-                                                value = 2,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 0.1
-                                  ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance")
+                 wellPanel(
+                   uiOutput("prop2_estatistica_BUi"),
+
+                   conditionalPanel(condition = 'input.prop2_estatistica_B == "percent"',
+                                    uiOutput("perc_tratamento_testar")
+                   ),
+                   conditionalPanel(condition = 'input.prop2_estatistica_B == "ratio"',
+                                    numericInput( "p2_TH_ratio",
+                                                  "Risco relativo/ Razão de prevalências",
+                                                  value = 2,
+                                                  min = 0,
+                                                  max = Inf,
+                                                  step = 0.1
+                                    )  %>% .help_buttom(body = .txt_risco_relativo, title = "Risco relativo/ Razão de prevalências")
+                   ),
+                   conditionalPanel(condition = 'input.prop2_estatistica_B == "odds"',
+                                    numericInput( "p2_TH_odds",
+                                                  "Razão de chance",
+                                                  value = 2,
+                                                  min = 0,
+                                                  max = Inf,
+                                                  step = 0.1
+                                    ) %>% .help_buttom(body = .txt_razao_chance, title = "Razão de chance")
+                   )
                  ),
                  uiOutput("k_TH_prop2Ui"),
                  numericInput( "beta_TH_prop2",
@@ -838,6 +837,81 @@ aba_TH_duas_amostra_prop <- tabPanel(
 
                  ###  CENARIOS  ####.
                  uiOutput("cenarios_duas_prop_thUi")
+               )
+             )
+    ),
+    tabPanel("Poder",
+             sidebarLayout(
+               sidebarPanel(
+
+                 wellPanel(
+                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                   withMathJax("$$H_0: \\pi_{Grupo A} = \\pi_{Grupo B}$$"),
+                   withMathJax("$$H_1: \\pi_{Grupo A} \\neq \\pi_{Grupo B}$$")
+                 ),
+
+                 HTML(paste0("<b><font size = '2.95'>Proporção (%) de desfechos no</font></b><br>")),
+                 div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                     numericInput( "prop2a_th_power",
+                                   "Grupo A",
+                                   value = 35,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
+                 ),
+                 div(style = "display: inline-block;vertical-align:top; width: 49%;",
+                     numericInput( "prop2b_th_power",
+                                   "Grupo B",
+                                   value = 60,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
+                 ),
+
+
+                 HTML(paste0("<b><font size = '2.95'>Tamanho amostral no</font></b><br>")),
+                 div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                     numericInput( "prop2a_th_n",
+                                   "Grupo A",
+                                   value = 35,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
+                 ),
+                 div(style = "display: inline-block;vertical-align:top; width: 49%;",
+                     numericInput( "prop2b_th_n",
+                                   "Grupo B",
+                                   value = 60,
+                                   min = 0,
+                                   max = 100,
+                                   step = 1
+                     )
+                 ),
+                 numericInput( "prop2_th_power_sig",
+                               "Nível de significância (%)",
+                               value = 5,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+
+                 checkboxInput("prop2_th_power_correction", "Aplicar correção de continuidade", value = TRUE
+                 ) %>% .help_buttom(body = paste0("Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade", .txt_definido_pesquisador))
+                 # selectInput('alternative_TH2_prop_pwr2_power',
+                 #             'Tipo de teste de acordo com hipótese alternativa:',
+                 #             choices = c('A % em A é DIFERENTE da % em B' = 'two.sided',
+                 #                         'A % em A é MAIOR do que a % em B' = 'greater',
+                 #                         'A % em A é MENOR do que a % em B' =  'less'),
+                 #             selected = 'two.sided'
+                 # ) %>% .help_buttom(body = .txt_h1)
+
+
+               ),
+               mainPanel(
+                 shinycssloaders::withSpinner(htmlOutput("THprop2_power"), type = 5)
                )
              )
     ),
@@ -951,13 +1025,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                  #                  #   bsplus::bs_embed_popover(title = "Defina a sequência (%) para o grupo Tratamento. Essa sequência será utilizada para compor o eixo x do gráfico",
                  #                  #                            placement = "left"),
                  #                  br(),
-                 #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                 #                  div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
                  #                      numericInput("p2_EST_from", "Mínimo", value = 5, step = 1, min = 0, max = 99)
                  #                  ),
-                 #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  div(style = "display: inline-block;vertical-align:top; width: 80px;",
                  #                      numericInput("p2_EST_to", "Máximo", value = 95, step = 1, min = 1, max = 100)
                  #                  ),
-                 #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  div(style = "display: inline-block;vertical-align:top; width: 80px;",
                  #                      numericInput("p2_EST_by", "Intervalo", value = 5, min = 0, step = 1, max = 99) %>%
                  #                        .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
                  #                                    title = "Sequência")
@@ -979,13 +1053,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                  #                  #                  #   bsplus::bs_embed_popover(title = "Defina a sequência do risco relativo. Essa sequência será utilizada para compor o eixo x do gráfico",
                  #                  #                  #                            placement = "left"),
                  #                  #                  br(),
-                 #                  #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                 #                  #                  div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
                  #                  #                      numericInput("rr_p2_EST_from", "Mínimo", value = 1.2, step = .1, min = 0, max = Inf)
                  #                  #                  ),
-                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                  div(style = "display: inline-block;vertical-align:top; width: 80px;",
                  #                  #                      numericInput("rr_p2_EST_to", "Máximo", value = 1.7, step = .1, min = 0, max = Inf)
                  #                  #                  ),
-                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                  div(style = "display: inline-block;vertical-align:top; width: 80px;",
                  #                  #                      numericInput("rr_p2_EST_by", "Intervalo", value = 0.1, min = 0, step = .1) %>%
                  #                  #                        .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
                  #                  #                                    title = "Sequência")
@@ -1007,13 +1081,13 @@ aba_TH_duas_amostra_prop <- tabPanel(
                  #                  #                  #   bsplus::bs_embed_popover(title = "Defina a sequência da razão de chances. Essa sequência será utilizada para compor o eixo x do gráfico",
                  #                  #                  #                            placement = "left"),
                  #                  #                  br(),
-                 #                  #                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+                 #                  #                  div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
                  #                  #                      numericInput("ods_p2_EST_from", "Mínimo", value = 1.2, step = .1, min = 0, max = Inf)
                  #                  #                  ),
-                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                  div(style = "display: inline-block;vertical-align:top; width: 80px;",
                  #                  #                      numericInput("ods_p2_EST_to", "Máximo", value = 1.7, step = .1, min = 0, max = Inf)
                  #                  #                  ),
-                 #                  #                  div(style="display: inline-block;vertical-align:top; width: 80px;",
+                 #                  #                  div(style = "display: inline-block;vertical-align:top; width: 80px;",
                  #                  #                      numericInput("ods_p2_EST_by", "Intervalo", value = 0.1, min = 0, step = .1) %>%
                  #                  #                        .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
                  #                  #                                    title = "Sequência")
@@ -1045,85 +1119,10 @@ aba_TH_duas_amostra_prop <- tabPanel(
                )
              )
 
-    ),
-    tabPanel("Poder",
-             sidebarLayout(
-               sidebarPanel(
-
-                 wellPanel(
-                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
-                   withMathJax("$$H_0: \\pi_{Grupo A} = \\pi_{Grupo B}$$"),
-                   withMathJax("$$H_1: \\pi_{Grupo A} \\neq \\pi_{Grupo B}$$")
-                 ),
-
-                 HTML(paste0("<b><font size = '2.95'>Proporção (%) de desfechos no</font></b><br>")),
-                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                     numericInput( "prop2a_th_power",
-                                   "Grupo A",
-                                   value = 35,
-                                   min = 0,
-                                   max = 100,
-                                   step = 1
-                     )
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 49%;",
-                     numericInput( "prop2b_th_power",
-                                   "Grupo B",
-                                   value = 60,
-                                   min = 0,
-                                   max = 100,
-                                   step = 1
-                     )
-                 ),
-
-
-                 HTML(paste0("<b><font size = '2.95'>Tamanho amostral no</font></b><br>")),
-                 div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                     numericInput( "prop2a_th_n",
-                                   "Grupo A",
-                                   value = 35,
-                                   min = 0,
-                                   max = 100,
-                                   step = 1
-                     )
-                 ),
-                 div(style="display: inline-block;vertical-align:top; width: 49%;",
-                     numericInput( "prop2b_th_n",
-                                   "Grupo B",
-                                   value = 60,
-                                   min = 0,
-                                   max = 100,
-                                   step = 1
-                     )
-                 ),
-                 numericInput( "prop2_th_power_sig",
-                               "Nível de significância (%)",
-                               value = 5,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
-
-                 checkboxInput("prop2_th_power_correction", "Aplicar correção de continuidade", value = TRUE
-                 ) %>% .help_buttom(body = paste0("Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade", .txt_definido_pesquisador))
-                 # selectInput('alternative_TH2_prop_pwr2_power',
-                 #             'Tipo de teste de acordo com hipótese alternativa:',
-                 #             choices = c('A % em A é DIFERENTE da % em B' = 'two.sided',
-                 #                         'A % em A é MAIOR do que a % em B' = 'greater',
-                 #                         'A % em A é MENOR do que a % em B' =  'less'),
-                 #             selected = 'two.sided'
-                 # ) %>% .help_buttom(body = .txt_h1)
-
-
-               ),
-               mainPanel(
-                 shinycssloaders::withSpinner(htmlOutput("THprop2_power"), type = 5)
-               )
-             )
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -1138,48 +1137,48 @@ aba_TH_duas_amostra_media_equivalencia <- tabPanel(
       "Alguns estudos podem querer verificar se um novo tratamento é melhor (estudo de superioridade) do que o padrão,
 fixado um limite superior; que ele não é inferior (estudo de não-inferioridade) ao padrão, fixado um limite
 inferior; ou tão eficaz (estudo de equivalência) quanto o padrão, fixados um limite inferior e um superior. ",
-      'Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
-      '<b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+'Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
+'<b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
 
     ))
   ),
-  #helpText("$$H_0: \\mu_{Tratamento} - \\mu_{Controle} \\le \\delta$$"),
+#helpText("$$H_0: \\mu_{Tratamento} - \\mu_{Controle} \\le \\delta$$"),
 
-  # helpText('An irrational number \\(\\sqrt{2}\\) and a fraction $$1-\\frac{1}{2}$$'),
-  tabsetPanel(
-    tabPanel("Testar",
-             sidebarLayout(
-               sidebarPanel(
-                 wellPanel(
-                   selectInput('mean_test_inf_eq_sup',
-                               'Selecione o tipo de teste',
-                               choices = c("Não inferioridade",
-                                           "Equivalência",
-                                           "Superioridade"
-                               ),
-                               selected = 'Não inferioridade'
-                   ),
-                   uiOutput("inf_sup_nomesUi")
+# helpText('An irrational number \\(\\sqrt{2}\\) and a fraction $$1-\\frac{1}{2}$$'),
+tabsetPanel(
+  tabPanel("Testar",
+           sidebarLayout(
+             sidebarPanel(
+               wellPanel(
+                 selectInput('mean_test_inf_eq_sup',
+                             'Selecione o tipo de teste',
+                             choices = c("Não inferioridade",
+                                         "Equivalência",
+                                         "Superioridade"
+                             ),
+                             selected = 'Não inferioridade'
                  ),
-                 uiOutput("inf_sup_complementoUi")
+                 uiOutput("inf_sup_nomesUi")
                ),
+               uiOutput("inf_sup_complementoUi")
+             ),
 
-               mainPanel(
-                 shinycssloaders::withSpinner(htmlOutput("mean_equivalence_2_ind"), type = 5),
-                 br(), br(),
-                 wellPanel(
-                   HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
-                   uiOutput("th2_equi_mean_formula1"),
-                   uiOutput("th2_equi_mean_formula2")
-                 ),
-                 br(),
-                 fluidRow(column(12, align="center",plotOutput("plot_eq_medias", width = "70%")))
-               )
+             mainPanel(
+               shinycssloaders::withSpinner(htmlOutput("mean_equivalence_2_ind"), type = 5),
+               br(), br(),
+               wellPanel(
+                 HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                 uiOutput("th2_equi_mean_formula1"),
+                 uiOutput("th2_equi_mean_formula2")
+               ),
+               br(),
+               fluidRow(column(12, align="center",plotOutput("plot_eq_medias", width = "70%")))
              )
-    )
-  ),
+           )
+  )
+),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+rodape
 )
 
 
@@ -1197,38 +1196,38 @@ aba_TH_duas_amostra_prop_equivalencia <- tabPanel(
       "Alguns estudos podem querer verificar se um novo tratamento é melhor (estudo de superioridade) do que o padrão,
 fixado um limite superior; que ele não é inferior (estudo de não-inferioridade) ao padrão, fixado um limite
 inferior; ou tão eficaz (estudo de equivalência) quanto o padrão, fixados um limite inferior e um superior. ",
-      'Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
-      '<b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
+'Qual a diferença entre teste de comparação, de superioridade, de equivalência e de não-inferioridade? Leia o artigo: ',
+'<b><a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Bioestatística e epidemiologia: perguntas que você sempre quis fazer, mas nunca teve coragem</a></b>'
 
     ))
   ),
-  tabsetPanel(
-    tabPanel("Testar",
-             sidebarLayout(
-               sidebarPanel(
+tabsetPanel(
+  tabPanel("Testar",
+           sidebarLayout(
+             sidebarPanel(
 
-                 wellPanel(
-                   selectInput('prop_test_inf_eq_sup',
-                               'Selecione o tipo de teste',
-                               choices = c("Não inferioridade",
-                                           "Equivalência",
-                                           "Superioridade"
-                               ),
-                               selected = 'Não inferioridade'
-                   ),
-                   uiOutput("inf_sup_nomesUi_prop")
+               wellPanel(
+                 selectInput('prop_test_inf_eq_sup',
+                             'Selecione o tipo de teste',
+                             choices = c("Não inferioridade",
+                                         "Equivalência",
+                                         "Superioridade"
+                             ),
+                             selected = 'Não inferioridade'
                  ),
-                 uiOutput("side_bar_prop_inf")
+                 uiOutput("inf_sup_nomesUi_prop")
                ),
+               uiOutput("side_bar_prop_inf")
+             ),
 
-               mainPanel(
-                 shinycssloaders::withSpinner(htmlOutput("prop_equivalence_2_ind"), type = 5)
-               )
+             mainPanel(
+               shinycssloaders::withSpinner(htmlOutput("prop_equivalence_2_ind"), type = 5)
              )
-    )
-  ),
+           )
+  )
+),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+rodape
 )
 
 
@@ -1351,7 +1350,7 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -1391,7 +1390,7 @@ aba_TH_duas_amostra_prop_dep <- tabPanel(
 
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 
 )
 
@@ -1411,13 +1410,13 @@ aba_TH_medidas_repetidas <- tabPanel(
              É assumido que a variável de tempo será tratada como categórica."),
   tabsetPanel(
     tabPanel("Testar",
-             shinycssloaders::withSpinner(uiOutput("medidas_repetidas_ui_sided"), type = 5),
-             HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+             mod_medidas_repetidas_Ui("tamanho_amostral"),
+             rodape
     ),
 
     tabPanel("Poder",
-             shinycssloaders::withSpinner(uiOutput("medidas_repetidas_ui_sided_poder"), type = 5),
-             HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+             mod_medidas_repetidas_Ui("poder"),
+             rodape
     )
   )
 )
@@ -1431,107 +1430,33 @@ aba_TH_duas_amostra_media_2tempos <- tabPanel(
 
   titlePanel("Comparação da mudança média ao longo do tempo de grupos independentes"),
   wellPanel(
-    includeMarkdown(file.path("www", "Delta_two_groups_independents.Rmd")),
+    includeMarkdown(file.path("www", "Delta_two_groups_independents.Rmd"))
   ),
 
   sidebarLayout(
     sidebarPanel(
-      checkboxInput("th2_mean_dep_utilizar_medias", "Utilizar os valores dos deltas de cada grupo", value = FALSE
-      ) %>% .help_buttom(body = "Clique aqui para usar os valores dos deltas de cada grupo ao invés da diferença esperada."),
-      conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == false",
-                       numericInput( "th2_mean_dep_diff",
-                                     "Diferença esperada/ desejada entre os deltas",
-                                     value = 0.4,
-                                     min = 0,
-                                     max = Inf,
-                                     step = 0.5
-                       ) %>% .help_buttom(body = .txt_diferenca_clinica, title = "Diferença a ser detectada")
+      wellPanel(
+        HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+        uiOutput("delta2_mean_formula1"),
+        uiOutput("delta2_mean_formula2")
       ),
 
-      conditionalPanel(condition = "input.th2_mean_dep_utilizar_medias == true",
-
-                       # numericInput( "th2_mean_dep_delta_tratamento",
-                       #               "Mudança média ao longo do tempo do grupo Tratamento",
-                       #               value = 5,
-                       #               min = -Inf,
-                       #               max = Inf,
-                       #               step = .5
-                       # ) %>% .help_buttom(body = "É a menor diferença considerada clinicamente relevante (que tenha algum valor clínico)."),
-                       # numericInput( "th2_mean_dep_delta_controle",
-                       #               "Mudança média ao longo do tempo do grupo Controle",
-                       #               value = 4.5,
-                       #               min = 0,
-                       #               max = Inf,
-                       #               step = .5
-                       # ) %>% .help_buttom(body = "lalala")
-
-
-                       HTML(paste0("<b><font size = '2.95'>Mudança média (delta) ao longo do tempo do grupo</font></b><br>")),
-                       div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                           numericInput( "th2_mean_dep_delta_tratamento",
-                                         "Tratamento",
-                                         value = 5,
-                                         min = -Inf,
-                                         max = Inf,
-                                         step = .5
-                           )
-                       ),
-                       div(style="display: inline-block;vertical-align:top; width: 49%;",
-                           numericInput( "th2_mean_dep_delta_controle",
-                                         "Controle",
-                                         value = 4.5,
-                                         min = 0,
-                                         max = Inf,
-                                         step = .5
-                           )
-                       )
-
-
-      ),
-      # numericInput( "th2_mean_dep_sigma1",
-      #               "Desvio padrão do grupo Tratamento no início do estudo",
-      #               value = 1.4,
-      #               min = 0,
-      #               max = Inf,
-      #               step = .5
-      # ) %>% .help_buttom(body = "Desvio padrão esperado para o grupo tratamento no início do estudo (baseline), geralmente obtido de estudos anteriores."),
-      # numericInput( "th2_mean_dep_sigma2",
-      #               "Desvio padrão do grupo Tratamento no final do estudo",
-      #               value = 1.2,
-      #               min = 0,
-      #               max = Inf,
-      #               step = .5
-      # ) %>% .help_buttom(body = "Desvio padrão esperado para o grupo tratamento no final do estudo (endpoint), geralmente obtido de estudos anteriores."),
-
-      HTML(paste0("<b><font size = '2.95'>Desvio padrão esperado do grupo Tratamento no</font></b><br>")),
-      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-          numericInput( "th2_mean_dep_sigma1",
-                        "Início do estudo",
-                        value = 1.4,
-                        min = 0,
-                        max = Inf,
-                        step = .5
-          )
-      ),
-      div(style="display: inline-block;vertical-align:top; width: 49%;",
-          numericInput( "th2_mean_dep_sigma2",
-                        "Final do estudo",
-                        value = 1.2,
-                        min = 0,
-                        max = Inf,
-                        step = .5
-          ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
-      ),
+      actionLink("show_th_2delta", "Mudar nomes"),
+      br(), br(),
 
 
 
-      numericInput( "th2_mean_dep_rho",
-                    "Correlação das medidas (início e fim) dentro do grupo Tratamento",
-                    value = 0.5,
-                    min = -1,
-                    max = 1,
-                    step = 1
-      ) %>% .help_buttom(body = paste0("Correlação das medidas (início e fim) dentro do grupo Tratamento", .txt_definido_pesquisador_OU_literatura)),
+      uiOutput("delta2_painelUi"),
+
+      numericInput( "th2_mean_dep_balanceamento",
+                    "Balanceamento (Tratamento:Controle)",
+                    value = 1,
+                    min = 0,
+                    max = Inf,
+                    step = .5
+      ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
+
+
       numericInput( "th2_mean_dep_pwr",
                     "Poder (%)",
                     value = 80,
@@ -1567,7 +1492,7 @@ aba_TH_duas_amostra_media_2tempos <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -1607,48 +1532,51 @@ aba_anova_one_way <- tabPanel(
                    ),
                    uiOutput("anova_formula"),
                  ),
-                 checkboxInput("anova_mean_f", "Usar tamanho de efeito f", value = FALSE),
 
-                 conditionalPanel(condition = "input.anova_mean_f == true",
-                                  # actionLink("show_f_anova", "O que é a magnitude do efeito (f)?"),
-                                  # br(), br(),
-                                  numericInput( "f_anova_n",
-                                                "Magnitude do efeito (f)",
-                                                value = .4,
-                                                min = 0,
-                                                max = 1,
-                                                step = .01
-                                  )  %>%
-                                    shinyhelper::helper(type = "markdown",
-                                                        title = "Tamanho de efeito f",
-                                                        content = "Effect_size_f", #,includeMarkdown(file.path("Markdown", "Effect_size_f.Rmd")),
-                                                        buttonLabel = "Fechar",
-                                                        fade = TRUE,
-                                                        colour = "#006338",
-                                                        size = "l"),
-                                  # %>% .help_buttom(body = paste0("Magnitude do efeito f (0.1 é considerado pequeno). ", .txt_definido_pesquisador_OU_literatura)),
-                                  numericInput( "k_anova_n",
-                                                "Número de grupos",
-                                                value = 3,
-                                                min = 2,
-                                                max = Inf,
-                                                step = 1
-                                  ) %>% .help_buttom(body = paste0("Nº de grupos para comparar.", .txt_definido_pesquisador))
-                 ),
-                 conditionalPanel(condition = "input.anova_mean_f == false",
-                                  textInput( "medias_anova_n",
-                                             "Médias dos grupos",
-                                             value = "12.6, 14.9, 16"
-                                  ) %>% .help_buttom(body = paste0("Insira as médias esperadas dos grupos separadas por vígula. Use ponto '.' como separador decimal.",
-                                                                   .txt_definido_pesquisador_OU_literatura)
-                                  ),
-                                  numericInput( "desvio_anova_n",
-                                                "Desvio padrão esperado (homocedasticidade)",
-                                                value = 4,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
+                 wellPanel(
+                   checkboxInput("anova_mean_f", "Usar tamanho de efeito f", value = FALSE),
+
+                   conditionalPanel(condition = "input.anova_mean_f == true",
+                                    # actionLink("show_f_anova", "O que é a magnitude do efeito (f)?"),
+                                    # br(), br(),
+                                    numericInput( "f_anova_n",
+                                                  "Magnitude do efeito (f)",
+                                                  value = .4,
+                                                  min = 0,
+                                                  max = 1,
+                                                  step = .01
+                                    )  %>%
+                                      shinyhelper::helper(type = "markdown",
+                                                          title = "Tamanho de efeito f",
+                                                          content = "Effect_size_f", #,includeMarkdown(file.path("Markdown", "Effect_size_f.Rmd")),
+                                                          buttonLabel = "Fechar",
+                                                          fade = TRUE,
+                                                          colour = "#006338",
+                                                          size = "l"),
+                                    # %>% .help_buttom(body = paste0("Magnitude do efeito f (0.1 é considerado pequeno). ", .txt_definido_pesquisador_OU_literatura)),
+                                    numericInput( "k_anova_n",
+                                                  "Número de grupos",
+                                                  value = 3,
+                                                  min = 2,
+                                                  max = Inf,
+                                                  step = 1
+                                    ) %>% .help_buttom(body = paste0("Nº de grupos para comparar.", .txt_definido_pesquisador))
+                   ),
+                   conditionalPanel(condition = "input.anova_mean_f == false",
+                                    textInput( "medias_anova_n",
+                                               "Médias dos grupos",
+                                               value = "12.6, 14.9, 16"
+                                    ) %>% .help_buttom(body = paste0("Insira as médias esperadas dos grupos separadas por vígula. Use ponto '.' como separador decimal.",
+                                                                     .txt_definido_pesquisador_OU_literatura)
+                                    ),
+                                    numericInput( "desvio_anova_n",
+                                                  "Desvio padrão esperado (homocedasticidade)",
+                                                  value = 4,
+                                                  min = 0,
+                                                  max = Inf,
+                                                  step = 1
+                                    ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado")
+                   )
                  ),
 
                  numericInput( "power_anova_n",
@@ -1758,7 +1686,7 @@ aba_anova_one_way <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -1854,193 +1782,193 @@ a1 b3 26.1 $
 a2 b1 7.98 $
 a2 b2 16.8 $
 a2 b3 26.1",
-                                                rows = 6
+rows = 6
 
                                   ) %>% .help_buttom(body = paste0("Entre com as medias conforme leitura do SAS. O simbolo $ representa a entrada de novos dados.", .txt_definido_pesquisador_OU_literatura)),
 
-                                  numericInput( "desvio_anova_n22",
-                                                "Desvio padrão esperado (homocedasticidade)",
-                                                value = 4,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
-                                  numericInput( "power_anova_n_two22",
-                                                "Poder (%)",
-                                                value = 80,
-                                                min = 0,
-                                                max = 100,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
-                                  numericInput( "sig_anova_n_two22",
-                                                "Nível de significância (%)",
-                                                value = 5,
-                                                min = 0,
-                                                max = 100,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
-                                  numericInput( "two_way_perdas_recusa22",
-                                                "Perdas/ Recusa (%)",
-                                                value = 10,
-                                                min = 0,
-                                                max = 100,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
+numericInput( "desvio_anova_n22",
+              "Desvio padrão esperado (homocedasticidade)",
+              value = 4,
+              min = 0,
+              max = Inf,
+              step = 1
+) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
+numericInput( "power_anova_n_two22",
+              "Poder (%)",
+              value = 80,
+              min = 0,
+              max = 100,
+              step = 1
+) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
+numericInput( "sig_anova_n_two22",
+              "Nível de significância (%)",
+              value = 5,
+              min = 0,
+              max = 100,
+              step = 1
+) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+numericInput( "two_way_perdas_recusa22",
+              "Perdas/ Recusa (%)",
+              value = 10,
+              min = 0,
+              max = 100,
+              step = 1
+) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
                  ),
 
-                 conditionalPanel(condition = "input.two_way_usar_medias == false",
-                                  textInput(inputId = "two_nome_desfechoA2",
-                                            label   = "Descreva o nome do fator A",
-                                            value   = "Fator A"
-                                  ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome do fator A para que sirvam de guia no preenchimento dos valores.")),
-                                  textInput(inputId = "two_nome_desfechoB2",
-                                            label   = "Descreva o nome do fator B",
-                                            value   = "Fator B"
-                                  ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome do fator B para que sirvam de guia no preenchimento dos valores.")),
-                                  uiOutput("k_anova_n_A_ui2"),
-                                  uiOutput("k_anova_n_B_ui2"),
-                                  uiOutput("f_anova_n_A_ui2"),
-                                  numericInput( "power_anova_n_two2",
-                                                "Poder (%)",
-                                                value = 80,
-                                                min = 0,
-                                                max = 100,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
-                                  numericInput( "sig_anova_n_two2",
-                                                "Nível de significância (%)",
-                                                value = 5,
-                                                min = 0,
-                                                max = 100,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
-                                  numericInput( "two_way_perdas_recusa2",
-                                                "Perdas/ Recusa (%)",
-                                                value = 10,
-                                                min = 0,
-                                                max = 100,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
-                 )
+conditionalPanel(condition = "input.two_way_usar_medias == false",
+                 textInput(inputId = "two_nome_desfechoA2",
+                           label   = "Descreva o nome do fator A",
+                           value   = "Fator A"
+                 ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome do fator A para que sirvam de guia no preenchimento dos valores.")),
+                 textInput(inputId = "two_nome_desfechoB2",
+                           label   = "Descreva o nome do fator B",
+                           value   = "Fator B"
+                 ) %>% .help_buttom(body = .txt_outros_desfechos("Descreva o nome do fator B para que sirvam de guia no preenchimento dos valores.")),
+                 uiOutput("k_anova_n_A_ui2"),
+                 uiOutput("k_anova_n_B_ui2"),
+                 uiOutput("f_anova_n_A_ui2"),
+                 numericInput( "power_anova_n_two2",
+                               "Poder (%)",
+                               value = 80,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
+                 numericInput( "sig_anova_n_two2",
+                               "Nível de significância (%)",
+                               value = 5,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+                 numericInput( "two_way_perdas_recusa2",
+                               "Perdas/ Recusa (%)",
+                               value = 10,
+                               min = 0,
+                               max = 100,
+                               step = 1
+                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
+)
                ),
 
-               mainPanel(
-                 conditionalPanel(condition = "input.two_way_usar_medias == true",
-                                  br(), br(),
-                                  HTML(
-                                    paste0(
-                                      "Preencha com os dados no painel lateral e após rode a sintaxe no <a href='https://welcome.oda.sas.com/' target='_blank'> SAS Studio</a>.<br><br>"
-                                    )
-                                  ),
-                                  downloadButton("download_sintax_sas_anova_two_way", "Download sintax!"),
-                                  br(), br(),
-                                  HTML(
-                                    paste0(
-                                      "
+mainPanel(
+  conditionalPanel(condition = "input.two_way_usar_medias == true",
+                   br(), br(),
+                   HTML(
+                     paste0(
+                       "Preencha com os dados no painel lateral e após rode a sintaxe no <a href='https://welcome.oda.sas.com/' target='_blank'> SAS Studio</a>.<br><br>"
+                     )
+                   ),
+                   downloadButton("download_sintax_sas_anova_two_way", "Download sintax!"),
+                   br(), br(),
+                   HTML(
+                     paste0(
+                       "
                                              Se você ainda não tem uma conta SAS, <a href='https://support.sas.com/ondemand/manuals/SASStudio.pdf' target='_blank'> clique aqui</a> para criar e acessar o SAS Studio.",
 
-                                      "<br><br>Após logado e com o SAS Studio aberto, siga os passos abaixo:<br><br>",
-                                      "
+                       "<br><br>Após logado e com o SAS Studio aberto, siga os passos abaixo:<br><br>",
+                       "
                                              <ol>
                                              <li>Abra o SAS Studio, clique F4 para abrir uma janela de edição (CODE);</li>
                                              <li> Copie a sintaxe gerada  e cole  na janela de edição;</li>
                                              <li>Execute a sintaxe e confira os resultados na janela RESULTS.</li>
                                              </ol>
                                              "
-                                    )
-                                  )
-                 ),
-                 conditionalPanel(condition = "input.two_way_usar_medias == false",
-                                  htmlOutput("anova_n_two2") %>%
-                                    shinycssloaders::withSpinner(type =  5)
-                 )
-               )
+                     )
+                   )
+  ),
+  conditionalPanel(condition = "input.two_way_usar_medias == false",
+                   htmlOutput("anova_n_two2") %>%
+                     shinycssloaders::withSpinner(type =  5)
+  )
+)
              )
     )
-    # tabPanel("Poder",
-    #          sidebarLayout(
-    #            sidebarPanel(
-    #              radioButtons('anovabtt', 'Selecione o pacote',
-    #                           choices = c('pwr', 'pwr2'), selected = 'pwr'),
-    #              conditionalPanel("input.anovabtt == 'pwr'",
-    #                               numericInput( "n_anova_power",
-    #                                             "Número de observações (por grupo)",
-    #                                             value = 15,
-    #                                             min = 1,
-    #                                             max = Inf,
-    #                                             step = 1
-    #                               ),
-    #                               numericInput( "k_anova_power",
-    #                                             "Número de grupos",
-    #                                             value = 3,
-    #                                             min = 1,
-    #                                             max = Inf,
-    #                                             step = 1
-    #                               ),
-    #                               numericInput( "f_anova_power",
-    #                                             "Magnitude do efeito",
-    #                                             value = .4,
-    #                                             min = 0,
-    #                                             max = 1,
-    #                                             step = .1
-    #                               ),
-    #                               numericInput( "sig_anova_power",
-    #                                             "Nível de significância",
-    #                                             value = .05,
-    #                                             min = 0,
-    #                                             max = 1,
-    #                                             step = .01
-    #                               ),
-    #                               actionButton("help_anova_power", "Ajuda")
-    #              ),conditionalPanel("input.anovabtt == 'pwr2'",
-    #                                 numericInput( "n_anova_power2",
-    #                                               "Número de observações (por grupo)",
-    #                                               value = 15,
-    #                                               min = 1,
-    #                                               max = Inf,
-    #                                               step = 1
-    #                                 ),
-    #                                 numericInput( "k_anova_power2",
-    #                                               "Número de grupos",
-    #                                               value = 3,
-    #                                               min = 1,
-    #                                               max = Inf,
-    #                                               step = 1
-    #                                 ),
-    #                                 numericInput( "sig_anova_power2",
-    #                                               "Nível de significância",
-    #                                               value = .05,
-    #                                               min = 0,
-    #                                               max = 1,
-    #                                               step = .01
-    #                                 )
-    #                                 ,
-    #                                 numericInput( "sigma_anova_power2",
-    #                                               "Desvio padrão da variável de interesse",
-    #                                               value = .7,
-    #                                               min = 0,
-    #                                               max = Inf,
-    #                                               step = .01
-    #                                 ),
-    #                                 numericInput( "delta_anova_power2",
-    #                                               "Menor diferença entre os grupos",
-    #                                               value = .8,
-    #                                               min = 0,
-    #                                               max = Inf,
-    #                                               step = .01
-    #                                 ),
-    #                                 actionButton("help_anova_power2", "Ajuda")
-    #              )
-    #            ),
-    #
-    #            mainPanel(
-    #              htmlOutput("anova_power")
-    #            )
-    #          )
-    # )
+# tabPanel("Poder",
+#          sidebarLayout(
+#            sidebarPanel(
+#              radioButtons('anovabtt', 'Selecione o pacote',
+#                           choices = c('pwr', 'pwr2'), selected = 'pwr'),
+#              conditionalPanel("input.anovabtt == 'pwr'",
+#                               numericInput( "n_anova_power",
+#                                             "Número de observações (por grupo)",
+#                                             value = 15,
+#                                             min = 1,
+#                                             max = Inf,
+#                                             step = 1
+#                               ),
+#                               numericInput( "k_anova_power",
+#                                             "Número de grupos",
+#                                             value = 3,
+#                                             min = 1,
+#                                             max = Inf,
+#                                             step = 1
+#                               ),
+#                               numericInput( "f_anova_power",
+#                                             "Magnitude do efeito",
+#                                             value = .4,
+#                                             min = 0,
+#                                             max = 1,
+#                                             step = .1
+#                               ),
+#                               numericInput( "sig_anova_power",
+#                                             "Nível de significância",
+#                                             value = .05,
+#                                             min = 0,
+#                                             max = 1,
+#                                             step = .01
+#                               ),
+#                               actionButton("help_anova_power", "Ajuda")
+#              ),conditionalPanel("input.anovabtt == 'pwr2'",
+#                                 numericInput( "n_anova_power2",
+#                                               "Número de observações (por grupo)",
+#                                               value = 15,
+#                                               min = 1,
+#                                               max = Inf,
+#                                               step = 1
+#                                 ),
+#                                 numericInput( "k_anova_power2",
+#                                               "Número de grupos",
+#                                               value = 3,
+#                                               min = 1,
+#                                               max = Inf,
+#                                               step = 1
+#                                 ),
+#                                 numericInput( "sig_anova_power2",
+#                                               "Nível de significância",
+#                                               value = .05,
+#                                               min = 0,
+#                                               max = 1,
+#                                               step = .01
+#                                 )
+#                                 ,
+#                                 numericInput( "sigma_anova_power2",
+#                                               "Desvio padrão da variável de interesse",
+#                                               value = .7,
+#                                               min = 0,
+#                                               max = Inf,
+#                                               step = .01
+#                                 ),
+#                                 numericInput( "delta_anova_power2",
+#                                               "Menor diferença entre os grupos",
+#                                               value = .8,
+#                                               min = 0,
+#                                               max = Inf,
+#                                               step = .01
+#                                 ),
+#                                 actionButton("help_anova_power2", "Ajuda")
+#              )
+#            ),
+#
+#            mainPanel(
+#              htmlOutput("anova_power")
+#            )
+#          )
+# )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+rodape
 )
 
 
@@ -2183,7 +2111,7 @@ aba_associacao <- tabPanel(
     #     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -2213,12 +2141,10 @@ aba_correlacao <- tabPanel(
   titlePanel("Coeficientes de correlação"),
   wellPanel("Muitas vezes o objetivo do estudo é analisar se duas variáveis variam conjuntamente. Nestes casos, a estatística de interesse é o coeficiente de correlação.
                            Os coeficiente de correlação avaliam a direção e o grau de alinhamento entre duas variáveis.
-                           Assume valores que variam de -1 (correlação negativa perfeita) a 1 (correlação positiva perfeita).
-
-                           Vale ressaltar que, para realizar inferências para o coeficiente de correlação linear de Pearson, é necessário supor que os dados aderem à uma
-                           distribuição normal e possuem variância constante em torno da reta de tendência.
-
-                                "),
+                           Assume valores que variam de -1 (correlação negativa perfeita) a 1 (correlação positiva perfeita).",
+            'Mais detalhes sobre o uso dessa aba em ',
+            HTML('<b><a https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')
+  ),
   tabsetPanel(
 
     tabPanel("Estimar",
@@ -2423,7 +2349,7 @@ aba_correlacao <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -2438,10 +2364,10 @@ aba_inclinacao_linear <- tabPanel(
   "Linear",
   titlePanel("Coeficiente de inclinação da reta para um modelo de regressão linear simples."),
   wellPanel("Quando um estudo quer observar a variação conjunta de duas variáveis, supondo uma relação linear, ",
-            "o pesquisador pode estar interessado em estimar o coeficiente de inclinação da relação entre elas. ",
-            "Ao calcular o tamanho da amostra para este objetivo, ",
-            "estaremos supondo que o desfecho de interesse segue uma distribuição normal, ",
-            "com uma determinada média e uma determinada variância constante ao longo da reta de regressão."
+            "o pesquisador pode estar interessado em estimar o coeficiente de inclinação da relação entre elas. "
+            # "Ao calcular o tamanho da amostra para este objetivo, ",
+            # "estaremos supondo que o desfecho de interesse segue uma distribuição normal, ",
+            # "com uma determinada média e uma determinada variância constante ao longo da reta de regressão."
   ),
   tabsetPanel(
 
@@ -2728,7 +2654,7 @@ aba_logistica <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -2777,7 +2703,7 @@ aba_surv_cox <- tabPanel(
                                     "<b><font size = '2.99'>Probabilidade (%) de sobrevivência até o final do seguimento no grupo</font></b><br>"
                                   ),
 
-                                  div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                                  div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
                                       numericInput( "cox_failure_trat",
                                                     "Tratamento",
                                                     value = 20,
@@ -2785,7 +2711,7 @@ aba_surv_cox <- tabPanel(
                                                     max  = 100,
                                                     step = 1)
                                   ),
-                                  div(style="display: inline-block;vertical-align:top; width: 49%;",
+                                  div(style = "display: inline-block;vertical-align:top; width: 49%;",
                                       numericInput( "cox_failure_control",
                                                     "Controle",
                                                     value = 20,
@@ -2868,7 +2794,7 @@ aba_surv_cox <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -2888,9 +2814,9 @@ aba_obter_dp <- tabPanel(
   wellPanel(
     paste0("Em muitos cálculos de tamanho amostral é necessário informar o desvio padrão da variável de interesse, ",
            "no entanto é encontrado na literatura somente outras estatísticas, como ",
-           "o erro padrão, intervalo de confiança, valor de t ou p. ",
-           "As fórmula utilizadas supõem que a amostra foi selecionada através de uma amostragem aleatória simples, ",
-           "as observações são independentes e seguem uma distribuição normal."
+           "o erro padrão, intervalo de confiança, valor de t ou p. "
+           # "As fórmula utilizadas supõem que a amostra foi selecionada através de uma amostragem aleatória simples, ",
+           # "as observações são independentes e seguem uma distribuição normal."
     )
   ),
 
@@ -3080,7 +3006,7 @@ aba_obter_dp <- tabPanel(
 
   ,
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 
 )
 
@@ -3315,7 +3241,7 @@ aba_cohen <- tabPanel("d de Cohen",
                         )
                       ),
 
-                      HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+                      rodape
 
 )
 
@@ -3324,17 +3250,19 @@ aba_cohen <- tabPanel("d de Cohen",
 
 # aba_pooled_var -----
 
-aba_pooled_var <- tabPanel("Variância combinada",
-                           titlePanel("Variância combinada de dois grupos independentes"),
-                           wellPanel(paste0("Usamos a variância combinada quando temos a informação da variância de dois grupos independentes e ",
-                                            "queremos agrega-las para ter uma única variância")
+aba_pooled_var <- tabPanel("Desvio padrão combinado",
+                           titlePanel("Desvio padrão combinado de dois grupos independentes"),
+                           wellPanel(paste0("Usamos o desvio padrão combinado quando temos a informação da variância de dois grupos independentes e ",
+                                            "queremos agrega-las para ter um único desvio padrão")
                            ),
 
                            sidebarLayout(
                              sidebarPanel(
+
+
                                checkboxInput(inputId = "pooled_eh_sd",
                                              label   = "Entrar com os valores do desvio padrão.",
-                                             value   = FALSE),
+                                             value   = TRUE),
 
                                uiOutput("pooled_var_sdUi"),
 
@@ -3347,7 +3275,7 @@ aba_pooled_var <- tabPanel("Variância combinada",
                                                 # HTML(
                                                 #   paste0("<b><font size = '2.99'>", estat_, " do</font></b><br>")
                                                 # ),
-                                                div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                                                div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
                                                     numericInput( "pooled_n1",
                                                                   "n do grupo A",
                                                                   value = 20,
@@ -3355,7 +3283,7 @@ aba_pooled_var <- tabPanel("Variância combinada",
                                                                   max = Inf,
                                                                   step = 1)
                                                 ),
-                                                div(style="display: inline-block;vertical-align:top; width: 49%;",
+                                                div(style = "display: inline-block;vertical-align:top; width: 49%;",
                                                     numericInput( "pooled_n2",
                                                                   "n do grupo B",
                                                                   value = 30,
@@ -3389,9 +3317,82 @@ aba_pooled_var <- tabPanel("Variância combinada",
                              )
                            ),
 
-                           HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+                           rodape
 
 )
+
+
+
+
+# aba_obter_correlacao -----
+
+aba_obter_correlacao <- tabPanel(
+  "Obter a correlação",
+  titlePanel("Obter a correlação de Pearson entre duas variáveis utilizando os desvios padrões"),
+  # wellPanel(paste0("Usamos o desvio padrão combinado quando temos a informação da variância de dois grupos independentes e ",
+  #                  "queremos agrega-las para ter um único desvio padrão")
+  # ),
+
+  sidebarLayout(
+    sidebarPanel(
+
+      numericInput( "outras_ferr_correlacaoA",
+                    "Desvio padrão da variável A",
+                    value = 6.4,
+                    min = 0,
+                    max = Inf,
+                    step = 1
+      ),
+
+      p("Em estudos longitudinais a variável A pode ser entendido como o Momento 1 (basal)."),
+
+      br(),
+
+      numericInput( "outras_ferr_correlacaoB",
+                    "Desvio padrão da variável B",
+                    value = 7.1,
+                    min = 0,
+                    max = Inf,
+                    step = 1
+      ),
+
+      p("Em estudos longitudinais a variável B pode ser entendido como o Momento 2 (follow-up)."),
+
+
+      br(),
+      numericInput( "outras_ferr_correlacaoAeB",
+                    "Desvio padrão da diferença entre as variáveis A e B",
+                    value = 4.5,
+                    min = 0,
+                    max = Inf,
+                    step = 1
+      )
+
+
+
+    ),
+
+    mainPanel(
+      br(), br(),
+      htmlOutput("correlacao_outras_ferramentas"),
+
+      br(), br(),
+      p("Foi utilizado a fórmula:"),
+      br(),
+      withMathJax(
+        "$$\\rho_{AeB} = \\dfrac{SD^2_A + SD^2_B - SD^2_{AeB}}{2*SD^2_A*SD^2_B} $$"
+      ),
+      br(), br(),
+      # p("onde:"),
+      # br(), br(),
+
+
+      rodape
+
+    )
+  )
+)
+
 
 
 
@@ -3433,7 +3434,7 @@ aba_curva_roc <- tabPanel(
                  #               step = .5
                  # ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento"),
                  numericInput( "auc_k",
-                               "Prevalênica de casos (%)",
+                               "Prevalência de casos (%)",
                                value = 50,
                                min = 0,
                                max = Inf,
@@ -3521,7 +3522,7 @@ aba_curva_roc <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -3545,7 +3546,7 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                              HTML(
                                                "<b><font size = '2.9'>Valores esperados (em %) de:</font></b><br>"
                                              ),
-                                             div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                                             div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
                                                  numericInput( "sensibil_sensibilidade",
                                                                "sensibilidade",
                                                                value = 75,
@@ -3553,7 +3554,7 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                                                max = 100,
                                                                step = 1)
                                              ),
-                                             div(style="display: inline-block;vertical-align:top; width: 49%;",
+                                             div(style = "display: inline-block;vertical-align:top; width: 49%;",
                                                  numericInput( "especif_especificidade",
                                                                "e especificidade",
                                                                value = 75,
@@ -3609,7 +3610,7 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                 )
                               ),
 
-                              HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+                              rodape
 
 )
 
@@ -3858,7 +3859,7 @@ aba_kappa <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -3990,7 +3991,7 @@ aba_icc <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -4066,13 +4067,13 @@ aba_estimacao_bland <- tabPanel(
 
       HTML("<b>Defina a sequência de valores para a amplitude do intervalo de confiança:</b>"),
       br(),
-      div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
+      div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
           numericInput("bland_from", "Mínimo", value = 0.3, step = 0.5)
       ),
-      div(style="display: inline-block;vertical-align:top; width: 80px;",
+      div(style = "display: inline-block;vertical-align:top; width: 80px;",
           numericInput("bland_to", "Máximo", value = 1.1, step = 0.5)
       ),
-      div(style="display: inline-block;vertical-align:top; width: 80px;",
+      div(style = "display: inline-block;vertical-align:top; width: 80px;",
           numericInput("bland_by", "Intervalo", value = 0.1, min = 0, step = 0.1) %>%
             .help_buttom(body = "Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.",
                          title = "Sequência")
@@ -4087,7 +4088,7 @@ aba_estimacao_bland <- tabPanel(
     )
   ),
 
-  HTML("<br><br><hr><br><br>", '<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+  rodape
 )
 
 
@@ -4166,13 +4167,13 @@ ui <- fluidPage(fluidRow(
               # Página de entrada #
 
               tabPanel("Boas vindas!",
-                       tags$head(tags$link(rel = "icon", href = "Favicon.gif")),
+                       tags$head(tags$link(rel = "icon", href = "PSS.png")),
                        # Muda a cor dos sliderInput
                        tags$head(tags$style(HTML(as.character(paste0(
                          ".js-irs-1 .irs-single, .js-irs-1 .irs-from, .js-irs-1 .irs-to, .js-irs-1 .irs-bar-edge, .js-irs-1 .irs-bar{background: #006338 ;  }",
                          ".js-irs-2 .irs-single, .js-irs-2 .irs-from, .js-irs-2 .irs-to, .js-irs-2 .irs-bar-edge, .js-irs-2 .irs-bar{background: #006338 ;  }",
-                         ".js-irs-2 .irs-single, .js-irs-3 .irs-from, .js-irs-3 .irs-to, .js-irs-3 .irs-bar-edge, .js-irs-3 .irs-bar{background: #006338 ;  }",
-                         ".js-irs-2 .irs-single, .js-irs-4 .irs-from, .js-irs-4 .irs-to, .js-irs-4 .irs-bar-edge, .js-irs-4 .irs-bar{background: #006338 ;  }"
+                         ".js-irs-3 .irs-single, .js-irs-3 .irs-from, .js-irs-3 .irs-to, .js-irs-3 .irs-bar-edge, .js-irs-3 .irs-bar{background: #006338 ;  }",
+                         ".js-irs-4 .irs-single, .js-irs-4 .irs-from, .js-irs-4 .irs-to, .js-irs-4 .irs-bar-edge, .js-irs-4 .irs-bar{background: #006338 ;  }"
                        ))))),
                        # tags$head(includeHTML(("google-analytics.html"))),
 
@@ -4191,7 +4192,8 @@ ui <- fluidPage(fluidRow(
                                 fluidRow(
                                   h2("PSS Health"),
                                   HTML(paste0(
-                                    "<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers (versão ", if(!.versao_online){
+                                    "<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers (versão ",
+                                    if (!.versao_online){
                                       packageVersion("PSS.Health")
                                     } else{
                                       "on-line"
@@ -4199,9 +4201,21 @@ ui <- fluidPage(fluidRow(
                                   )
                                 )
                          ),
-                         column(1, img(src='Favicon.gif', align = "right", width="150%")),
-
+                         column(1, img(src = 'PSS.png', align = "right", width = "150%"))
                        )),
+
+                       # h2("PSS Health"),
+                       # HTML(paste0(
+                       #   "<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers (versão ", if(!.versao_online){
+                       #     packageVersion("PSS.Health")
+                       #   } else{
+                       #     "on-line"
+                       #   }, ")")
+                       # ),
+
+                       # fluidPage(
+                       #   column(1, img(src = 'PSS.png', align = "right", width = "150%"))
+                       # ),
 
 
                        # uiOutput("PSS_CRAN"),
@@ -4234,8 +4248,8 @@ ui <- fluidPage(fluidRow(
                             "<li><b>Artigo sobre o PSS Health:</b></li>",
                             "<ul>",
                             '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/109542/pdf" target="_blank">Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde</a></b></li>',
+                            '<li><b><a href="https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b></li>',
                             "</ul>",
-
                             "<br><br>",
                             "<li><b>Principais conceitos em Epidemiologia:</b> Têm dúvidas sobre os tipos de delineamento e métodos de amostragem?</li>",
                             "<ul>",
@@ -4379,6 +4393,7 @@ ui <- fluidPage(fluidRow(
 
               navbarMenu("Outras ferramentas",
                          aba_obter_dp,
+                         aba_obter_correlacao,
                          aba_pooled_var,
                          aba_cohen
               )

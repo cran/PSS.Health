@@ -6,11 +6,5 @@ output: html_document
 ---
 
 
-Nesta técnica deseja-se calcular o tamanho amostral de um estudo cujo objetivo é comparar se a mudança média em um intervalo de  tempo $(\bar{\Delta})$ de dois grupos independentes diferem. Ao calcular o tamanho da amostra para este objetivo, estaremos supondo que a variável de interesse, em cada um dos grupos, segue uma distribuição normal, com uma determinada média e uma determinada variância.
-
-
-Considerando $\bar{\Delta}_{Tratamento}$ e $\bar{\Delta}_{Controle}$ como sendo a mudança média em um intervalo de tempo do grupo Tratamento e Controle, respectivamente, o tamanho de amostra será calculado para testar:
-
-$$H_0:  \bar{\Delta}_{Tratamento} = \bar{\Delta}_{Controle}$$
-$$H_1:  \bar{\Delta}_{Tratamento} \neq \bar{\Delta}_{Controle}$$
+Nesta técnica deseja-se calcular o tamanho amostral de um estudo cujo objetivo é comparar se a mudança média em um intervalo de  tempo $(\bar{\Delta})$ de dois grupos independentes diferem. 
 
