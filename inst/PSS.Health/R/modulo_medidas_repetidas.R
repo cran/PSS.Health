@@ -709,6 +709,8 @@ mod_medidas_repetidas_server <- function(id, tipo){
         fluidPage(fluidRow(
           sidebarLayout(
             sidebarPanel(
+              wellPanel(HTML('<b><a href="https://youtu.be/oErZbk_cpWY" target="_blank">Vídeo: PSS Health para comparar duas médias</a></b><br>')),
+
               wellPanel(
                 HTML("<b><font size = '2.8'>Hipóteses a serem testadas*</font></b>"),
                 uiOutput(ns("rep_formula1")),

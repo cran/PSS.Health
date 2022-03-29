@@ -270,13 +270,13 @@
 
     paste0("<b>ABNT: </b> BORGES, Rogério Boff et al. Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde. ",
            "<b>Clinical & Biomedical Research</b>, [S.l.], v. 40, n. 4, apr. 2021. ISSN 2357-9730. Available at: ",
-           "<a href='https://seer.ufrgs.br/hcpa/article/view/109542' target='_blank'>&lthttps://seer.ufrgs.br/hcpa/article/view/109542&gt</a>",
+           "<a href='https://doi.org/10.22491/2357-9730.109542' target='_blank'>&lthttps://doi.org/10.22491/2357-9730.109542&gt</a>",
            ". Date accessed: ", .data_citacao_f2, ".<br><br>"),
 
     paste0("<b>APA:</b> Borges, R., Mancuso, A., Camey, S., Leotti, V., Hirakata, V., Azambuja, G., & Castro, S. (2021). ",
            "Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde. ",
            "<i>Clinical & Biomedical Research</i>, 40(4). Retrieved from ",
-           "<a href='https://seer.ufrgs.br/hcpa/article/view/109542' target='_blank'>https://seer.ufrgs.br/hcpa/article/view/109542</a>",
+           "<a href='https://doi.org/10.22491/2357-9730.109542' target='_blank'>https://doi.org/10.22491/2357-9730.109542</a>",
            "<br><br>"),
 
     paste0("<b>BibTex: </b>",
@@ -289,14 +289,14 @@
            "year = {2021},<br>",
            "keywords = {tamanho de amostra, poder do teste, estimação de parâmetros, comparação de grupos, R},<br>",
            "issn = {2357-9730},<br>",
-           "url = {https://seer.ufrgs.br/hcpa/article/view/109542}<br>",
+           "url = {https://doi.org/10.22491/2357-9730.109542}<br>",
            "}"
     ),
     "</p>"
   )
 
 
-rodape <- fluidPage(
+.rodape <- fluidPage(
   HTML("<br><br><hr><br><br>"),
   column(11,
          HTML('<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
@@ -312,10 +312,27 @@ rodape <- fluidPage(
 .versao_online <- FALSE
 
 
-.txt_citacao_tap <- paste("ferramenta PSS Health versão",
-                         if(!.versao_online){
-                           packageVersion("PSS.Health")
-                         } else{
-                           "on-line"
-                         },
-                         "(citação abaixo)")
+
+
+.txt_citacao_tap <- paste(
+  "ferramenta PSS Health versão",
+  if (!.versao_online) {
+    packageVersion("PSS.Health")
+  } else{
+    "on-line"
+  },
+  "(citação abaixo)"
+)
+
+
+.txt_citacao_tap_ingles <- paste(
+  "PSS Health tool version",
+  if (!.versao_online) {
+    packageVersion("PSS.Health")
+  } else{
+    "on-line"
+  },
+  "(citation below)"
+)
+
+

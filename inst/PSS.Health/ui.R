@@ -13,12 +13,25 @@ aba_estimacao_uma_media <- tabPanel(
     # includeMarkdown(file.path("Markdown", "Caput_estimar_uma_media.Rmd")),
     "Um estudo pode ter como objetivo estimar ou testar o valor médio de uma variável quantitativa referente à população de interesse. ",
     'Mais detalhes sobre o uso dessa aba em ',
-    HTML('<b><a https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')
+    HTML('<b><a href="https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')
   ),
   tabsetPanel(
     tabPanel("Estimar",
+
              sidebarLayout(
                sidebarPanel(
+
+                 wellPanel(HTML('<b><a href="https://youtu.be/qqXF6-CAlok" target="_blank">Vídeo: PSS Health para estimar uma média</a></b><br>')),
+                 # actionLink(
+                 #   "pss1",
+                 #   HTML('<b><a href="https://youtu.be/qqXF6-CAlok" target="_blank">Vídeo: PSS para Estimar uma Média</a></b><br>')
+                 # ),
+                 # actionButton(
+                 #   "pss2",
+                 #   HTML('<b><a href="https://youtu.be/qqXF6-CAlok" target="_blank">Vídeo: PSS para Estimar uma Média</a></b><br>')
+                 # ),
+
+
                  selectInput(inputId = "mean_delineamento",
                              label   = "Processo de amostragem aleatória",
                              choices = c("Aleatória simples" = "aas",
@@ -62,7 +75,7 @@ aba_estimacao_uma_media <- tabPanel(
                ) # Fecha main panel
              ),
 
-             rodape
+             .rodape
     ),
 
 
@@ -190,12 +203,14 @@ aba_estimacao_uma_prop <- tabPanel(
                       calcular o tamanho da amostra é garantir uma determinada precisão na estimativa
                       que será obtida. ",
             'Mais detalhes sobre o uso dessa aba em ',
-            HTML('<b><a https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')),
+            HTML('<b><a "https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')),
 
   tabsetPanel(
     tabPanel("Estimar",
              sidebarLayout(
                sidebarPanel(
+                 wellPanel(HTML('<b><a href="https://youtu.be/FRMtGkW7byY" target="_blank">Vídeo: PSS Health para estimar uma proporção</a></b><br>')),
+
                  textInput(inputId = "prop_nome_desfecho",
                            label   = "Descreva o nome do desfecho",
                            value   = "Y") %>% .help_buttom(body = .txt_desfecho),
@@ -385,7 +400,7 @@ aba_estimacao_uma_prop <- tabPanel(
   ),
 
 
-  rodape
+  .rodape
 )
 
 
@@ -467,7 +482,7 @@ aba_estimacao_Cronbach <- tabPanel("Cronbach",
                                      )
                                    ),
 
-                                   rodape
+                                   .rodape
 )
 
 
@@ -497,6 +512,7 @@ aba_TH_duas_amostra_media <- tabPanel(
     tabPanel("Testar",
              sidebarLayout(
                sidebarPanel(
+                 wellPanel(HTML('<b><a href="https://youtu.be/LpwvwqjPkJk" target="_blank">Vídeo: PSS Health para comparar dua médias</a></b><br>')),
                  wellPanel(
                    HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
                    uiOutput("th2_mean_formula1"),
@@ -697,6 +713,8 @@ aba_TH_duas_amostra_media <- tabPanel(
     tabPanel("Estimar",
              sidebarLayout(
                sidebarPanel(
+                 wellPanel(HTML('<b><a href="https://youtu.be/LpwvwqjPkJk" target="_blank">Vídeo: PSS Health para comparar dua médias</a></b><br>')),
+
                  textInput(inputId = "mean2TH_nome_desfecho",
                            label   = "Descreva o nome do desfecho",
                            value   = "Y") %>% .help_buttom(body = .txt_desfecho),
@@ -737,7 +755,7 @@ aba_TH_duas_amostra_media <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -1122,7 +1140,7 @@ aba_TH_duas_amostra_prop <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -1178,7 +1196,7 @@ tabsetPanel(
   )
 ),
 
-rodape
+.rodape
 )
 
 
@@ -1227,7 +1245,7 @@ tabsetPanel(
   )
 ),
 
-rodape
+.rodape
 )
 
 
@@ -1246,6 +1264,8 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
     tabPanel("Testar",
              sidebarLayout(
                sidebarPanel(
+                 wellPanel(HTML('<b><a href="https://youtu.be/mp8qbyUSqV0" target="_blank">Vídeo: PSS Health para comparar dua médias</a></b><br>')),
+
                  wellPanel(
                    HTML(
                      "<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"
@@ -1350,7 +1370,7 @@ aba_TH_duas_amostra_mean_pareado <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -1390,7 +1410,7 @@ aba_TH_duas_amostra_prop_dep <- tabPanel(
 
   ),
 
-  rodape
+  .rodape
 
 )
 
@@ -1411,12 +1431,12 @@ aba_TH_medidas_repetidas <- tabPanel(
   tabsetPanel(
     tabPanel("Testar",
              mod_medidas_repetidas_Ui("tamanho_amostral"),
-             rodape
+             .rodape
     ),
 
     tabPanel("Poder",
              mod_medidas_repetidas_Ui("poder"),
-             rodape
+             .rodape
     )
   )
 )
@@ -1435,6 +1455,9 @@ aba_TH_duas_amostra_media_2tempos <- tabPanel(
 
   sidebarLayout(
     sidebarPanel(
+
+      wellPanel(HTML('<b><a href="https://youtu.be/c7zzQxgeaS4" target="_blank">Vídeo: PSS Health para comparar duas médias</a></b><br>')),
+
       wellPanel(
         HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
         uiOutput("delta2_mean_formula1"),
@@ -1492,7 +1515,7 @@ aba_TH_duas_amostra_media_2tempos <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -1686,7 +1709,7 @@ aba_anova_one_way <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -1968,7 +1991,7 @@ mainPanel(
 # )
   ),
 
-rodape
+.rodape
 )
 
 
@@ -2111,7 +2134,7 @@ aba_associacao <- tabPanel(
     #     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -2143,13 +2166,15 @@ aba_correlacao <- tabPanel(
                            Os coeficiente de correlação avaliam a direção e o grau de alinhamento entre duas variáveis.
                            Assume valores que variam de -1 (correlação negativa perfeita) a 1 (correlação positiva perfeita).",
             'Mais detalhes sobre o uso dessa aba em ',
-            HTML('<b><a https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')
+            HTML('<b><a "https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b>.')
   ),
   tabsetPanel(
 
     tabPanel("Estimar",
              sidebarLayout(
                sidebarPanel(
+                 wellPanel(HTML('<b><a href="https://youtu.be/4pP4PwlgVnU" target="_blank">Vídeo: PSS Health para estimar a correlação</a></b><br>')),
+
                  # textInput(inputId = "cor_nome_desfechos",
                  #           label   = "Descreva os nomes dos desfechos",
                  #           value   = "X1 e X2"
@@ -2349,7 +2374,7 @@ aba_correlacao <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -2654,7 +2679,7 @@ aba_logistica <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -2670,131 +2695,266 @@ aba_surv_cox <- tabPanel(
   ),
   tabsetPanel(
 
-    tabPanel("Testar",
-             sidebarLayout(
-               sidebarPanel(
-                 wellPanel(HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
-                           withMathJax("$$H_0: HR = 1 \\text{  vs  } H_1: HR \\neq 1$$")),
+    tabPanel(
+      "Testar",
+      sidebarLayout(
+        sidebarPanel(
+          wellPanel(HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                    withMathJax("$$H_0: HR = 1 \\text{  vs  } H_1: HR \\neq 1$$")),
 
-                 radioButtons(inputId = "cox_tipo_variavel",
-                              label   = "Qual tipo de variável independente?",
-                              choices =  c("Binária"  = 0,
-                                           "Contínua" = 1),
-                              selected = 0,
-                              inline   = TRUE),
-                 numericInput( "cox_hr_esperado",
-                               "Hazard ratio esperado",
-                               value = 2,
-                               min = 0,
-                               max = Inf,
-                               step = 1
-                 ) %>% .help_buttom(body = paste0("O hazard ratio (HR), ou razão de riscos proporcionais, é calculado quando o desfecho de interesse é o tempo até o evento ocorrer. ",
-                                                  "Desta forma, a razão de riscos proporcionais é obtida dividindo o risco (hazard) de desenvolver o evento em um grupo pelo risco de outro grupo. ",
-                                                  "Maiores informações em ",
-                                                  '<a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Castro et al. 2019</a>.',
-                                                  .txt_definido_pesquisador_OU_literatura
-                 ), title = "Hazard ratio"
-                 ),
-
-
-                 conditionalPanel("input.cox_tipo_variavel == 0",
-
-                                  HTML(
-                                    "<b><font size = '2.99'>Probabilidade (%) de sobrevivência até o final do seguimento no grupo</font></b><br>"
-                                  ),
-
-                                  div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
-                                      numericInput( "cox_failure_trat",
-                                                    "Tratamento",
-                                                    value = 20,
-                                                    min  = 0,
-                                                    max  = 100,
-                                                    step = 1)
-                                  ),
-                                  div(style = "display: inline-block;vertical-align:top; width: 49%;",
-                                      numericInput( "cox_failure_control",
-                                                    "Controle",
-                                                    value = 20,
-                                                    min  = 0,
-                                                    max  = 100,
-                                                    step = 1
-                                      ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento", .txt_definido_literatura))
-                                  ),
-
-                                  numericInput( "cox_balanceamento",
-                                                "Balanceamento da amostra (Tratamento:Controle)",
-                                                value = 1,
-                                                min = 0,
-                                                max = Inf,
-                                                step = 0.5
-                                  ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento")
-                 ),
+          radioButtons(inputId = "cox_tipo_variavel",
+                       label   = "Qual tipo de variável independente?",
+                       choices =  c("Binária"  = 0,
+                                    "Contínua" = 1),
+                       selected = 0,
+                       inline   = TRUE),
+          numericInput( "cox_hr_esperado",
+                        "Hazard ratio esperado",
+                        value = 2,
+                        min = 0,
+                        max = Inf,
+                        step = 1
+          ) %>% .help_buttom(body = paste0("O hazard ratio (HR), ou razão de riscos proporcionais, é calculado quando o desfecho de interesse é o tempo até o evento ocorrer. ",
+                                           "Desta forma, a razão de riscos proporcionais é obtida dividindo o risco (hazard) de desenvolver o evento em um grupo pelo risco de outro grupo. ",
+                                           "Maiores informações em ",
+                                           '<a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Castro et al. 2019</a>.',
+                                           .txt_definido_pesquisador_OU_literatura
+          ), title = "Hazard ratio"
+          ),
 
 
+          conditionalPanel("input.cox_tipo_variavel == 0",
 
-                 conditionalPanel("input.cox_tipo_variavel == 1",
-                                  numericInput( "cox_failure_continua",
-                                                "Probabilidade (%) de sobrevivência até o final do seguimento",
-                                                value = 100 -73.8,
-                                                min  = 0,
-                                                max  = 100,
-                                                step = 1
-                                  ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento.", .txt_definido_literatura)),
+                           HTML(
+                             "<b><font size = '2.99'>Probabilidade (%) de sobrevivência até o final do seguimento no grupo</font></b><br>"
+                           ),
 
-                                  numericInput( "cox_desvio_padrao",
-                                                "Desvio padrão da variável independente",
-                                                value = 0.3126,
-                                                min  = 0,
-                                                max  = Inf,
-                                                step = 1
-                                  ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
+                           div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                               numericInput( "cox_failure_trat",
+                                             "Tratamento",
+                                             value = 20,
+                                             min  = 0,
+                                             max  = 100,
+                                             step = 1)
+                           ),
+                           div(style = "display: inline-block;vertical-align:top; width: 49%;",
+                               numericInput( "cox_failure_control",
+                                             "Controle",
+                                             value = 20,
+                                             min  = 0,
+                                             max  = 100,
+                                             step = 1
+                               ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento", .txt_definido_literatura))
+                           ),
 
-                                  numericInput( "cox_r2",
-                                                "Coeficiente de correlação múltipla",
-                                                value = 0,
-                                                min  = -1,
-                                                max  = 1,
-                                                step = .2
-                                  ) %>% .help_buttom(body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
+                           numericInput( "cox_balanceamento",
+                                         "Balanceamento da amostra (Tratamento:Controle)",
+                                         value = 1,
+                                         min = 0,
+                                         max = Inf,
+                                         step = 0.5
+                           ) %>% .help_buttom(body = .txt_balanceamento, title = "Balanceamento")
+          ),
+
+
+
+          conditionalPanel("input.cox_tipo_variavel == 1",
+                           numericInput( "cox_failure_continua",
+                                         "Probabilidade (%) de sobrevivência até o final do seguimento",
+                                         value = 100 -73.8,
+                                         min  = 0,
+                                         max  = 100,
+                                         step = 1
+                           ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento.", .txt_definido_literatura)),
+
+                           numericInput( "cox_desvio_padrao",
+                                         "Desvio padrão da variável independente",
+                                         value = 0.3126,
+                                         min  = 0,
+                                         max  = Inf,
+                                         step = 1
+                           ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
+
+                           numericInput( "cox_r2",
+                                         "Coeficiente de correlação múltipla",
+                                         value = 0,
+                                         min  = -1,
+                                         max  = 1,
+                                         step = .2
+                           ) %>% .help_buttom(body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
                                                      Defina zero (default) se não haverá outras variáveis independentes.", .txt_definido_pesquisador_OU_literatura))
-                 ),
+          ),
 
 
-                 numericInput( "cox_power",
-                               "Poder (%)",
-                               value = 80,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
-                 numericInput( "cox_significancia",
-                               "Nível de significância (%)",
-                               value = 5,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
-                 numericInput( "cox_perdas_recusa_est",
-                               "Perdas/ Recusa (%)",
-                               value = 10,
-                               min = 0,
-                               max = 100,
-                               step = 1
-                 ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
-                 # actionButton("help_r_n_est", "Ajuda")
-               ),
+          numericInput( "cox_power",
+                        "Poder (%)",
+                        value = 80,
+                        min = 0,
+                        max = 100,
+                        step = 1
+          ) %>% .help_buttom(body = .txt_power, title = "Poder (%)"),
+          numericInput( "cox_significancia",
+                        "Nível de significância (%)",
+                        value = 5,
+                        min = 0,
+                        max = 100,
+                        step = 1
+          ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)"),
+          numericInput( "cox_perdas_recusa_est",
+                        "Perdas/ Recusa (%)",
+                        value = 10,
+                        min = 0,
+                        max = 100,
+                        step = 1
+          ) %>% .help_buttom(body = .txt_perdas_recusas, title = "Perdas/ Recusas (%)")
+          # actionButton("help_r_n_est", "Ajuda")
+        ),
 
-               mainPanel(
-                 shinycssloaders::withSpinner(htmlOutput("cox_out"), type = 5),
+        mainPanel(
+          shinycssloaders::withSpinner(htmlOutput("cox_out"), type = 5),
 
-                 ###  CENARIOS  ####.
-                 uiOutput("cenarios_testar_cox")
-               )
-             )
+          ###  CENARIOS  ####.
+          uiOutput("cenarios_testar_cox")
+        )
+      )
+    ),
+
+    ## Poder ----
+
+
+    tabPanel(
+      "Poder",
+      sidebarLayout(
+        sidebarPanel(
+          wellPanel(HTML("<b><font size = '2.8'>Hipóteses a serem testadas</font></b>"),
+                    withMathJax("$$H_0: HR = 1 \\text{  vs  } H_1: HR \\neq 1$$")),
+
+          radioButtons(inputId = "cox_poder_tipo_variavel",
+                       label   = "Qual tipo de variável independente?",
+                       choices =  c("Binária"  = 0,
+                                    "Contínua" = 1),
+                       selected = 0,
+                       inline   = TRUE),
+          numericInput( "cox_poder_hr_esperado",
+                        "Hazard ratio esperado",
+                        value = 2,
+                        min = 0,
+                        max = Inf,
+                        step = 1
+          ) %>% .help_buttom(body = paste0("O hazard ratio (HR), ou razão de riscos proporcionais, é calculado quando o desfecho de interesse é o tempo até o evento ocorrer. ",
+                                           "Desta forma, a razão de riscos proporcionais é obtida dividindo o risco (hazard) de desenvolver o evento em um grupo pelo risco de outro grupo. ",
+                                           "Maiores informações em ",
+                                           '<a href="https://seer.ufrgs.br/hcpa/article/view/96394/pdf" target="_blank">Castro et al. 2019</a>.',
+                                           .txt_definido_pesquisador_OU_literatura
+          ), title = "Hazard ratio"
+          ),
+
+
+          conditionalPanel("input.cox_poder_tipo_variavel == 0",
+
+                           HTML(
+                             "<b><font size = '2.99'>Tamanho amostral do grupo</font></b><br>"
+                           ),
+
+                           div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                               numericInput( "cox_poder_n_trat",
+                                             "Tratamento",
+                                             value = 20,
+                                             min  = 0,
+                                             step = 1)
+                           ),
+                           div(style = "display: inline-block;vertical-align:top; width: 49%;",
+                               numericInput( "cox_poder_n_control",
+                                             "Controle",
+                                             value = 30,
+                                             min  = 0,
+                                             step = 1
+                               )
+                           ),
+
+
+                           HTML(
+                             "<b><font size = '2.99'>Probabilidade (%) de sobrevivência até o final do seguimento no grupo</font></b><br>"
+                           ),
+
+                           div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
+                               numericInput( "cox_poder_failure_trat",
+                                             "Tratamento",
+                                             value = 20,
+                                             min  = 0,
+                                             max  = 100,
+                                             step = 1)
+                           ),
+                           div(style = "display: inline-block;vertical-align:top; width: 49%;",
+                               numericInput( "cox_poder_failure_control",
+                                             "Controle",
+                                             value = 20,
+                                             min  = 0,
+                                             max  = 100,
+                                             step = 1
+                               ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento", .txt_definido_literatura))
+                           ),
+
+          ),
+
+
+
+          conditionalPanel("input.cox_poder_tipo_variavel == 1",
+
+                           numericInput( "cox_poder_n_continua",
+                                         "Tamanho amostral",
+                                         value = 50,
+                                         min  = 0,
+                                         step = 1),
+
+                           numericInput( "cox_poder_failure_continua",
+                                         "Probabilidade (%) de sobrevivência até o final do seguimento",
+                                         value = 100 -73.8,
+                                         min  = 0,
+                                         max  = 100,
+                                         step = 1
+                           ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento.", .txt_definido_literatura)),
+
+                           numericInput( "cox_poder_desvio_padrao",
+                                         "Desvio padrão da variável independente",
+                                         value = 0.3126,
+                                         min  = 0,
+                                         max  = Inf,
+                                         step = 1
+                           ) %>% .help_buttom(body = .txt_dp, title = "Desvio padrão esperado"),
+
+                           numericInput( "cox_poder_r2",
+                                         "Coeficiente de correlação múltipla",
+                                         value = 0,
+                                         min  = -1,
+                                         max  = 1,
+                                         step = .2
+                           ) %>% .help_buttom(body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
+                                                     Defina zero (default) se não haverá outras variáveis independentes.", .txt_definido_pesquisador_OU_literatura))
+          ),
+
+
+          numericInput( "cox_poder_significancia",
+                        "Nível de significância (%)",
+                        value = 5,
+                        min = 0,
+                        max = 100,
+                        step = 1
+          ) %>% .help_buttom(body = .txt_significancia, title = "Nível de significância (%)")
+        ),
+
+        mainPanel(
+          shinycssloaders::withSpinner(htmlOutput("cox_poder_out"), type = 5),
+
+          ###  CENARIOS  ####.
+          uiOutput("cenarios_testar_cox_poder")
+        )
+      )
     )
+
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -3006,7 +3166,7 @@ aba_obter_dp <- tabPanel(
 
   ,
 
-  rodape
+  .rodape
 
 )
 
@@ -3241,7 +3401,7 @@ aba_cohen <- tabPanel("d de Cohen",
                         )
                       ),
 
-                      rodape
+                      .rodape
 
 )
 
@@ -3317,7 +3477,7 @@ aba_pooled_var <- tabPanel("Desvio padrão combinado",
                              )
                            ),
 
-                           rodape
+                           .rodape
 
 )
 
@@ -3387,7 +3547,7 @@ aba_obter_correlacao <- tabPanel(
       # br(), br(),
 
 
-      rodape
+      .rodape
 
     )
   )
@@ -3522,7 +3682,7 @@ aba_curva_roc <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -3610,7 +3770,7 @@ aba_sensibilidade <- tabPanel("Sensibilidade/ Especificidade",
                                 )
                               ),
 
-                              rodape
+                              .rodape
 
 )
 
@@ -3859,7 +4019,7 @@ aba_kappa <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -3991,7 +4151,7 @@ aba_icc <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -4088,7 +4248,7 @@ aba_estimacao_bland <- tabPanel(
     )
   ),
 
-  rodape
+  .rodape
 )
 
 
@@ -4175,6 +4335,8 @@ ui <- fluidPage(fluidRow(
                          ".js-irs-3 .irs-single, .js-irs-3 .irs-from, .js-irs-3 .irs-to, .js-irs-3 .irs-bar-edge, .js-irs-3 .irs-bar{background: #006338 ;  }",
                          ".js-irs-4 .irs-single, .js-irs-4 .irs-from, .js-irs-4 .irs-to, .js-irs-4 .irs-bar-edge, .js-irs-4 .irs-bar{background: #006338 ;  }"
                        ))))),
+
+
                        # tags$head(includeHTML(("google-analytics.html"))),
 
                        # tags$script(HTML("var header = $('.navbar > .container-fluid');
@@ -4193,12 +4355,21 @@ ui <- fluidPage(fluidRow(
                                   h2("PSS Health"),
                                   HTML(paste0(
                                     "<b>P</b>ower and <b>S</b>ample <b>S</b>ize for Health Researchers (versão ",
-                                    if (!.versao_online){
+                                    if (!.versao_online) {
                                       packageVersion("PSS.Health")
-                                    } else{
+                                    } else {
                                       "on-line"
-                                    }, ")")
+                                    }, ")<br><br><br>")
                                   )
+
+                                  # radioButtons(
+                                  #   inputId = "idioma",
+                                  #   label = "Idioma/ Language",
+                                  #   choices = c("Português" = "pt", "English" = "en"),
+                                  #   selected = "pt",
+                                  #   inline = TRUE
+                                  # ),
+
                                 )
                          ),
                          column(1, img(src = 'PSS.png', align = "right", width = "150%"))
@@ -4247,7 +4418,7 @@ ui <- fluidPage(fluidRow(
 
                             "<li><b>Artigo sobre o PSS Health:</b></li>",
                             "<ul>",
-                            '<li><b><a href="https://seer.ufrgs.br/hcpa/article/view/109542/pdf" target="_blank">Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde</a></b></li>',
+                            '<li><b><a href="https://doi.org/10.22491/2357-9730.109542" target="_blank">Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde</a></b></li>',
                             '<li><b><a href="https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b></li>',
                             "</ul>",
                             "<br><br>",

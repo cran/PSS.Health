@@ -8,10 +8,14 @@ output: html_document
 O tamanho de efeito $f$ é uma medida de efeito utilizada em análise de variância. Sua fórmula é dada por
 
 $$
-f = \dfrac{\sigma_{entre}}{\sigma_{dentro}},
+f = \sqrt{\dfrac{SQ_{entre}}{SQ_{dentro}}},
 $$
 
-onde $\sigma_{entre}$ é a variância entre os grupos e $\sigma_{dentro}$ é a variância comum dentro dos grupos. 
+onde $SQ_{entre}$ é a soma de quadrados entre os grupos e $SQ_{dentro}$ é a soma de quadrados dentro dos grupos. 
+  
+
+&nbsp;
+&nbsp;
 
 
 O $f$ também pode ser obtido da medida de efeito $\eta^2$ pela fórmula

@@ -1,8 +1,8 @@
 Package: PSS.Health
 Type: Package
 Title: Power and Sample Size for Health Researchers via Shiny
-Version: 0.3.1
-Date: 2021-10-06
+Version: 0.4.0
+Date: 2022-03-29
 Language: pt
 Authors@R: c(person(given = "Rogério",
                     family = "Boff Borges",
@@ -57,10 +57,12 @@ Imports: DT, easypower, EnvStats, epiR, ICC.Sample.Size, kappaSize,
         tidyverse, writexl
 License: GPL (>= 2)
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Contact: 'mailto:l-bioestatistica@hcpa.edu.br'
+Suggests: rmarkdown, knitr
+VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2021-10-07 15:23:43 UTC; roger
+Packaged: 2022-03-29 15:27:14 UTC; roger
 Author: Rogério Boff Borges [aut, cre]
     (<https://orcid.org/0000-0002-2548-1889>),
   Guilherme Serpa Azambuja [aut]
@@ -76,4 +78,4 @@ Author: Rogério Boff Borges [aut, cre]
   Hospital de Clínicas de Porto Alegre [fnd]
 Maintainer: Rogério Boff Borges <roborges@hcpa.edu.br>
 Repository: CRAN
-Date/Publication: 2021-10-07 16:30:08 UTC
+Date/Publication: 2022-03-29 16:50:02 UTC
