@@ -1,8 +1,8 @@
 Package: PSS.Health
 Type: Package
 Title: Power and Sample Size for Health Researchers via Shiny
-Version: 0.4.0
-Date: 2022-03-29
+Version: 0.5.1
+Date: 2022-07-06
 Language: pt
 Authors@R: c(person(given = "Rogério",
                     family = "Boff Borges",
@@ -51,18 +51,18 @@ Description: Power and Sample Size for Health Researchers is a Shiny application
     limit of agreement on Bland-Altman plots,
     area under the curve, sensitivity and specificity incorporating the prevalence of disease. 
     You can also use the online version at <https://hcpa-unidade-bioestatistica.shinyapps.io/PSS_Health/>.
-Imports: DT, easypower, EnvStats, epiR, ICC.Sample.Size, kappaSize,
-        longpower, plotly, powerMediation, powerSurvEpi, presize, pROC,
-        pwr, pwr2, shiny, shinycssloaders, shinyFeedback, shinyhelper,
-        tidyverse, writexl
+Imports: dplyr, DT, easypower, EnvStats, epiR, ggplot2,
+        ICC.Sample.Size, kappaSize, longpower, plotly, powerMediation,
+        powerSurvEpi, presize, pROC, pwr, pwr2, shiny, shinycssloaders,
+        shinyFeedback, shinyhelper, writexl
 License: GPL (>= 2)
 Encoding: UTF-8
-RoxygenNote: 7.1.2
 Contact: 'mailto:l-bioestatistica@hcpa.edu.br'
-Suggests: rmarkdown, knitr
+Suggests: rmarkdown, knitr, MESS, WebPower
 VignetteBuilder: knitr
+RoxygenNote: 7.2.0
 NeedsCompilation: no
-Packaged: 2022-03-29 15:27:14 UTC; roger
+Packaged: 2022-07-06 16:27:41 UTC; roborges
 Author: Rogério Boff Borges [aut, cre]
     (<https://orcid.org/0000-0002-2548-1889>),
   Guilherme Serpa Azambuja [aut]
@@ -78,4 +78,4 @@ Author: Rogério Boff Borges [aut, cre]
   Hospital de Clínicas de Porto Alegre [fnd]
 Maintainer: Rogério Boff Borges <roborges@hcpa.edu.br>
 Repository: CRAN
-Date/Publication: 2022-03-29 16:50:02 UTC
+Date/Publication: 2022-07-06 17:10:02 UTC

@@ -10,9 +10,6 @@ PSS_Health()
 \description{
 Run locally an interactive Shiny application for Power and Sample Size determination.
 }
-\note{
-You can also use the online version at \url{https://hcpa-unidade-bioestatistica.shinyapps.io/PSS_Health/}
-}
 \examples{
 if(interactive()){
 PSS_Health()
@@ -24,8 +21,9 @@ PSS_Health()
 
 Borges, R., Mancuso, A., Camey, S., Leotti, V., Hirakata, V., Azambuja, G., & Castro, S. (2021). Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde. Clinical & Biomedical Research, 40(4). Retrieved from \url{https://seer.ufrgs.br/hcpa/article/view/109542}
 
+Castro, S. M. de J., Branco, A. C., Camey, S. A., Leotti, V. B., Hirakata, V. N., & Borges, R. B. (2021). PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação. Clinical and Biomedical Research, 41(3). Retrieved from de \url{https://seer.ufrgs.br/index.php/hcpa/article/view/112466}
 }
 }
 \author{
-Unidade de Bioestatística, Grupo de Pesquisa em Pós Graduação, Hospital de Clínicas de Porto Alegre.
+Unidade de Bioestatística, Diretoria de Pesquisa, Hospital de Clínicas de Porto Alegre.
 }
