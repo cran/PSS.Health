@@ -22,6 +22,9 @@ PSS_Health()
 Borges, R., Mancuso, A., Camey, S., Leotti, V., Hirakata, V., Azambuja, G., & Castro, S. (2021). Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde. Clinical & Biomedical Research, 40(4). Retrieved from \url{https://seer.ufrgs.br/hcpa/article/view/109542}
 
 Castro, S. M. de J., Branco, A. C., Camey, S. A., Leotti, V. B., Hirakata, V. N., & Borges, R. B. (2021). PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação. Clinical and Biomedical Research, 41(3). Retrieved from de \url{https://seer.ufrgs.br/index.php/hcpa/article/view/112466}
+
+Hirakata, V. N., Mancuso, A. C. B., Castro, S. M. de J., Camey, S. A., Leotti, V. B., & Borges, R. B. (2022). PSS Health: como calcular tamanho de amostra para testes de comparação de médias de dois grupos. Clinical and Biomedical Research, 42(2). Retrieved from de \url{https://seer.ufrgs.br/index.php/hcpa/article/view/120997}
+
 }
 }
 \author{

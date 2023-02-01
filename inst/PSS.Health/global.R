@@ -1,23 +1,4 @@
 
-# require('PSS.Health')
-# require('DT')
-# require('easypower')
-# require('epiR')
-# require('EnvStats')
-# require('ICC.Sample.Size')
-# require('kappaSize')
-# require('longpower')
-# require('plotly')
-# require('powerMediation')
-# require('powerSurvEpi')
-# require("presize")
-# require('pROC')
-# require('pwr')
-# require('pwr2')
-# require('shinycssloaders')
-# require('shinyFeedback')
-# require('shinyhelper')
-# require('writexl')
 
 {
   library("shiny", quietly = TRUE, warn.conflicts = FALSE)
@@ -118,13 +99,13 @@
 )
 
 
-.txt_citacao_pss <- paste(
+.txt_citacao_pss <- paste0(
   "Este cálculo foi realizado por meio da ferramenta PSS Health versão ",
   if (!.versao_online) {
     packageVersion("PSS.Health")
   } else{
     "on-line"
   },
-  "(citação abaixo)."
+  " (citação abaixo)."
 )
 

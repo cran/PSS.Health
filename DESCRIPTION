@@ -1,8 +1,8 @@
 Package: PSS.Health
 Type: Package
 Title: Power and Sample Size for Health Researchers via Shiny
-Version: 0.5.1
-Date: 2022-07-06
+Version: 0.6.1
+Date: 2023-02-01
 Language: pt
 Authors@R: c(person(given = "Rogério",
                     family = "Boff Borges",
@@ -60,9 +60,9 @@ Encoding: UTF-8
 Contact: 'mailto:l-bioestatistica@hcpa.edu.br'
 Suggests: rmarkdown, knitr, MESS, WebPower
 VignetteBuilder: knitr
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2022-07-06 16:27:41 UTC; roborges
+Packaged: 2023-02-01 17:06:51 UTC; roborges
 Author: Rogério Boff Borges [aut, cre]
     (<https://orcid.org/0000-0002-2548-1889>),
   Guilherme Serpa Azambuja [aut]
@@ -78,4 +78,4 @@ Author: Rogério Boff Borges [aut, cre]
   Hospital de Clínicas de Porto Alegre [fnd]
 Maintainer: Rogério Boff Borges <roborges@hcpa.edu.br>
 Repository: CRAN
-Date/Publication: 2022-07-06 17:10:02 UTC
+Date/Publication: 2023-02-01 17:50:11 UTC

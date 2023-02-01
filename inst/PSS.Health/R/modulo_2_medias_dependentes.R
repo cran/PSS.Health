@@ -16,7 +16,8 @@ mod_2_medias_dependentes_Ui <- function(id){
 
 mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, h1,
                                             translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                                            warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero){
+                                            warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero,
+                                            lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -44,7 +45,11 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
           sidebarPanel(
 
 
-            wellPanel(HTML('<b><a href="https://youtu.be/mp8qbyUSqV0" target="_blank">Vídeo: PSS Health para comparar dua médias</a></b><br>')),
+            wellPanel(HTML(
+              '<b><a href="https://youtu.be/mp8qbyUSqV0" target="_blank">',
+              translation_pss("Vídeo: PSS Health para comparar dua médias", linguagem()),
+              '</a></b><br>'
+            )),
 
             if (tipo %in% c("tamanho_amostral", "poder")) {
               wellPanel(
@@ -127,7 +132,7 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
                 ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
                 selectInput(ns('th_alternativa'),
-                            translation_pss('Tipo de teste de acordo com hipótese alternativa:', linguagem()),
+                            translation_pss('Tipo de teste de acordo com hipótese alternativa', linguagem()),
                             choices = h1(),
                             selected = 'Bilateral'
                 ) %>% .help_buttom(body = txt_ajuda()$txt_h1)
@@ -390,28 +395,34 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
           if (tipo == "tamanho_amostral") {
             paste0(
               "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
-              "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> pares ",
+              "</font></b></br></br>",
 
-              if (th_alternativa() == "two.sided") {
-                paste0(
-                  " para testar se existe uma diferença mínima de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ",
-                  "na média das diferenças de <i>",
-                  nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> "
-                )
-              } else {
-                paste0(
-                  "para testar se  a média das diferenças de <i>", nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> é ",
-                  ifelse(th_alternativa() == "less", "menor", "maior"),
-                  " do que zero "
-                )
-              },
 
-              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
-              "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
-              "média e desvio padrão das diferenças iguais a <b>", input$diferenca_para_detectar,
-              "</b> e <b>", input$sigma, " ", unidade_medida(), "</b>, respectivamente (referido por Fulano (1900)). ",
-              .txt_citacao_pss,
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                "Foi calculado um tamanho de amostra de <b>", n, "</b> pares ",
+
+                if (th_alternativa() == "two.sided") {
+                  paste0(
+                    " para testar se existe uma diferença mínima de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ",
+                    "na média das diferenças de <i>",
+                    nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> "
+                  )
+                } else {
+                  paste0(
+                    "para testar se  a média das diferenças de <i>", nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> é ",
+                    ifelse(th_alternativa() == "less", "menor", "maior"),
+                    " do que zero "
+                  )
+                },
+
+                "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+                "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
+                "média e desvio padrão das diferenças iguais a <b>", input$diferenca_para_detectar,
+                "</b> e <b>", input$sigma, " ", unidade_medida(), "</b>, respectivamente (referido por Fulano (1900)). ",
+                .txt_citacao_pss
+              ),
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -421,27 +432,32 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
           } else if (tipo == "poder") {
             paste0(
               "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", n, "%",
-              "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-              "O poder",
-              if (th_alternativa() == "two.sided") {
-                paste0(
-                  " para testar se existe uma diferença mínima de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ",
-                  "na média das diferenças de <i>",
-                  nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> "
-                )
-              } else {
-                paste0(
-                  "para testar se  a média das diferenças de <i>", nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> é ",
-                  ifelse(th_alternativa() == "less", "menor", "maior"),
-                  " do que zero "
-                )
-              },
-              "é de <b>", n, "%</b>. ",
-              "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
-              "tamanho amostral igual a <b>", input$n, "</b> pares, ",
-              "média e desvio padrão das diferenças iguais a <b>", input$diferenca_para_detectar,
-              "</b> e <b>", input$sigma, " ", unidade_medida(), "</b>, respectivamente (referido por Fulano (1900)). ",
-              .txt_citacao_pss,
+              "</font></b></br></br><i>",
+
+
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                "O poder",
+                if (th_alternativa() == "two.sided") {
+                  paste0(
+                    " para testar se existe uma diferença mínima de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ",
+                    "na média das diferenças de <i>",
+                    nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> "
+                  )
+                } else {
+                  paste0(
+                    "para testar se  a média das diferenças de <i>", nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> é ",
+                    ifelse(th_alternativa() == "less", "menor", "maior"),
+                    " do que zero "
+                  )
+                },
+                "é de <b>", n, "%</b>. ",
+                "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+                "tamanho amostral igual a <b>", input$n, "</b> pares, ",
+                "média e desvio padrão das diferenças iguais a <b>", input$diferenca_para_detectar,
+                "</b> e <b>", input$sigma, " ", unidade_medida(), "</b>, respectivamente (referido por Fulano (1900)). ",
+                .txt_citacao_pss
+                ),
               .txt_referencia_tap,
               print_r_code(code)
 
@@ -451,16 +467,20 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
 
             paste0(
               "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
-              "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "</font></b></br></br><i>",
 
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> pares  para estimar a média das diferenças de <i>",
-              nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i>, ",
-              "com margem de erro  igual a <b>", input$precisao, " ", unidade_medida(), "</b> ",
-              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-              "O cálculo considerou nível de confiança de <b>", input$confianca, "</b>%  e ",
-              "desvio padrão das diferenças iguais a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). ",
-              .txt_citacao_pss,
+                "Foi calculado um tamanho de amostra de <b>", n, "</b> pares  para estimar a média das diferenças de <i>",
+                nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i>, ",
+                "com margem de erro  igual a <b>", input$precisao, " ", unidade_medida(), "</b> ",
+                "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+
+                "O cálculo considerou nível de confiança de <b>", input$confianca, "</b>%  e ",
+                "desvio padrão das diferenças iguais a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). ",
+                .txt_citacao_pss
+              ),
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -507,7 +527,7 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
           HTML(
             "<b>",
             translation_pss("Defina a sequência de valores para a diferença a ser detectada", linguagem()),
-            ":</b>"
+            "</b>"
           ),
 
 
@@ -528,7 +548,7 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
           fluidRow(
             column(6,
                    textInput(inputId = ns("desvio_cenarios"),
-                             label   = translation_pss("Digite valores de desvio padrão (DP) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de desvio padrão para fazer o gráfico", linguagem()),
                              value   = paste0(c(input$sigma, input$sigma + 0.2, input$sigma + 0.5), collapse = ", "),
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())
@@ -610,7 +630,10 @@ mod_2_medias_dependentes_server <- function(id, tipo = "tamanho_amostral", txt_a
           ylab(translation_pss("Tamanho da amostra*", linguagem())) +
           theme_bw() +
           theme(axis.text = element_text(colour = "black")) +
-          scale_color_brewer(palette = "Set1")
+          scale_color_brewer(
+            name = translation_pss("Desvio padrão", linguagem()),
+            palette = "Set1"
+          )
 
 
         plotly::ggplotly(g1,

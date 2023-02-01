@@ -16,7 +16,8 @@ mod_mc_nemar_Ui <- function(id){
 
 mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balanceamento_f,
                                 translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                                warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas){
+                                warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas,
+                                lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -188,7 +189,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
             # HTML(paste0("<b><font size = '2.99'>% de discordância no grupo</font></b><br>")),
             # div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
                 numericInput( ns("discordante1"),
-                              paste0("% de ", nome_grupo_controle(), " (pb)"),
+                              paste0("% ", nome_grupo_controle(), " (pb)"),
                               value = 50,
                               min = 0,
                               max = 100,
@@ -197,7 +198,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
             # ),
             # div(style="display: inline-block;vertical-align:top; width: 49%;",
                 numericInput( ns("discordante2"),
-                              paste0("% de ", nome_grupo_tratamento(), " (pc)"),
+                              paste0("% ", nome_grupo_tratamento(), " (pc)"),
                               value = 30,
                               min = 0,
                               max = 100,
@@ -231,7 +232,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                         translation_pss("Método utilizado para calcular o teste", linguagem()),
                         choices = metodo(),
                         selected = "normal"
-            ) |> .help_buttom(body = txt_ajuda()$txt_per_method_MESS)
+            ) %>% .help_buttom(body = txt_ajuda()$txt_per_method_MESS)
               ,
 
             numericInput( ns("alpha"),
@@ -255,7 +256,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -279,7 +280,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
               textInput(inputId = ns("nome_grupo_controle"),
                         label   = HTML("Descreva a célula p_b"),
                         value   = ifelse(input$mudar_nomes == 0,
-                                         "Sim para Não",
+                                         translation_pss("Sim para Não", linguagem()),
                                          nome_grupo_controle())),
 
               br(),
@@ -287,7 +288,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
               textInput(inputId = ns("nome_grupo_tratamento"),
                         label   = HTML("Descreva a célula p_c"),
                         value   = ifelse(input$mudar_nomes == 0,
-                                         "Não para Sim",
+                                         translation_pss("Não para Sim", linguagem()),
                                          nome_grupo_tratamento()))
 
             ),
@@ -299,11 +300,11 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
 
 
       nome_grupo_controle <- reactive({
-        ifelse(is.null(input$nome_grupo_controle), "Sim para Não", input$nome_grupo_controle)
+        ifelse(is.null(input$nome_grupo_controle), translation_pss("Sim para Não", linguagem()), input$nome_grupo_controle)
       })
 
       nome_grupo_tratamento <- reactive({
-        ifelse(is.null(input$nome_grupo_tratamento), "Não para Sim", input$nome_grupo_tratamento)
+        ifelse(is.null(input$nome_grupo_tratamento), translation_pss("Não para Sim", linguagem()), input$nome_grupo_tratamento)
       })
 
 
@@ -355,20 +356,26 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
 
 
           paste0(
-            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "<i> pares</i>",
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
+            "</font></b></br></br>",
 
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> pares para testar se as proporções de <i>",
-            nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> são diferentes ",
-            "(com o acréscimo de ", input$perc_perdas, "% para possíveis perdas e recusas este número deve ser ",
-            n_perdas(n, input$perc_perdas), "). ",
-            "O cálculo, baseado no teste ",
-            tolower(names(metodo()[metodo() == input$metodo_estimacao])),
-            ", considerou um poder de <b>",
-            input$poder, "%</b>, nível de significância de <b>", input$alpha, "</b>%, percentuais de <b>",
-            input$discordante1, "%</b> e <b>", input$discordante2, "%</b> de <i>",
-            nome_grupo_controle(), "</i> e <i> ", nome_grupo_tratamento(), "</i>, respectivamente (dados de Fulano (1900)). ",
-            .txt_citacao_pss,
+
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> pares para testar se as proporções de <i>",
+              nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> são diferentes ",
+              "(com o acréscimo de ", input$perc_perdas, "% para possíveis perdas e recusas este número deve ser ",
+              n_perdas(n, input$perc_perdas), "). ",
+              "O cálculo, baseado no teste ",
+              tolower(names(metodo()[metodo() == input$metodo_estimacao])),
+              ", considerou um poder de <b>",
+              input$poder, "%</b>, nível de significância de <b>", input$alpha, "</b>%, percentuais de <b>",
+              input$discordante1, "%</b> e <b>", input$discordante2, "%</b> de <i>",
+              nome_grupo_controle(), "</i> e <i> ", nome_grupo_tratamento(), "</i>, respectivamente (dados de Fulano (1900)). ",
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap, print_r_code(code)
           )
 
@@ -408,15 +415,18 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
           paste0("<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", round(poder$power*100, digits = 1),
                   "%</font></b></br></br>",
 
-                 "O poder para testar se as proporções de <i>",
-                 nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> são diferentes é <b>",
-                 round(poder$power*100, digits = 1), "</b>. ",
-                 " Este valor foi obtido considerando nível de significância de <b>", input$alpha, "</b>%, ",
-                 "tamanho amostral de <b>", input$n, "</b> pares, ",
-                 "percentuais de <b>",
-                 input$discordante1, "%</b> e <b>", input$discordante2, "%</b> de <i>",
-                 nome_grupo_controle(), "</i> e <i> ", nome_grupo_tratamento(), "</i>, respectivamente (dados de Fulano (1900)). ",
-                 .txt_citacao_pss,
+                 lista_de_funcoes_server()$sugestao_texto_portugues(
+                   # "<i>",
+                   "O poder para testar se as proporções de <i>",
+                   nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(), "</i> são diferentes é <b>",
+                   round(poder$power*100, digits = 1), "</b>. ",
+                   " Este valor foi obtido considerando nível de significância de <b>", input$alpha, "</b>%, ",
+                   "tamanho amostral de <b>", input$n, "</b> pares, ",
+                   "percentuais de <b>",
+                   input$discordante1, "%</b> e <b>", input$discordante2, "%</b> de <i>",
+                   nome_grupo_controle(), "</i> e <i> ", nome_grupo_tratamento(), "</i>, respectivamente (dados de Fulano (1900)). ",
+                   .txt_citacao_pss
+                 ),
                  .txt_referencia_tap, print_r_code(code)
           )
 
@@ -454,7 +464,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
 
 
           HTML(paste0(
-            "<b>Defina a sequência de valores (%) de <i>", nome_grupo_controle(), "</i>:</b>")),
+            "<b>", translation_pss("Defina a sequência de valores", linguagem()),"(%) <i>", nome_grupo_controle(), "</i></b>")),
           br(),
           div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 80px;",
               numericInput(ns("from"), translation_pss("Mínimo", linguagem()), value = input$discordante1, step = 1)
@@ -471,7 +481,10 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
           fluidRow(
             column(6,
                    textInput(inputId = ns("seq_prop2"),
-                             label   = paste0("Digite valores de percentual de ", nome_grupo_tratamento(), " para fazer o gráfico"),
+                             label   = paste0(
+                               translation_pss("Digite valores de", linguagem()),
+                               " (%) ", nome_grupo_tratamento()
+                             ),
                              value   = paste0(c(input$discordante2, input$discordante2 + 1, input$discordante2 + 3), collapse = ", "),
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())
@@ -508,7 +521,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
           alpha =  input$alpha,
           metodo = input$metodo_estimacao,
           stringsAsFactors = FALSE
-        )  |>
+        )  %>%
           mutate(
             numerador = pmax(perc1, perc2),
             denominador = pmin(perc1, perc2)
@@ -550,14 +563,14 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                      color = `Disc. 2`))+
           geom_point() +
           geom_line() +
-          xlab(paste0("% de ", nome_grupo_controle())) +
-          ylab("Tamanho total da amostra*") +
+          xlab(paste0("% ", nome_grupo_controle())) +
+          ylab(translation_pss("Tamanho total da amostra*", linguagem())) +
           scale_x_continuous(breaks = seq(from = input$from, to = input$to, by = input$by)) +
           theme_bw() +
           theme(axis.text = element_text(colour = "black")) +
           scale_color_brewer(
             palette = "Set1",
-            name = paste0("% de ", nome_grupo_tratamento())
+            name = paste0("% ", nome_grupo_tratamento())
           )
 
 
@@ -570,15 +583,15 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
 
 
       cenarios_print <- reactive({
-        dataset <- cenarios() |>
+        dataset <- cenarios() %>%
           select(
             c(
               perc1, perc2, poder, alpha, metodo, `Tamanho da amostra`
             )
           )
 
-        colnames(dataset) <- c(paste0("% de ", nome_grupo_controle()),
-                               paste0("% de ", nome_grupo_tratamento()),
+        colnames(dataset) <- c(paste0("% ", nome_grupo_controle()),
+                               paste0("% ", nome_grupo_tratamento()),
                                translation_pss("Poder (%)", linguagem()),
                                translation_pss("Nível de significância (%)", linguagem()),
                                translation_pss("Método utilizado para calcular o teste", linguagem()),
@@ -592,7 +605,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
       output$tab <- DT::renderDataTable({
 
         cenarios_print() %>%
-        # cenarios() |>
+        # cenarios() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

@@ -16,7 +16,8 @@ mod_2_proporcoes_independentes_Ui <- function(id){
 
 mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balanceamento_f, h1,
                                                   translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                                                  warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas){
+                                                  warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas,
+                                                  lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -221,7 +222,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                 ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
                 selectInput(ns('th_alternativa'),
-                            translation_pss('Tipo de teste de acordo com hipótese alternativa:', linguagem()),
+                            translation_pss('Tipo de teste de acordo com hipótese alternativa', linguagem()),
                             choices = h1(),
                             selected = 'Bilateral'
                 ) %>% .help_buttom(body = txt_ajuda()$txt_h1)
@@ -257,11 +258,13 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
               ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             },
 
-            checkboxInput(
-              ns("prop_correction"),
-              translation_pss("Aplicar correção de continuidade", linguagem()),
-              value = TRUE
-            ) %>% .help_buttom(body = txt_ajuda()$txt_correcao_continuidade),
+            if (tipo != "estimar") {
+              checkboxInput(
+                ns("prop_correction"),
+                translation_pss("Aplicar correção de continuidade", linguagem()),
+                value = TRUE
+              ) %>% .help_buttom(body = txt_ajuda()$txt_correcao_continuidade)
+            }
           ),
 
           mainPanel(
@@ -299,7 +302,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                               alternative_TH2_prop2() == 'less'      ~ "\\geq")
 
         withMathJax(
-          paste0("$$H_0: \\pi_{", nome_grupo_tratamento(), "} ", sinal_h0, " \\pi_{", nome_grupo_controle(), "}$$"))
+          paste0("$$H_0: \\pi_\\text{", nome_grupo_tratamento(), "} ", sinal_h0, " \\pi_\\text{", nome_grupo_controle(), "}$$"))
       })
 
       output$th_h1 <- renderUI({
@@ -310,7 +313,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                               alternative_TH2_prop2() == 'less'      ~ "<")
 
         withMathJax(
-          paste0("$$H_1: \\pi_{", nome_grupo_tratamento(), "}", sinal_h1, " \\pi_{", nome_grupo_controle(), "}$$"))
+          paste0("$$H_1: \\pi_\\text{", nome_grupo_tratamento(), "}", sinal_h1, " \\pi_\\text{", nome_grupo_controle(), "}$$"))
       })
 
 
@@ -572,24 +575,28 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
             if (n1 != n2) {
               paste0(
-                " (<i>", n1, " ", nome_grupo_tratamento(), " e ", n2, " ", nome_grupo_controle(), "</i>)"
+                " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
               )
             } else {
               paste0(
-                " (<i>", n1, " para cada grupo</i>)"
+                " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
               )
             },
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-            if (n1 != n2) {
-              paste0(
-                "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
-              )
-            } else {
-              paste0(
-                "(", n1, " para cada grupo)"
-              )
-            }
+            "</font></b></br></br>",
+
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+              if (n1 != n2) {
+                paste0(
+                  "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
+                )
+              } else {
+                paste0(
+                  "(", n1, " para cada grupo)"
+                )
+              }
+            )
           )
 
 
@@ -597,21 +604,24 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
 
           paste0(
             cabecalho,
-            texto_comparacao,
 
-            if (input$balanceamento == 1) {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
-            } else {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
-            },
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              texto_comparacao,
 
-            if (tipo == "tamanho_amostral") {
-              paste0("O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ")
-            } else {
-              paste0("O cálculo considerou nível de confiança de <b>", input$confianca, "%</b>, ")
-            },
-            text_just,
-            .txt_citacao_pss,
+              if (input$balanceamento == 1) {
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
+              } else {
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
+              },
+
+              if (tipo == "tamanho_amostral") {
+                paste0("O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ")
+              } else {
+                paste0("O cálculo considerou nível de confiança de <b>", input$confianca, "%</b>, ")
+              },
+              text_just,
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -621,18 +631,19 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
 
 
 
+          ## pODER ----
         } else {
 
 
           code <- paste0(
             "EnvStats::propTestPower(",
-            "n.or.n1     = ", input$n_controle, ", ",
-            "p.or.p1 = ", input$perc_controle, "/100, ",
-            "n2 = ", input$n_tratamento, ", ",
-            "p0.or.p2	= ", p2, "/100, ",
+            "n.or.n1     = ", input$n_tratamento, ", ",
+            "p.or.p1 = ", p2, ", ",
+            "n2 = ", input$n_controle, ", ",
+            "p0.or.p2	= ", input$perc_controle, "/100, ",
             "alpha       = ", input$alpha, "/100, ",
             "sample.type = 'two.sample', ",
-            "alternative = 'two.sided', ",
+            "alternative = '", alternative_TH2_prop2(), "', ",
             "correct     = ", input$prop_correction, ", warn = FALSE)"
           )
 
@@ -642,35 +653,39 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
           paste0("<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", round(poder*100, digits = 1),
                  "%</font></b></br></br>",
 
-                 "O poder ",
-                 if (alternative_TH2_prop2() == "two.sided") {
-                   texto_comparacao <- paste0(
-                     " para testar se existe diferença entre os percentuais de <i>",
-                     nome_desfecho(), "</i> nos grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i> "
-                   )
-                 } else {
-                   texto_comparacao <- paste0(
-                     " para testar se o percentual de <i>",
-                     nome_desfecho(), "</i> no <i>", nome_grupo_tratamento(), "</i> é ",
-                     if (alternative_TH2_prop2() == "less") "menor" else "maior",
-                     " do que no <i>", nome_grupo_controle(), "</i> "
-                   )
-                 },
-                 " é <b>", round(poder*100, digits = 1), "%</b>. ",
-                 "Este valor",
-                 if (input$prop_correction) ", aplicando correção de continuidade,",
-                 " foi obtido considerando nível de significância de <b>", input$alpha, "</b>%, ",
-                 if (input$n_tratamento == input$n_controle) {
-                   paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
-                 } else {
-                   paste0(
-                     "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
-                     nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
-                     nome_grupo_controle(), "</i>, "
-                   )
-                 },
-                 text_just,
-                 .txt_citacao_pss,
+                 lista_de_funcoes_server()$sugestao_texto_portugues(
+
+                   "O poder ",
+                   if (alternative_TH2_prop2() == "two.sided") {
+                     texto_comparacao <- paste0(
+                       " para testar se existe diferença entre os percentuais de <i>",
+                       nome_desfecho(), "</i> nos grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i> "
+                     )
+                   } else {
+                     texto_comparacao <- paste0(
+                       " para testar se o percentual de <i>",
+                       nome_desfecho(), "</i> no <i>", nome_grupo_tratamento(), "</i> é ",
+                       if (alternative_TH2_prop2() == "less") "menor" else "maior",
+                       " do que no <i>", nome_grupo_controle(), "</i> "
+                     )
+                   },
+                   " é <b>", round(poder*100, digits = 1), "%</b>. ",
+                   "Este valor",
+                   if (input$prop_correction) ", aplicando correção de continuidade,",
+                   " foi obtido considerando nível de significância de <b>", input$alpha, "</b>%, ",
+                   if (input$n_tratamento == input$n_controle) {
+                     paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
+                   } else {
+                     paste0(
+                       "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
+                       nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
+                       nome_grupo_controle(), "</i>, "
+                     )
+                   },
+                   text_just,
+                   .txt_citacao_pss
+                 ),
+
                  .txt_referencia_tap,
                  print_r_code(code)
           )
@@ -729,15 +744,15 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
 
           if (input$estatistica_tratamento == 'percent') {
             HTML(
-              paste0("<b>", translation_pss("Defina a sequência de valores (%) para o grupo", linguagem()), " ", nome_grupo_tratamento(), ":</b>")
+              paste0("<b>", translation_pss("Defina a sequência de valores (%) para o grupo", linguagem()), " ", nome_grupo_tratamento(), "</b>")
             )
           } else if (input$estatistica_tratamento == 'ratio') {
             HTML(
-              paste0("<b>", translation_pss("Defina a sequência do risco relativo", linguagem()),":</b>")
+              paste0("<b>", translation_pss("Defina a sequência do risco relativo", linguagem()),"</b>")
             )
           } else {
             HTML(
-              paste0("<b>", translation_pss("Defina a sequência da razão de chances", linguagem()), ":</b>")
+              paste0("<b>", translation_pss("Defina a sequência da razão de chances", linguagem()), "</b>")
             )
           },
 
@@ -759,7 +774,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
           fluidRow(
             column(6,
                    textInput(inputId = ns("poder_cenarios"),
-                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())

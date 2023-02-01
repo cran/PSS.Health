@@ -17,7 +17,8 @@ mod_cox_Ui <- function(id){
 mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balanceamento_f,
                            translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
                            warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas,
-                           hazard_ratio){
+                           hazard_ratio,
+                           lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -156,7 +157,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -249,7 +250,9 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
           tagList(
             HTML(
-              "<b><font size = '2.99'>Probabilidade (%) de sobrevivência até o final do seguimento no grupo</font></b><br>"
+              "<b><font size = '2.99'>",
+              translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()),
+              "</font></b><br>"
             ),
 
             div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
@@ -267,7 +270,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                               min  = 0,
                               max  = 100,
                               step = 1
-                ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento", txt_ajuda()$txt_definido_literatura))
+                ) %>% .help_buttom(body = paste0(translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()), txt_ajuda()$txt_definido_literatura))
             ),
 
             if (tipo == "tamanho_amostral") {
@@ -325,15 +328,15 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             },
 
             numericInput( ns("cox_failure_continua"),
-                          "Probabilidade (%) de sobrevivência até o final do seguimento",
+                          translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()),
                           value = 26.2,
                           min  = 0,
                           max  = 100,
                           step = 1
-            ) %>% .help_buttom(body = paste0("Probabilidade (%) de sobrevivência até o final do seguimento.", txt_ajuda()$txt_definido_literatura)),
+            ) %>% .help_buttom(body = paste0(translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()), txt_ajuda()$txt_definido_literatura)),
 
             numericInput( ns("cox_desvio_padrao"),
-                          paste0("Desvio padrão de ", nome_preditora()),
+                          paste0(translation_pss("Desvio padrão esperado de", linguagem()), nome_preditora()),
                           value = 0.3126,
                           min  = 0,
                           max  = Inf,
@@ -341,7 +344,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             ) %>% .help_buttom(body = txt_ajuda()$txt_dp, title = "Desvio padrão esperado"),
 
             numericInput( ns("cox_r2"),
-                          "Coeficiente de correlação múltipla",
+                          translation_pss("Coeficiente de correlação múltipla", linguagem()),
                           value = 0,
                           min  = -1,
                           max  = 1,
@@ -396,30 +399,36 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             poder <- try_n(code)
 
             paste0("<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", round(poder*100, digits = 1),
-                   "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-                   "O poder para testar se o hazard ratio para <i>", nome_desfecho(), "</i> ",
-                   "entre os grupos <b>",nome_grupo_controle(), "</b> e <b>", nome_grupo_tratamento(),
-                   "</b> é diferente de 1 é <b>", round(poder*100, digits = 1), "%</b>. ",
+                   "</font></b></br></br>",
 
-                   "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
-                   if (input$n_tratamento == input$n_controle) {
-                     paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
-                   } else {
-                     paste0(
-                       "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
-                       nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
-                       nome_grupo_controle(), "</i>, "
-                     )
-                   },
-                   "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
-                   if (input$cox_failure_control == input$cox_failure_trat) {
-                     "em ambos grupos "
-                   } else {
-                     paste0(" e <b>", input$cox_failure_control, "%</b>, respectivamente, ")
-                   },
-                   "e hazard ratio esperado de <b>", input$hr, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
 
-                   .txt_citacao_pss,
+                   lista_de_funcoes_server()$sugestao_texto_portugues(
+                     "<i>",
+                     translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                     "O poder para testar se o hazard ratio para <i>", nome_desfecho(), "</i> ",
+                     "entre os grupos <b>",nome_grupo_controle(), "</b> e <b>", nome_grupo_tratamento(),
+                     "</b> é diferente de 1 é <b>", round(poder*100, digits = 1), "%</b>. ",
+
+                     "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+                     if (input$n_tratamento == input$n_controle) {
+                       paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
+                     } else {
+                       paste0(
+                         "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
+                         nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
+                         nome_grupo_controle(), "</i>, "
+                       )
+                     },
+                     "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
+                     if (input$cox_failure_control == input$cox_failure_trat) {
+                       "em ambos grupos "
+                     } else {
+                       paste0(" e <b>", input$cox_failure_control, "%</b>, respectivamente, ")
+                     },
+                     "e hazard ratio esperado de <b>", input$hr, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
+
+                     .txt_citacao_pss
+                   ),
                    .txt_referencia_tap,
                    print_r_code(code)
             )
@@ -442,45 +451,51 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
               if (n1 != n2) {
                 paste0(
-                  " (<i>", n1, " ", nome_grupo_tratamento(), " e ", n2, " ", nome_grupo_controle(), "</i>)"
+                  " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
                 )
               } else {
                 paste0(
-                  " (<i>", n1, " para cada grupo</i>)"
+                  " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
                 )
               },
-              "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-              if (n1 != n2) {
-                paste0(
-                  "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
-                )
-              } else {
-                paste0(
-                  "(", n1, " para cada grupo)"
-                )
-              },
+              "</font></b></br></br>",
 
-              " para testar se o hazard ratio para <i>", nome_desfecho(), "</i> ",
-              "entre os grupos <b>",nome_grupo_controle(), "</b> e <b>", nome_grupo_tratamento(),
-              "</b> é diferente de 1 ",
 
-              if (input$balanceamento == 1) {
-                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
-              } else {
-                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
-              },
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+                if (n1 != n2) {
+                  paste0(
+                    "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
+                  )
+                } else {
+                  paste0(
+                    "(", n1, " para cada grupo)"
+                  )
+                },
 
-              "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
-              "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
-              if (input$cox_failure_control == input$cox_failure_trat) {
-                "em ambos grupos "
-              } else {
-                paste0(" e <b>", input$cox_failure_control, "%</b>, respectivamente, ")
-              },
-              "e hazard ratio esperado de <b>", input$hr, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
+                " para testar se o hazard ratio para <i>", nome_desfecho(), "</i> ",
+                "entre os grupos <b>",nome_grupo_controle(), "</b> e <b>", nome_grupo_tratamento(),
+                "</b> é diferente de 1 ",
 
-              .txt_citacao_pss,
+                if (input$balanceamento == 1) {
+                  paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
+                } else {
+                  paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
+                },
+
+                "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
+                "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
+                if (input$cox_failure_control == input$cox_failure_trat) {
+                  "em ambos grupos "
+                } else {
+                  paste0(" e <b>", input$cox_failure_control, "%</b>, respectivamente, ")
+                },
+                "e hazard ratio esperado de <b>", input$hr, "</b> como é referida em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
+                .txt_citacao_pss
+              ),
+
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -518,19 +533,22 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             paste0("<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", round(poder*100, digits = 1),
                    "%</font></b></br></br>",
 
-                   "O poder para testar se o hazard ratio para <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(),
-                   "</i> é diferente de 1 é <b>", round(poder*100, digits = 1), "%</b>. ",
+                   lista_de_funcoes_server()$sugestao_texto_portugues(
+                     "<i>",
+                     "O poder para testar se o hazard ratio para <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(),
+                     "</i> é diferente de 1 é <b>", round(poder*100, digits = 1), "%</b>. ",
 
-                   "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
-                   "tamanho amostral igual a <b>", input$n, "</b> sujeitos, ",
-                   if (input$cox_r2 != 0) {
-                     paste0("coeficiente de correlação múltipla com as demais covariáveis de <b>", input$cox_r2, "</b> ")
-                   },
-                   "hazard ratio esperado de <b>", input$hr, "</b>, ",
-                   "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_continua, "%</b>, ",
-                   " e desvio padrão da <i>", nome_preditora(), "</i> de <b>", input$cox_desvio_padrao, " u.m.</b>, ",
-                   "como é referida em Fulano (1900). ",
-                   .txt_citacao_pss,
+                     "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+                     "tamanho amostral igual a <b>", input$n, "</b> sujeitos, ",
+                     if (input$cox_r2 != 0) {
+                       paste0("coeficiente de correlação múltipla com as demais covariáveis de <b>", input$cox_r2, "</b> ")
+                     },
+                     "hazard ratio esperado de <b>", input$hr, "</b>, ",
+                     "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_continua, "%</b>, ",
+                     " e desvio padrão da <i>", nome_preditora(), "</i> de <b>", input$cox_desvio_padrao, " u.m.</b>, ",
+                     "como é referida em Fulano (1900). ",
+                     .txt_citacao_pss
+                   ),
 
                    .txt_referencia_tap, print_r_code(code)
             )
@@ -543,20 +561,25 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
           paste0(
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "</font></b></br></br>",
 
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-            "para testar se o hazard ratio para <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(), "</i> é diferente de 1 ",
-            "(com o acréscimo de ", input$perc_perdas, "% para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
-            "O cálculo considerou um poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
-            if (input$cox_r2 != 0) {
-              paste0("coeficiente de correlação múltipla com as demais covariáveis de <b>", input$cox_r2, "</b> ")
-            },
-            "hazard ratio esperado de <b>", input$hr, "</b>, ",
-            "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_continua, "%</b>, ",
-            " e desvio padrão da <i>", nome_preditora(), "</i> de <b>", input$cox_desvio_padrao, " u.m.</b>, ",
-            "como é referida em Fulano (1900). ",
-            .txt_citacao_pss,
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+              "para testar se o hazard ratio para <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(), "</i> é diferente de 1 ",
+              "(com o acréscimo de ", input$perc_perdas, "% para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+              "O cálculo considerou um poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
+              if (input$cox_r2 != 0) {
+                paste0("coeficiente de correlação múltipla com as demais covariáveis de <b>", input$cox_r2, "</b> ")
+              },
+              "hazard ratio esperado de <b>", input$hr, "</b>, ",
+              "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_continua, "%</b>, ",
+              " e desvio padrão da <i>", nome_preditora(), "</i> de <b>", input$cox_desvio_padrao, " u.m.</b>, ",
+              "como é referida em Fulano (1900). ",
+              .txt_citacao_pss
+            ),
 
             .txt_referencia_tap, print_r_code(code)
           )
@@ -597,7 +620,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
           ),
 
           HTML(
-            "<b>", translation_pss("Defina a sequência do hazard ratio", linguagem()), ":</b>"
+            "<b>", translation_pss("Defina a sequência do hazard ratio", linguagem()), "</b>"
           ),
 
 
@@ -618,7 +641,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
           fluidRow(
             column(6,
                    textInput(inputId = ns("poder_cenarios"),
-                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())
@@ -712,7 +735,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                  sigma = input$cox_desvio_padrao,
                                  psi = input$cox_failure_continua,
                                  rho = input$cox_r2,
-                                 stringsAsFactors = FALSE) |>
+                                 stringsAsFactors = FALSE) %>%
             mutate(
               n = mapply(
                 function(hr, alpha, poder, sigma, psi, rho){

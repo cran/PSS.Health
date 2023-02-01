@@ -16,7 +16,8 @@ mod_kappa_Ui <- function(id){
 
 mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                              translation_pss, linguagem, .rodape, validate_n, try_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                             warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, erro_painel_principal){
+                             warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, erro_painel_principal,
+                             lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -64,17 +65,17 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
               },
 
               radioButtons( ns("numero_categorias"),
-                            "Número de categorias do desfecho",
+                            translation_pss("Número de categorias do desfecho", linguagem()),
                             choices = 2:5,
                             selected = 2,
                             inline = TRUE
               ),
-              actionLink(ns("mudar_nomes"), translation_pss("Mudar rótulo", linguagem())),
+              actionLink(ns("mudar_nomes"), translation_pss("Mudar rótulos", linguagem())),
               br(), br(),
               uiOutput(ns("probabilidadesUi")),
 
               numericInput( ns("kappa"),
-                            "Kappa esperado",
+                            translation_pss("Kappa esperado", linguagem()),
                             value = 0.85,
                             min = 0,
                             max = 1,
@@ -92,7 +93,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
               },
 
               numericInput( ns("avaliadores"),
-                            "Número de métodos/ avaliadores",
+                            translation_pss("Número de avaliadores", linguagem()),
                             value = 2,
                             min = 2,
                             max = 6,
@@ -283,7 +284,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
         req(!is.null(input$numero_categorias))
 
         wellPanel(
-          HTML(paste0("<b>Percentual (%) de ocorrência da categoria</b><br><br>")),
+          HTML(paste0("<b>", translation_pss("Percentual (%) de ocorrência da categoria", linguagem()), "</b><br><br>")),
           uiOutput(ns("prob_categoriasUi"))
         )
 
@@ -426,18 +427,22 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
 
 
           paste0(
-            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br><i>",
-            translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br>",
 
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para testar se o coeficiente de concordância de Kappa, que avaliará a ",
-            "concordância entre os <b>métodos/ avaliadores ", metodos, "</b>, é diferente de <b>", input$kappa_h0, "</b> ",
-            "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-            "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
-            "Kappa esperado de <b>", input$kappa, "</b> ",
-            "e percentuais de ocorrência de <b>", probs_categorias, "%</b> para as categorias <b>", categorias, "</b>, respectivamente, ",
-            "conforme referido em Fulano (1900) OU escolha do pesquisador. ",
-            .txt_citacao_pss,
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para testar se o coeficiente de concordância de Kappa, que avaliará a ",
+              "concordância entre os <b>métodos/ avaliadores ", metodos, "</b>, é diferente de <b>", input$kappa_h0, "</b> ",
+              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+
+              "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
+              "Kappa esperado de <b>", input$kappa, "</b> ",
+              "e percentuais de ocorrência de <b>", probs_categorias, "%</b> para as categorias <b>", categorias, "</b>, respectivamente, ",
+              "conforme referido em Fulano (1900) OU escolha do pesquisador. ",
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -467,18 +472,22 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
 
 
           paste0(
-            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br><i>",
-            translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br>",
 
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para estimar o coeficiente de concordância de Kappa, que avaliará a ",
-            "concordância entre os <b>métodos/ avaliadores ", metodos, "</b>, com amplitude desejada para o intervalo de confiança de de <b>", input$amplitude, "</b> ",
-            "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-            "O cálculo considerou nível de significância de <b>", input$alpha, "%</b>, ",
-            "Kappa esperado de <b>", input$kappa, "</b> ",
-            "e percentuais de ocorrência de <b>", probs_categorias, "%</b> para as categorias <b>", categorias, "</b>, respectivamente, ",
-            "conforme referido em Fulano (1900) OU escolha do pesquisador. ",
-            .txt_citacao_pss,
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para estimar o coeficiente de concordância de Kappa, que avaliará a ",
+              "concordância entre os <b>métodos/ avaliadores ", metodos, "</b>, com amplitude desejada para o intervalo de confiança de de <b>", input$amplitude, "</b> ",
+              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+
+              "O cálculo considerou nível de significância de <b>", input$alpha, "%</b>, ",
+              "Kappa esperado de <b>", input$kappa, "</b> ",
+              "e percentuais de ocorrência de <b>", probs_categorias, "%</b> para as categorias <b>", categorias, "</b>, respectivamente, ",
+              "conforme referido em Fulano (1900) OU escolha do pesquisador. ",
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )

@@ -17,7 +17,8 @@ mod_nao_inferioridade_Ui <- function(id){
 mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_variavel = "c",
                                          txt_ajuda, txt_balanceamento_f,
                                          translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                                         warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero){
+                                         warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero,
+                                         lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -468,7 +469,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
 
       output$th_h0 <- renderUI({
 
-        paramentro <- ifelse(tipo_variavel == "c", "\\mu_{", "\\pi_{")
+        paramentro <- ifelse(tipo_variavel == "c", "\\mu_\\text{", "\\pi_\\text{")
 
         if (input$opcoes_teste %in% c("inf", "sup")) {
           withMathJax(
@@ -490,7 +491,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
       })
 
       output$th_h1 <- renderUI({
-        paramentro <- ifelse(tipo_variavel == "c", "\\mu_{", "\\pi_{")
+        paramentro <- ifelse(tipo_variavel == "c", "\\mu_\\text{", "\\pi_\\text{")
 
         if (input$opcoes_teste %in% c("inf", "sup")) {
           withMathJax(
@@ -772,94 +773,99 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
               "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
               if (n1 != n2) {
                 paste0(
-                  " (<i>", n1, " ", nome_grupo_tratamento(), " e ", n2, " ", nome_grupo_controle(), "</i>)"
+                  " (<i>", n1, " ", nome_grupo_tratamento(),
+                  translation_pss(" e ", linguagem()),
+                  n2, " ", nome_grupo_controle(), "</i>)"
                 )
               } else {
                 paste0(
-                  " (<i>", n1, " para cada grupo</i>)"
+                  " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
                 )
               }
             )
           } else if (tipo == "poder") {
             paste0("<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", poder, "%")
           },
+          "</font></b></br></br>",
 
 
+          lista_de_funcoes_server()$sugestao_texto_portugues(
+            "<i>",
+            translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-          "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+
+            # Inicio do texto
+
+            if (tipo == "tamanho_amostral") {
+              paste0(
+                "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+                if (n1 != n2) {
+                  paste0(
+                    "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
+                  )
+                } else {
+                  paste0(
+                    "(", n1, " para cada grupo)"
+                  )
+                }
+              )
+            } else if (tipo == "poder") {
+              "O poder"
+            },
+
+            " para testar a ", teste_escolhido,
 
 
-          # Inicio do texto
+            if (tipo_variavel == "c") ", em termos de médias de <i>" else  ", em termos de proporção de <i>",
+            nome_desfecho(), "</i>, do grupo <i>", nome_grupo_tratamento(),
+            "</i> em relação ao grupo <i>", nome_grupo_controle(), "</i> ",
 
-          if (tipo == "tamanho_amostral") {
-            paste0(
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-              if (n1 != n2) {
-                paste0(
-                  "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
-                )
+
+            if (tipo == "tamanho_amostral") {
+              if (input$balanceamento == 1) {
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
               } else {
-                paste0(
-                  "(", n1, " para cada grupo)"
-                )
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
               }
-            )
-          } else if (tipo == "poder") {
-            "O poder"
-          },
-
-          " para testar a ", teste_escolhido,
-
-
-          if (tipo_variavel == "c") ", em termos de médias de <i>" else  ", em termos de proporção de <i>",
-          nome_desfecho(), "</i>, do grupo <i>", nome_grupo_tratamento(),
-          "</i> em relação ao grupo <i>", nome_grupo_controle(), "</i> ",
-
-
-          if (tipo == "tamanho_amostral") {
-            if (input$balanceamento == 1) {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
             } else {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
-            }
-          } else {
-            paste0("é de <b>", poder, "%</b>. ")
-          },
+              paste0("é de <b>", poder, "%</b>. ")
+            },
 
 
-          if (tipo == "tamanho_amostral") {
-            paste0(
-              "O cálculo considerou como margem de ", teste_escolhido, " <b>", input$margem,
+            if (tipo == "tamanho_amostral") {
+              paste0(
+                "O cálculo considerou como margem de ", teste_escolhido, " <b>", input$margem,
 
-              if (tipo_variavel == "c") paste0(" ", unidade_medida(), "</b>, ") else paste0("%</b>, "),
-              "poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, "
-            )
-          } else if (tipo == "poder") {
-            paste0(
-              "Este valor foi obtido considerando margem de ", teste_escolhido, " </b>", input$margem,
-              if (tipo_variavel == "c") paste0(" ", unidade_medida(), "</b>, ") else paste0(" %</b>, "),
-              "nível de significância de <b>", input$alpha, "%</b>, ",
-              if (input$n_tratamento == input$n_controle) {
-                paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
-              } else {
-                paste0(
-                  "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
-                  nome_grupo_tratamento(), "</i> e <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
-                  nome_grupo_controle(), "</i> "
-                )
-              }
-            )
-          },
+                if (tipo_variavel == "c") paste0(" ", unidade_medida(), "</b>, ") else paste0("%</b>, "),
+                "poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, "
+              )
+            } else if (tipo == "poder") {
+              paste0(
+                "Este valor foi obtido considerando margem de ", teste_escolhido, " </b>", input$margem,
+                if (tipo_variavel == "c") paste0(" ", unidade_medida(), "</b>, ") else paste0(" %</b>, "),
+                "nível de significância de <b>", input$alpha, "%</b>, ",
+                if (input$n_tratamento == input$n_controle) {
+                  paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
+                } else {
+                  paste0(
+                    "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
+                    nome_grupo_tratamento(), "</i> e <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
+                    nome_grupo_controle(), "</i> "
+                  )
+                }
+              )
+            },
 
-          if (tipo_variavel == "c") {
-            paste0(
-              "diferença de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> entre as médias e ",
-              "desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
-            )
-          } else {
-            text_just
-          },
-          .txt_citacao_pss,
+            if (tipo_variavel == "c") {
+              paste0(
+                "diferença de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> entre as médias e ",
+                "desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
+              )
+            } else {
+              text_just
+            },
+            .txt_citacao_pss
+          ),
           .txt_referencia_tap,
           print_r_code(code)
         )

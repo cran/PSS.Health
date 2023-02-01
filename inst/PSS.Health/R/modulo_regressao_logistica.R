@@ -16,7 +16,8 @@ mod_regressao_logistica_Ui <- function(id) {
 
 mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balanceamento_f,
                                            translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                                           warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas) {
+                                           warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas,
+                                           lista_de_funcoes_server) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -58,6 +59,24 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
         tipo
       })
 
+
+
+
+
+
+      opcoes_metodos_estimacao <- reactive({
+        choices <- c(
+          "Logit suavizado" = "indip_smooth",
+          "Gart" = "gart",
+          "Woolf" = "woolf"
+        )
+
+        if (linguagem() == "en") {
+          names(choices) <- c("Independence-smoothed logit", "Gart", "Woolf")
+        }
+
+        choices
+      })
 
 
 
@@ -134,13 +153,9 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
 
                 selectInput(ns("metodo_estimacao"),
                             translation_pss("Método utilizado para calcular o intervalo de confiança", linguagem()),
-                            choices = c(
-                              "Logit suavizado" = "indip_smooth",
-                              "Gart" = "gart",
-                              "Woolf" = "woolf"
-                            ),
+                            choices = opcoes_metodos_estimacao(),
                             selected = "indip_smooth"
-                ) |>
+                ) %>%
                   .help_buttom(body = txt_ajuda()$txt_per_method_presize)
               )
             },
@@ -157,13 +172,13 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
-            htmlOutput(ns("texto_principal_poder")) |>
+            htmlOutput(ns("texto_principal_poder")) %>%
               shinycssloaders::withSpinner(type = 5),
 
-            htmlOutput(ns("texto_principal_estimar")) |>
+            htmlOutput(ns("texto_principal_estimar")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -464,17 +479,22 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
 
 
           paste0("<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
-                 "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                 "</font></b></br></br>",
+
+                 lista_de_funcoes_server()$sugestao_texto_portugues(
+                   "<i>",
+                   translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
 
-                 "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-                 "para testar se a razão de chances para desenvolver <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(), "</i> é diferente de 1 ",
-                 "(com o acréscimo de ", input$perc_perdas, "% para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
-                 "O cálculo considerou um poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
-                 "percentual de <i>", nome_desfecho(), "</i> na média de <i>", nome_preditora(), "</i> de <b>", input$logistic_rate_mean, "%</b> ",
-                 "e razão de chances esperada de <b>", input$rc_continua, "</b> como é referida em Fulano (1900) OU escolha do pesquisador. ",
-                 .txt_citacao_pss,
-                 .txt_referencia_tap,
+                   "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+                   "para testar se a razão de chances para desenvolver <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(), "</i> é diferente de 1 ",
+                   "(com o acréscimo de ", input$perc_perdas, "% para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+                   "O cálculo considerou um poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
+                   "percentual de <i>", nome_desfecho(), "</i> na média de <i>", nome_preditora(), "</i> de <b>", input$logistic_rate_mean, "%</b> ",
+                   "e razão de chances esperada de <b>", input$rc_continua, "</b> como é referida em Fulano (1900) OU escolha do pesquisador. ",
+                   .txt_citacao_pss
+                 ),
+                   .txt_referencia_tap,
                  print_r_code(code)
           )
 
@@ -535,42 +555,47 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
             if (n1 != n2) {
               paste0(
-                " (<i>", n1, " ", nome_grupo_tratamento(), " e ", n2, " ", nome_grupo_controle(), "</i>)"
+                " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
               )
             } else {
               paste0(
-                " (<i>", n1, " para cada grupo</i>)"
+                " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
               )
             },
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "</font></b></br></br>",
+
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
 
-            "Foi calculado um tamanho de amostra de <b>", n , "</b> sujeitos, sendo <b>",
-            if (probs == 0.5) {
-              paste0(
-                n1, "</b> em cada grupo, "
-              )
-            } else {
-              paste0(
-                n1, "</b> no <i>", nome_grupo_tratamento(), "</i> e <b>", n2, "</b> no <i>", nome_grupo_controle(), "</i>, "
-              )
-            },
+              "Foi calculado um tamanho de amostra de <b>", n , "</b> sujeitos, sendo <b>",
+              if (probs == 0.5) {
+                paste0(
+                  n1, "</b> em cada grupo, "
+                )
+              } else {
+                paste0(
+                  n1, "</b> no <i>", nome_grupo_tratamento(), "</i> e <b>", n2, "</b> no <i>", nome_grupo_controle(), "</i>, "
+                )
+              },
 
-            "para testar se a razão de chances para desenvolver <i>",
-            nome_desfecho(), "</i> entre os grupos <i>",
-            nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(),
-            "</i> é diferente de 1 ",
+              "para testar se a razão de chances para desenvolver <i>",
+              nome_desfecho(), "</i> entre os grupos <i>",
+              nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(),
+              "</i> é diferente de 1 ",
 
-            if (probs == 0.5) {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
-            } else {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " <i>", nome_grupo_tratamento(), "</i> e ", nperdas2, " <i>", nome_grupo_controle(), "</i>). ")
-            },
+              if (probs == 0.5) {
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
+              } else {
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " <i>", nome_grupo_tratamento(), "</i> e ", nperdas2, " <i>", nome_grupo_controle(), "</i>). ")
+              },
 
-            "O cálculo considerou um poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
-            text_just,
+              "O cálculo considerou um poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
+              text_just,
 
-            .txt_citacao_pss,
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -604,14 +629,17 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
             "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", round(poder*100, digits = 1),
             "%</font></b></br></br>",
 
-            "O poder para testar se a razão de chances para desenvolver <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(), "</i> é diferente de 1 é <b>",
-            round(poder*100, digits = 1), "%</b>. ",
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              # "<i>",
+              "O poder para testar se a razão de chances para desenvolver <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(), "</i> é diferente de 1 é <b>",
+              round(poder*100, digits = 1), "%</b>. ",
 
-            "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
-            "tamanho amostral igual a <b>", input$n_total, "</b> sujeitos, ",
-            "percentual de <i>", nome_desfecho(), "</i> na média de <i>", nome_preditora(), "</i> de <b>", input$logistic_rate_mean, "%</b> ",
-            "e razão de chances esperada de <b>", input$rc_continua, "</b> como é referida em Fulano (1900) OU escolha do pesquisador. ",
-            .txt_citacao_pss,
+              "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+              "tamanho amostral igual a <b>", input$n_total, "</b> sujeitos, ",
+              "percentual de <i>", nome_desfecho(), "</i> na média de <i>", nome_preditora(), "</i> de <b>", input$logistic_rate_mean, "%</b> ",
+              "e razão de chances esperada de <b>", input$rc_continua, "</b> como é referida em Fulano (1900) OU escolha do pesquisador. ",
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -666,24 +694,27 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
             "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", round(poder*100, digits = 1),
             "%</font></b></br></br>",
 
-            "O poder para testar se a razão de chances para desenvolver <i>",
-            nome_desfecho(), "</i> entre os grupos <i>",
-            nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(),
-            "</i> é diferente de 1 é <b>", round(poder*100, digits = 1), "%</b>. ",
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              # "<i>",
+              "O poder para testar se a razão de chances para desenvolver <i>",
+              nome_desfecho(), "</i> entre os grupos <i>",
+              nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(),
+              "</i> é diferente de 1 é <b>", round(poder*100, digits = 1), "%</b>. ",
 
-            "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
-            if (input$n_tratamento == input$n_controle) {
-              paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
-            } else {
-              paste0(
-                "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
-                nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
-                nome_grupo_controle(), "</i>, "
-              )
-            },
-            text_just,
+              "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+              if (input$n_tratamento == input$n_controle) {
+                paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo, ")
+              } else {
+                paste0(
+                  "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
+                  nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
+                  nome_grupo_controle(), "</i>, "
+                )
+              },
+              text_just,
 
-            .txt_citacao_pss,
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -766,44 +797,49 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
           "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
           if (n1 != n2) {
             paste0(
-              " (<i>", n1, " ", nome_grupo_tratamento(), " e ", n2, " ", nome_grupo_controle(), "</i>)"
+              " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
             )
           } else {
             paste0(
-              " (<i>", n1, " para cada grupo</i>)"
+              " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
             )
           },
-          "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+          "</font></b></br></br>",
+
+          lista_de_funcoes_server()$sugestao_texto_portugues(
+            "<i>",
+            translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
 
-          "Foi calculado um tamanho de amostra de <b>", n , "</b> sujeitos, sendo <b>",
-          if (input$balanceamento == 1) {
-            paste0(
-              n1, "</b> em cada grupo, "
-            )
-          } else {
-            paste0(
-              n1, "</b> no <i>", nome_grupo_tratamento(), "</i> e <b>", n2, "</b> no <i>", nome_grupo_controle(), "</i>, "
-            )
-          },
+            "Foi calculado um tamanho de amostra de <b>", n , "</b> sujeitos, sendo <b>",
+            if (input$balanceamento == 1) {
+              paste0(
+                n1, "</b> em cada grupo, "
+              )
+            } else {
+              paste0(
+                n1, "</b> no <i>", nome_grupo_tratamento(), "</i> e <b>", n2, "</b> no <i>", nome_grupo_controle(), "</i>, "
+              )
+            },
 
-          "para estimar a razão de chances de desenvolver <i>",
-          nome_desfecho(), "</i> entre os grupos <i>",
-          nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(),
-          "</i>, ",
-          "com amplitude desejada para o intervalo de confiança de <b>", input$amplitude, "</b> ",
+            "para estimar a razão de chances de desenvolver <i>",
+            nome_desfecho(), "</i> entre os grupos <i>",
+            nome_grupo_controle(), "</i> e <i>", nome_grupo_tratamento(),
+            "</i>, ",
+            "com amplitude desejada para o intervalo de confiança de <b>", input$amplitude, "</b> ",
 
-          if (input$balanceamento == 1) {
-            paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
-          } else {
-            paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " <i>", nome_grupo_tratamento(), "</i> e ", nperdas2, " <i>", nome_grupo_controle(), "</i>). ")
-          },
+            if (input$balanceamento == 1) {
+              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
+            } else {
+              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " <i>", nome_grupo_tratamento(), "</i> e ", nperdas2, " <i>", nome_grupo_controle(), "</i>). ")
+            },
 
-          "O cálculo (utilizando o método ", metodo, ") ",
-          "considerou nível de confiança de <b>", input$confianca, "%</b>, ",
-          text_just,
+            "O cálculo (utilizando o método ", metodo, ") ",
+            "considerou nível de confiança de <b>", input$confianca, "%</b>, ",
+            text_just,
+            .txt_citacao_pss
+          ),
 
-          .txt_citacao_pss,
           .txt_referencia_tap,
           print_r_code(code)
         )
@@ -876,19 +912,19 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
 
           if (input$tipo_variavel == 1) {
             HTML(
-              paste0("<b>", translation_pss("Defina a sequência da razão de chances", linguagem()), ":</b>")
+              paste0("<b>", translation_pss("Defina a sequência da razão de chances", linguagem()), "</b>")
             )
           } else if (input$estatistica_tratamento == 'percent') {
             HTML(
-              paste0("<b>", translation_pss("Defina a sequência de valores (%) para o grupo", linguagem()) , nome_grupo_tratamento(), ":</b>")
+              paste0("<b>", translation_pss("Defina a sequência de valores (%) para o grupo", linguagem()) , nome_grupo_tratamento(), "</b>")
             )
           } else if (input$estatistica_tratamento == 'ratio') {
             HTML(
-              paste0("<b>", translation_pss("Defina a sequência do risco relativo", linguagem()),":</b>")
+              paste0("<b>", translation_pss("Defina a sequência do risco relativo", linguagem()),"</b>")
             )
           } else {
             HTML(
-              paste0("<b>", translation_pss("Defina a sequência da razão de chances", linguagem()), ":</b>")
+              paste0("<b>", translation_pss("Defina a sequência da razão de chances", linguagem()), "</b>")
             )
           },
 
@@ -910,7 +946,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
           fluidRow(
             column(6,
                    textInput(inputId = ns("poder_cenarios"),
-                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())

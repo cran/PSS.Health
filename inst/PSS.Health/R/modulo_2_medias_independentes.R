@@ -16,7 +16,8 @@ mod_2_medias_independentes_Ui <- function(id){
 
 mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balanceamento_f, h1, cohen_d,
                                               translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                                              warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero){
+                                              warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero,
+                                              lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -48,8 +49,12 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
           sidebarPanel(
 
 
-            wellPanel(HTML('<b><a href="https://youtu.be/LpwvwqjPkJk" target="_blank">Vídeo: PSS Health para comparar dua médias</a></b><br>')),
-
+            # wellPanel(HTML('<b><a href="https://youtu.be/LpwvwqjPkJk" target="_blank">Vídeo: PSS Health para comparar dua médias</a></b><br>')),
+            wellPanel(HTML(
+              '<b><a href="https://youtu.be/LpwvwqjPkJk" target="_blank">',
+              translation_pss("Vídeo: PSS Health para comparar dua médias", linguagem()),
+              '</a></b><br>'
+            )),
 
             if (tipo %in% c("tamanho_amostral", "poder")) {
               wellPanel(
@@ -135,7 +140,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                 ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
                 selectInput(ns('th_alternativa'),
-                            translation_pss('Tipo de teste de acordo com hipótese alternativa:', linguagem()),
+                            translation_pss('Tipo de teste de acordo com hipótese alternativa', linguagem()),
                             choices = h1(),
                             selected = 'Bilateral'
                 ) %>% .help_buttom(body = txt_ajuda()$txt_h1)
@@ -164,6 +169,12 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
           ),
 
           mainPanel(
+            # actionLink(ns("mudar_nomess"), translation_pss("Mudar nomes", linguagem())),
+            # mod_desvio_padrao_agrupado_Ui(
+            #   # ns("teste")
+            #   "teste"
+            # ),
+
             htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
@@ -171,6 +182,34 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
           )
         )
       })
+
+
+
+      # observeEvent(input$mudar_nomess, {
+      #   showModal(
+      #     modalDialog(
+      #       title = translation_pss("Ajustes", linguagem()),
+      #       fluidPage(
+      #         mod_desvio_padrao_agrupado_Ui(ns("teste"))
+      #       ),
+      #       easyClose = TRUE,
+      #       footer    = NULL
+      #     )
+      #   )
+      # })
+
+
+      # mod_desvio_padrao_agrupado_server(
+      #   # ns("teste"),
+      #   "teste",
+      #   txt_ajuda = txt_ajuda,
+      #   translation_pss = translation_pss,
+      #   linguagem = linguagem,
+      #   grupo_A = nome_grupo_tratamento,
+      #   grupo_B = nome_grupo_controle,
+      #   warning_numero_positivo = warning_numero_positivo,
+      #   warning_inteiro = warning_inteiro
+      # )
 
 
       # Desvio combinado ----
@@ -283,7 +322,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
         withMathJax(
           paste0(
             "$$",
-            "H_0: \\mu_{", nome_grupo_tratamento(), "}", sinal_h0,  "\\mu_{", nome_grupo_controle(), "} ",
+            "H_0: \\mu_\\text{", nome_grupo_tratamento(), "}", sinal_h0,  "\\mu_\\text{", nome_grupo_controle(), "} ",
             "$$"
           )
         )
@@ -299,7 +338,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
         withMathJax(
           paste0(
             "$$",
-            "H_1: \\mu_{", nome_grupo_tratamento(), "}", sinal_h1,  "\\mu_{", nome_grupo_controle(), "} ",
+            "H_1: \\mu_\\text{", nome_grupo_tratamento(), "}", sinal_h1,  "\\mu_\\text{", nome_grupo_controle(), "} ",
             "$$"
           )
         )
@@ -368,6 +407,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
       unidade_medida <- reactive({
         ifelse(is.null(input$unidade_medida),  translation_pss("u.m.", linguagem()), input$unidade_medida)
       })
+
 
 
 
@@ -513,58 +553,63 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
             if (n1 != n2) {
               paste0(
-                " (<i>", n1, " ", nome_grupo_tratamento(), " e ", n2, " ", nome_grupo_controle(), "</i>)"
+                " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
               )
             } else {
               paste0(
-                " (<i>", n1, " para cada grupo</i>)"
+                " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
               )
             },
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-            if (n1 != n2) {
-              paste0(
-                "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
-              )
-            } else {
-              paste0(
-                "(", n1, " para cada grupo)"
-              )
-            },
+            "</font></b></br></br>",
 
-            if (th_alternativa() == "two.sided") {
-              paste0(
-                " para testar se existe uma diferença mínima ",
-                if (!input$calcular_utilizando_d_cohen) paste0("de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> "),
-                "nas médias de <i>",
-                nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i> "
-              )
-            } else {
-              paste0(
-                "para testar se  a média de <i>", nome_desfecho(), "</i> do grupo <i>", nome_grupo_tratamento(), "</i> é ",
-                if (th_alternativa() == "less") "menor" else "maior",
-                " do que a do grupo <i>", nome_grupo_controle(), "</i> ",
-                if (!input$calcular_utilizando_d_cohen) paste0("em <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ")
-              )
-            },
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+              if (n1 != n2) {
+                paste0(
+                  "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
+                )
+              } else {
+                paste0(
+                  "(", n1, " para cada grupo)"
+                )
+              },
 
-            if (input$balanceamento == 1) {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
-            } else {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
-            },
+              if (th_alternativa() == "two.sided") {
+                paste0(
+                  " para testar se existe uma diferença mínima ",
+                  if (!input$calcular_utilizando_d_cohen) paste0("de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> "),
+                  "nas médias de <i>",
+                  nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i> "
+                )
+              } else {
+                paste0(
+                  "para testar se  a média de <i>", nome_desfecho(), "</i> do grupo <i>", nome_grupo_tratamento(), "</i> é ",
+                  if (th_alternativa() == "less") "menor" else "maior",
+                  " do que a do grupo <i>", nome_grupo_controle(), "</i> ",
+                  if (!input$calcular_utilizando_d_cohen) paste0("em <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ")
+                )
+              },
 
-            "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>",
+              if (input$balanceamento == 1) {
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ")
+              } else {
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas1, " ", nome_grupo_tratamento(), " e ", nperdas2, " ", nome_grupo_controle(), "). ")
+              },
 
-            if (input$calcular_utilizando_d_cohen) {
-              paste0(" e d de Cohen de <b>", input$d, "</b>, (referido por Fulano (1900) OU escolha do pesquisador). ")
-            } else {
-              paste0(
-                if (input$deff != 1) paste0(", tamanho de efeito do delineamento de <b>", input$deff, "</b> "),
-                " e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
-              )
-            },
-            .txt_citacao_pss,
+              "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>",
+
+              if (input$calcular_utilizando_d_cohen) {
+                paste0(" e d de Cohen de <b>", input$d, "</b>, (referido por Fulano (1900) OU escolha do pesquisador). ")
+              } else {
+                paste0(
+                  if (input$deff != 1) paste0(", tamanho de efeito do delineamento de <b>", input$deff, "</b> "),
+                  " e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
+                )
+              },
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -605,42 +650,48 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
 
           paste0(
             "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", poder, "%",
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-            "O poder",
-            if (th_alternativa() == "two.sided") {
-              paste0(
-                " para testar se existe uma diferença mínima ",
-                if (!input$calcular_utilizando_d_cohen) paste0("de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> "),
-                "nas médias de <i>",
-                nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i> "
-              )
-            } else {
-              paste0(
-                "para testar se  a média de <i>", nome_desfecho(), "</i> do grupo <i>", nome_grupo_tratamento(), "</i> é ",
-                if (th_alternativa() == "less") "menor" else "maior",
-                " do que a do grupo <i>", nome_grupo_controle(), "</i> ",
-                if (!input$calcular_utilizando_d_cohen) paste0("em <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ")
-              )
-            },
-            "é de <b>", poder, "%</b>. ",
-            "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
-            if (input$n_tratamento == input$n_controle) {
-              paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo ")
-            } else {
-              paste0(
-                "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
-                nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
-                nome_grupo_controle(), "</i> "
-              )
-            },
-            if (input$calcular_utilizando_d_cohen) {
-              paste0("e d de Cohen de <b>", input$d, "</b>, (referido por Fulano (1900) OU escolha do pesquisador). ")
-            } else {
-              paste0(
-                "e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
-              )
-            },
-            .txt_citacao_pss,
+            "</font></b></br></br>",
+
+
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "O poder",
+              if (th_alternativa() == "two.sided") {
+                paste0(
+                  " para testar se existe uma diferença mínima ",
+                  if (!input$calcular_utilizando_d_cohen) paste0("de <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> "),
+                  "nas médias de <i>",
+                  nome_desfecho(), "</i> entre os grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i> "
+                )
+              } else {
+                paste0(
+                  "para testar se  a média de <i>", nome_desfecho(), "</i> do grupo <i>", nome_grupo_tratamento(), "</i> é ",
+                  if (th_alternativa() == "less") "menor" else "maior",
+                  " do que a do grupo <i>", nome_grupo_controle(), "</i> ",
+                  if (!input$calcular_utilizando_d_cohen) paste0("em <b>", input$diferenca_para_detectar, " ", unidade_medida(), "</b> ")
+                )
+              },
+              "é de <b>", poder, "%</b>. ",
+              "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+              if (input$n_tratamento == input$n_controle) {
+                paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo ")
+              } else {
+                paste0(
+                  "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
+                  nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
+                  nome_grupo_controle(), "</i> "
+                )
+              },
+              if (input$calcular_utilizando_d_cohen) {
+                paste0("e d de Cohen de <b>", input$d, "</b>, (referido por Fulano (1900) OU escolha do pesquisador). ")
+              } else {
+                paste0(
+                  "e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
+                )
+              },
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -670,33 +721,51 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
             if (n1 != n2) {
               paste0(
-                " (<i>", n1, " ", nome_grupo_tratamento(), " e ", n2, " ", nome_grupo_controle(), "</i>)"
+                " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
               )
             } else {
               paste0(
-                " (<i>", n1, " para cada grupo</i>)"
+                " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
               )
             },
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "</font></b></br></br>",
 
 
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-            if (n1 != n2) {
-              paste0(
-                "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
-              )
-            } else {
-              paste0(
-                "(", n1, " para cada grupo)"
-              )
-            },
-            " para estimar a diferença entre as médias de <i>",
-            nome_desfecho(), "</i> nos grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i>, ",
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-            "com margem de erro igual a <b>", input$precisao, " ", unidade_medida(), "</b> ",
-            "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ",
-            "O cálculo considerou nível de confiança de <b>", input$confianca, "</b>% e desvio padrão esperado igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). ",
-            .txt_citacao_pss,
+
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+              if (n1 != n2) {
+                paste0(
+                  "(", n1, " no grupo ", nome_grupo_tratamento(), " e ", n2, " no grupo ", nome_grupo_controle(), ")"
+                )
+              } else {
+                paste0(
+                  "(", n1, " para cada grupo)"
+                )
+              },
+
+              if (n1 != n2) {
+                paste0(
+                  " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
+                )
+              } else {
+                paste0(
+                  " (<i>", n1, " ", translation_pss("para cada grupo", linguagem()), "</i>)"
+                )
+              },
+
+
+              " para estimar a diferença entre as médias de <i>",
+              nome_desfecho(), "</i> nos grupos <i>", nome_grupo_tratamento(), "</i> e <i>", nome_grupo_controle(), "</i>, ",
+
+              "com margem de erro igual a <b>", input$precisao, " ", unidade_medida(), "</b> ",
+              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas1 + nperdas2, "</b>). ",
+              "O cálculo considerou nível de confiança de <b>", input$confianca, "</b>% e desvio padrão esperado igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). ",
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -744,13 +813,13 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
           if (input$calcular_utilizando_d_cohen) {
             HTML("<b>",
                  translation_pss("Defina a sequência de valores para a magnitude do efeito", linguagem()),
-                 ":</b>"
+                 "</b>"
             )
           } else {
             HTML(
               "<b>",
               translation_pss("Defina a sequência de valores para a diferença a ser detectada", linguagem()),
-              ":</b>"
+              "</b>"
             )
           },
 
@@ -772,7 +841,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
           fluidRow(
             column(6,
                    textInput(inputId = ns("poder_cenarios"),
-                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())
@@ -873,7 +942,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                 h1,
                 deff
               ),
-              n2 = ceiling(n1*balanceamento),
+              n2 = ceiling(n1/balanceamento),
               n = n1 + n2
             )
         }

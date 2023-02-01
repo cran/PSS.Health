@@ -16,7 +16,8 @@ mod_auc_Ui <- function(id){
 
 mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balanceamento_f,
                            translation_pss, linguagem, .rodape, validate_n, try_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                           warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas){
+                           warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas,
+                           lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -61,7 +62,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               br(), br(),
 
               numericInput( ns("auc"),
-                            "Área sob a curva esperada",
+                            translation_pss("Área sob a curva ROC", linguagem()),
                             value = 0.7,
                             min = 0.5,
                             max = 1,
@@ -95,17 +96,34 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                 )
               } else {
                 tagList(
-                  numericInput( ns("balanceamento"),
+                  # numericInput( ns("balanceamento"),
+                  #               paste0(
+                  #                 translation_pss("Balanceamento", linguagem()),
+                  #                 " (", nome_grupo_controle(), ":", nome_grupo_tratamento(), ")"
+                  #               ),
+                  #               value = 1,
+                  #               min   = 0,
+                  #               max   = Inf,
+                  #               step  = .5
+                  # ) %>% .help_buttom(body = txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
+                  #                    title = translation_pss("Balanceamento", linguagem())),
+
+                  numericInput( ns("percentual_desfecho"),
                                 paste0(
-                                  translation_pss("Balanceamento", linguagem()),
-                                  " (", nome_grupo_controle(), ":", nome_grupo_tratamento(), ")"
+                                  translation_pss("Percentual esperado (%)", linguagem()),
+                                  " ",
+                                  translation_pss("de", linguagem()),
+                                  " ",
+                                  nome_desfecho()
                                 ),
-                                value = 1,
+                                value = 50,
                                 min   = 0,
-                                max   = Inf,
-                                step  = .5
-                  ) %>% .help_buttom(body = txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
-                                     title = translation_pss("Balanceamento", linguagem())),
+                                max   = 100,
+                                step  = 5
+                  ) %>%  .help_buttom(
+                    body = paste0(txt_ajuda()$txt_perc_esperado, txt_ajuda()$txt_definido_literatura),
+                    title = translation_pss("Percentual esperado (%)", linguagem())
+                  ),
 
 
                   if (tipo == "tamanho_amostral") {
@@ -188,18 +206,18 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                         value   = ifelse(input$mudar_nomes == 0, "Y", nome_desfecho())),
               HTML("<i>", gsub("<br><br>", "", txt_ajuda()$txt_desfecho), "</i>"),
               br(), br(),
-              textInput(inputId = ns("nome_grupo_tratamento"),
-                        label   = translation_pss("Descreva um nome para o grupo Tratamento", linguagem()),
-                        value   = ifelse(input$mudar_nomes == 0, translation_pss("Tratamento", linguagem()), nome_grupo_tratamento())),
-
-              HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
-
-              textInput(inputId = ns("nome_grupo_controle"),
-                        label   = translation_pss("Descreva um nome para o grupo Controle", linguagem()),
-                        value   = ifelse(input$mudar_nomes == 0, translation_pss("Controle", linguagem()), nome_grupo_controle())),
-
-              HTML("<i>Em alguns estudos o grupo Controle também pode ser chamado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
-              br(), br(),
+              # textInput(inputId = ns("nome_grupo_tratamento"),
+              #           label   = translation_pss("Descreva um nome para o grupo Tratamento", linguagem()),
+              #           value   = ifelse(input$mudar_nomes == 0, translation_pss("Tratamento", linguagem()), nome_grupo_tratamento())),
+              #
+              # HTML("<i>Em alguns estudos o grupo Tratamento também pode ser chamado de grupo Intervenção ou grupo Exposto.</i><br><br>"),
+              #
+              # textInput(inputId = ns("nome_grupo_controle"),
+              #           label   = translation_pss("Descreva um nome para o grupo Controle", linguagem()),
+              #           value   = ifelse(input$mudar_nomes == 0, translation_pss("Controle", linguagem()), nome_grupo_controle())),
+              #
+              # HTML("<i>Em alguns estudos o grupo Controle também pode ser chamado de grupo Placebo/ Sham ou grupo Não exposto.</i>"),
+              # br(), br(),
 
 
               textInput(inputId = ns("nome_preditora"),
@@ -249,7 +267,8 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             if (tipo == "tamanho_amostral") {
               paste0(
                 "power = ", input$poder, "/100, ",
-                "kappa = ", input$balanceamento
+                # "kappa = ", input$balanceamento
+                "kappa = ", input$percentual_desfecho, " / (100 - ", input$percentual_desfecho, ")"
               )
             } else {
               paste0(
@@ -279,38 +298,20 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
             paste0(
               "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
-              if (n_control != n_casos) {
-                paste0(
-                  " (<i>", n_casos, " ", nome_grupo_tratamento(), " e ", n_control, " ", nome_grupo_controle(), "</i>)"
-                )
-              } else {
-                paste0(
-                  " (<i>", n_control, " para cada grupo</i>)"
-                )
-              },
-              "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-              if (n_control != n_casos) {
-                paste0(
-                  "(", n_control, " no grupo ", nome_grupo_tratamento(), " e ", n_casos, " no grupo ", nome_grupo_controle(), ")"
-                )
-              } else {
-                paste0(
-                  "(", n_control, " para cada grupo)"
-                )
-              },
+              "</font></b></br></br>",
 
-              " para testar se, utilizar <i>", nome_preditora(), "</i> como variável preditora de <i>", nome_desfecho(), "</i>, fornece uma área sob a curva diferente de 0.5 ",
 
-              if (input$balanceamento == 1) {
-                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas, "</b>). ")
-              } else {
-                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas_casos, " ", nome_grupo_tratamento(), " e ", nperdas_controle, " ", nome_grupo_controle(), "). ")
-              },
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
+                "para testar se, utilizar <i>", nome_preditora(), "</i> como variável preditora de <i>", nome_desfecho(), "</i>, fornece uma área sob a curva diferente de 0.5 ",
 
-              "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b> ",
-              "e uma área sob a curva esperada de <b>", input$auc, "</b> (referido por Fulano (1900) OU escolha do pesquisador). ",
-              .txt_citacao_pss,
+                paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas, "</b>). "),
+                "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b> ",
+                "e uma área sob a curva esperada de <b>", input$auc, "</b> (referido por Fulano (1900) OU escolha do pesquisador). ",
+                .txt_citacao_pss
+              ),
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -326,22 +327,27 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
             paste0(
               "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", poder, "%",
-              "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-              "O poder para testar se, utilizar <i>", nome_preditora(), "</i> como variável preditora de <i>", nome_desfecho(), "</i>, fornece uma área sob a curva diferente de 0.5 é <b>",
-              poder, "%</b>. ",
+              "</font></b></br></br>",
 
-              "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
-              if (input$n_tratamento == input$n_controle) {
-                paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo ")
-              } else {
-                paste0(
-                  "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
-                  nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
-                  nome_grupo_controle(), "</i> "
-                )
-              },
-              "e uma área sob a curva esperada de <b>", input$auc, "</b> (referido por Fulano (1900) OU escolha do pesquisador). ",
-              .txt_citacao_pss,
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                "O poder para testar se, utilizar <i>", nome_preditora(), "</i> como variável preditora de <i>", nome_desfecho(), "</i>, fornece uma área sob a curva diferente de 0.5 é <b>",
+                poder, "%</b>. ",
+
+                "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+                if (input$n_tratamento == input$n_controle) {
+                  paste0("tamanho amostral igual a <b>", input$n_controle, "</b> sujeitos em cada grupo ")
+                } else {
+                  paste0(
+                    "tamanho amostral igual a <b>", input$n_tratamento, "</b> sujeitos para o grupo <i>",
+                    nome_grupo_tratamento(), "</i>, <b>", input$n_controle, "</b> sujeitos para o grupo <i>",
+                    nome_grupo_controle(), "</i> "
+                  )
+                },
+                "e uma área sob a curva esperada de <b>", input$auc, "</b> (referido por Fulano (1900) OU escolha do pesquisador). ",
+                .txt_citacao_pss
+              ),
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -352,13 +358,13 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
         } else {
 
 
-          balanceamento <- paste0(
-            input$balanceamento, "/(1 + ", input$balanceamento, ")"
-          )
+          # balanceamento <- paste0(
+          #   input$balanceamento, "/(1 + ", input$balanceamento, ")"
+          # )
           code <- paste0(
             "presize::prec_auc(",
             "auc = ", input$auc, ", ",
-            "prev = ", balanceamento, ", ",
+            "prev = ", input$percentual_desfecho, "/100, ",
             "conf.level = ", input$confianca,  "/100, ",
             "conf.width = ", input$amplitude, ")"
           )
@@ -379,39 +385,22 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
           paste0(
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
-            if (n_control != n_casos) {
-              paste0(
-                " (<i>", n_casos, " ", nome_grupo_tratamento(), " e ", n_control, " ", nome_grupo_controle(), "</i>)"
-              )
-            } else {
-              paste0(
-                " (<i>", n_control, " para cada grupo</i>)"
-              )
-            },
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-            "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
-            if (n_control != n_casos) {
-              paste0(
-                "(", n_control, " no grupo ", nome_grupo_tratamento(), " e ", n_casos, " no grupo ", nome_grupo_controle(), ")"
-              )
-            } else {
-              paste0(
-                "(", n_control, " para cada grupo)"
-              )
-            },
+            "</font></b></br></br>",
 
-            " para estimar a área sob a curva ao utilizar <i>", nome_preditora(), "</i> como variável preditora de <i>", nome_desfecho(), "</i> ",
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos ",
 
-            if (input$balanceamento == 1) {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas, "</b>). ")
-            } else {
-              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser ", nperdas_casos, " ", nome_grupo_tratamento(), " e ", nperdas_controle, " ", nome_grupo_controle(), "). ")
-            },
+              " para estimar a área sob a curva ao utilizar <i>", nome_preditora(), "</i> como variável preditora de <i>", nome_desfecho(), "</i> ",
 
-            "O cálculo considerou nível de confiança de <b>", input$confianca, "%</b>, ",
-            "amplitude desejada para o intervalo de confiança de <b>", input$amplitude, "</b> ",
-            "e uma área sob a curva esperada de <b>", input$auc, "</b> (referido por Fulano (1900) OU escolha do pesquisador). ",
-            .txt_citacao_pss,
+              paste0("(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas, "</b>). "),
+
+              "O cálculo considerou nível de confiança de <b>", input$confianca, "%</b>, ",
+              "amplitude desejada para o intervalo de confiança de <b>", input$amplitude, "</b> ",
+              "e uma área sob a curva esperada de <b>", input$auc, "</b> (referido por Fulano (1900) OU escolha do pesquisador). ",
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -454,7 +443,11 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
           ),
 
 
-          HTML("<b>Defina a sequência de valores para a área sob a curva:</b>"),
+          HTML(
+            "<b>",
+            translation_pss("Defina a sequência para a área sob a curva", linguagem()),
+            "</b>"
+          ),
 
 
           br(),
@@ -474,7 +467,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
           fluidRow(
             column(6,
                    textInput(inputId = ns("poder_cenarios"),
-                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())
@@ -508,7 +501,8 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
         df_grid <- expand.grid(poder = poder,
                                auc = seq(input$from, input$to, input$by),
                                alpha = input$alpha,
-                               balanceamento = input$balanceamento,
+                               prevalencia = input$percentual_desfecho,
+                               balanceamento = input$percentual_desfecho/(100-input$percentual_desfecho),
                                stringsAsFactors = FALSE) %>%
           mutate(
             n_casos = mapply(
@@ -574,15 +568,24 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
       return_table_tabela_cenarios <- reactive({
 
-        df_ <- tab_TH_cenarios()
+        df_ <- tab_TH_cenarios() %>%
+          dplyr::select(
+            poder,
+            auc,
+            alpha,
+            prevalencia,
+            n
+
+          )
 
         colnames(df_) <- c(
           translation_pss("Poder (%)", linguagem()),
           "AUC",
           translation_pss("Nível de significância (%)", linguagem()),
-          translation_pss("Balanceamento", linguagem()),
-          paste0("n ", nome_grupo_tratamento()),
-          paste0("n ", nome_grupo_controle()),
+          # translation_pss("Balanceamento", linguagem()),
+          translation_pss("Percentual (%)", linguagem()),
+          # paste0("n ", nome_grupo_tratamento()),
+          # paste0("n ", nome_grupo_controle()),
           translation_pss("Tamanho amostral", linguagem())
         )
 

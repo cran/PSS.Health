@@ -17,7 +17,8 @@ mod_anova1_Ui <- function(id) {
 mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                               ajuda_cenarios_multiplos_valores2,
                               translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                              warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero) {
+                              warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero,
+                              lista_de_funcoes_server) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -311,41 +312,46 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           eval(parse(text = validate_n_inf("n")))
 
           paste0(
-            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n*k,  " (<i>", n, " em cada grupo</i>)",
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n*k,  " (<i>", n, " ", translation_pss("para cada grupo", linguagem()), "</i>)",
+            "</font></b></br></br>",
 
 
-            "Foi calculado um tamanho de amostra de <b>", n*k, "</b> sujeitos (", n, " em cada grupo) para detectar ",
-            if (input$calcular_utilizando_f) {
-              paste0(
-                "o tamanho de efeito (f) <b>", input$f, "</b> referida em Fulano (1900) <b>OU</b> escolha do pesquisador para "
-              )
-            } else {
-              "diferenças significativas entre as médias de "
-            },
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-            "<i>", nome_desfecho(), "</i> entre os grupos ",
-            sub(",([^,]*)$", " e\\1", paste(LETTERS[1:k], collapse = ", ")),
 
-            if (!input$calcular_utilizando_f) {
-              paste0(
-                " sendo <b>", sub(",([^,]*)$", " e\\1", input$medias), " ", unidade_medida(),
-                "</b> as médias consideradas para cada grupo, respectivamente"
-              )
-            },
-            " (com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas*k, "</b>). ",
-            "O cálculo considerou poder de <b>", input$poder, "%</b>",
-            if (input$calcular_utilizando_f) {
-              paste0(
-                " e nível de significância de <b>", input$alpha, "%</b>. "
-              )
-            } else {
-              paste0(
-                ", nível de significância de <b>", input$alpha, "%</b>",
-                " e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
-              )
-            },
-            .txt_citacao_pss,
+              "Foi calculado um tamanho de amostra de <b>", n*k, "</b> sujeitos (", n, " em cada grupo) para detectar ",
+              if (input$calcular_utilizando_f) {
+                paste0(
+                  "o tamanho de efeito (f) <b>", input$f, "</b> referida em Fulano (1900) <b>OU</b> escolha do pesquisador para "
+                )
+              } else {
+                "diferenças significativas entre as médias de "
+              },
+
+              "<i>", nome_desfecho(), "</i> entre os grupos ",
+              sub(",([^,]*)$", " e\\1", paste(LETTERS[1:k], collapse = ", ")),
+
+              if (!input$calcular_utilizando_f) {
+                paste0(
+                  " sendo <b>", sub(",([^,]*)$", " e\\1", input$medias), " ", unidade_medida(),
+                  "</b> as médias consideradas para cada grupo, respectivamente"
+                )
+              },
+              " (com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", nperdas*k, "</b>). ",
+              "O cálculo considerou poder de <b>", input$poder, "%</b>",
+              if (input$calcular_utilizando_f) {
+                paste0(
+                  " e nível de significância de <b>", input$alpha, "%</b>. "
+                )
+              } else {
+                paste0(
+                  ", nível de significância de <b>", input$alpha, "%</b>",
+                  " e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
+                )
+              },
+              .txt_citacao_pss
+            ),
             .txt_referencia_tap,
             print_r_code(code)
           )
@@ -400,42 +406,45 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           paste0("<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", poder,
                  "%</font></b></br></br>",
 
-                 "O poder para detectar ",
-                 if (input$calcular_utilizando_f) {
-                   paste0(
-                     "o tamanho de efeito (f) <b>", input$f, "</b> referida em Fulano (1900) <b>OU</b> escolha do pesquisador para "
-                   )
-                 } else {
-                   "diferenças significativas entre as médias de "
-                 },
+                 lista_de_funcoes_server()$sugestao_texto_portugues(
 
-                 "<i>", nome_desfecho(), "</i> entre os grupos ",
-                 sub(",([^,]*)$", " e\\1", paste(LETTERS[1:k], collapse = ", ")),
+                   "O poder para detectar ",
+                   if (input$calcular_utilizando_f) {
+                     paste0(
+                       "o tamanho de efeito (f) <b>", input$f, "</b> referida em Fulano (1900) <b>OU</b> escolha do pesquisador para "
+                     )
+                   } else {
+                     "diferenças significativas entre as médias de "
+                   },
 
-                 if (!input$calcular_utilizando_f) {
-                   paste0(
-                     " sendo <b>", sub(",([^,]*)$", " e\\1", input$medias), " ", unidade_medida(),
-                     "</b> as médias consideradas para cada grupo, respectivamente"
-                   )
-                 },
-                 " é <b>", poder, "%</b>. ",
+                   "<i>", nome_desfecho(), "</i> entre os grupos ",
+                   sub(",([^,]*)$", " e\\1", paste(LETTERS[1:k], collapse = ", ")),
 
-                 "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+                   if (!input$calcular_utilizando_f) {
+                     paste0(
+                       " sendo <b>", sub(",([^,]*)$", " e\\1", input$medias), " ", unidade_medida(),
+                       "</b> as médias consideradas para cada grupo, respectivamente"
+                     )
+                   },
+                   " é <b>", poder, "%</b>. ",
 
-                 if (input$calcular_utilizando_f) {
-                   paste0(
-                     " e tamanho de amostra igua a <b>", input$n_por_k, "</b> sujeitos para cada grupo. "
-                   )
-                 } else {
-                   paste0(
-                     " tamanho de amostra igua a <b>",
-                     paste(text_input_to_vector(input$n_por_k_texto), collapse = ", ") %>%
-                       sub(",([^,]*)$", " e\\1", .),
-                     "</b> sujeitos para cada grupo, respectivamente, ",
-                     " e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
-                   )
-                 },
-                 .txt_citacao_pss,
+                   "Este valor foi obtido considerando nível de significância de <b>", input$alpha, "%</b>, ",
+
+                   if (input$calcular_utilizando_f) {
+                     paste0(
+                       " e tamanho de amostra igua a <b>", input$n_por_k, "</b> sujeitos para cada grupo. "
+                     )
+                   } else {
+                     paste0(
+                       " tamanho de amostra igua a <b>",
+                       paste(text_input_to_vector(input$n_por_k_texto), collapse = ", ") %>%
+                         sub(",([^,]*)$", " e\\1", .),
+                       "</b> sujeitos para cada grupo, respectivamente, ",
+                       " e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
+                     )
+                   },
+                   .txt_citacao_pss
+                 ),
                  .txt_referencia_tap,
                  print_r_code(code)
           )
@@ -487,10 +496,10 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           if (input$calcular_utilizando_f) {
             HTML("<b>",
                  translation_pss("Defina a sequência de valores para a magnitude do efeito", linguagem()),
-                 ":</b>"
+                 "</b>"
             )
           } else {
-            HTML("<b>Defina a sequência de valores para a diferença o desvio padrão:</b>")
+            HTML("<b>", translation_pss("Defina a sequência de valores para o desvio padrão", linguagem()), "</b>")
           },
 
 
@@ -511,7 +520,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           fluidRow(
             column(6,
                    textInput(inputId = ns("poder_cenarios"),
-                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())

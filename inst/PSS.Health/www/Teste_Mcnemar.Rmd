@@ -8,8 +8,7 @@ output:
 ---
 
 
-Este cálculo é para comparar duas amostras pareadas quanto ao resultado de uma variável dicotômica.  É muito utilizado para analisar dados oriundos de planejamentos do tipo 'antes' e 'depois' onde o mesmo
-sujeito é avaliado quanto a uma informação binária antes e depois de uma determinada interferência. Neste tipo de análise, os dados podem ser resumidos em uma tabela de contingência do tipo 2X2, conforme abaixo:
+**Objetivo do estudo:** comparar duas amostras pareadas quanto ao resultado de uma variável dicotômica. É muito utilizado para analisar dados oriundos de planejamentos do tipo 'antes' e 'depois' onde o mesmo sujeito é avaliado quanto a uma informação binária antes e depois de uma determinada interferência. Neste tipo de análise, os dados podem ser resumidos em uma tabela de contingência do tipo 2X2, conforme abaixo:
 
 
 <!-- |**Antes/Depois**     |*Sim*   | *Não*| -->
@@ -28,9 +27,7 @@ sujeito é avaliado quanto a uma informação binária antes e depois de uma det
 
 
 
-
-
-Onde as células $p_b$ e $p_c$ representam o percentual do total de pares discordantes  (aqueles que obtiveram respostas diferentes).
+onde as células $p_b$ e $p_c$ representam o percentual do total de pares discordantes (aqueles que obtiveram respostas diferentes).
 
 
 

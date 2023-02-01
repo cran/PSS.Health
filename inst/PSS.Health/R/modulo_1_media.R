@@ -16,7 +16,8 @@ mod_1_media_Ui <- function(id){
 
 mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostragem_aleatoria_simples = FALSE,
                                translation_pss, linguagem, .rodape, try_n, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                               warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero){
+                               warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas, warning_numero,
+                               lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -139,7 +140,7 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
                 ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
                 selectInput(ns('th_alternativa'),
-                            translation_pss('Tipo de teste de acordo com hipótese alternativa:', linguagem()),
+                            translation_pss('Tipo de teste de acordo com hipótese alternativa', linguagem()),
                             choices = h1(),
                             selected = 'Bilateral'
                 ) %>% .help_buttom(body = txt_ajuda()$txt_h1)
@@ -220,7 +221,7 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
 
         withMathJax(
           paste0(
-            "$$H_0: \\mu_{", nome_desfecho(), "} ", sinal_h0, input$media_sob_h0, "$$"
+            "$$H_0: \\mu_\\text{", nome_desfecho(), "} ", sinal_h0, input$media_sob_h0, "$$"
           )
         )
       })
@@ -233,7 +234,7 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
 
         withMathJax(
           paste0(
-            "$$H_1: \\mu_{", nome_desfecho(), "}", sinal_h1, input$media_sob_h0, "$$"
+            "$$H_1: \\mu_\\text{", nome_desfecho(), "}", sinal_h1, input$media_sob_h0, "$$"
           )
         )
       })
@@ -568,40 +569,49 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
 
           if (tipo == "tamanho_amostral") {
             paste0(
-              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br><i>",
-              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para testar se a média de <i>", nome_desfecho(),
-              "</i> é ",
-              case_when(input$th_alternativa == 'bi'  ~ "diferente de ",
-                        input$th_alternativa == 'sup' ~ "maior do que ",
-                        input$th_alternativa == 'inf' ~ "menor do que "),
-              "<b>", input$media_sob_h0, " ", unidade_medida(), "</b> ",
-              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
-              "O cálculo considerou poder de <b>", input$poder, "%</b>, ",
-              "nível de significância de <b>", input$alpha, "%</b>, ",
-              "média esperada de <b>", input$media_esperada, " ", unidade_medida(),"</b> ",
-              "e desvio padrão esperado para <i>", nome_desfecho(), "</i> igual a <b>",
-              input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)).  ",
-              .txt_citacao_pss,
+              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br>",
+
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                  "<i>",
+                  translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                  "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para testar se a média de <i>", nome_desfecho(),
+                  "</i> é ",
+                  case_when(input$th_alternativa == 'bi'  ~ "diferente de ",
+                            input$th_alternativa == 'sup' ~ "maior do que ",
+                            input$th_alternativa == 'inf' ~ "menor do que "),
+                  "<b>", input$media_sob_h0, " ", unidade_medida(), "</b> ",
+                  "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+                  "O cálculo considerou poder de <b>", input$poder, "%</b>, ",
+                  "nível de significância de <b>", input$alpha, "%</b>, ",
+                  "média esperada de <b>", input$media_esperada, " ", unidade_medida(),"</b> ",
+                  "e desvio padrão esperado para <i>", nome_desfecho(), "</i> igual a <b>",
+                  input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)).  ",
+                  .txt_citacao_pss
+              ),
+
               .txt_referencia_tap,
               print_r_code(code)
             )
           } else {
             paste0(
-              "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", n, "%</font></b></br></br><i>",
-              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
-              "O poder para testar se a média de <i>", nome_desfecho(),
-              "</i> é ",
-              case_when(input$th_alternativa == 'bi'  ~ "diferente de ",
-                        input$th_alternativa == 'sup' ~ "maior do que ",
-                        input$th_alternativa == 'inf' ~ "menor do que "),
-              "<b>", input$input$media_sob_h0, " ", unidade_medida(), "</b> é <b>", n, "%</b>. ",
-              "Este valor foi obtido considerando nível de significância de de <b>", input$alpha, "%</b>, ",
-              "tamanho de amostra igual a <b>", input$n, "</b>, ",
-              "média esperada de <b>", input$media_esperada, " ", unidade_medida(),"</b> ",
-              "e desvio padrão esperado para <i>", nome_desfecho(), "</i> igual a <b>",
-              input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)).  ",
-              .txt_citacao_pss,
+              "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", n, "%</font></b></br></br>",
+
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                  translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                  "O poder para testar se a média de <i>", nome_desfecho(),
+                  "</i> é ",
+                  case_when(input$th_alternativa == 'bi'  ~ "diferente de ",
+                            input$th_alternativa == 'sup' ~ "maior do que ",
+                            input$th_alternativa == 'inf' ~ "menor do que "),
+                  "<b>", input$input$media_sob_h0, " ", unidade_medida(), "</b> é <b>", n, "%</b>. ",
+                  "Este valor foi obtido considerando nível de significância de de <b>", input$alpha, "%</b>, ",
+                  "tamanho de amostra igual a <b>", input$n, "</b>, ",
+                  "média esperada de <b>", input$media_esperada, " ", unidade_medida(),"</b> ",
+                  "e desvio padrão esperado para <i>", nome_desfecho(), "</i> igual a <b>",
+                  input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)).  ",
+                  .txt_citacao_pss
+                ),
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -627,15 +637,18 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
             eval(parse(text = validate_n_inf("n")))
 
             paste0(
-              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br><i>",
-              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br>",
 
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para estimar a média de <i>", nome_desfecho(),  "</i> ",
-              "com margem de erro de <b>", input$precisao," ", unidade_medida(),"</b> ",
-              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
-              "O cálculo considerou nível de confiança de <b>", input$confianca, "%</b> e desvio padrão esperado para <i>", nome_desfecho(),  "</i> igual a <b>",
-              input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)).  ",
-              .txt_citacao_pss,
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                  translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+                  "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos para estimar a média de <i>", nome_desfecho(),  "</i> ",
+                  "com margem de erro de <b>", input$precisao," ", unidade_medida(),"</b> ",
+                  "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+                  "O cálculo considerou nível de confiança de <b>", input$confianca, "%</b> e desvio padrão esperado para <i>", nome_desfecho(),  "</i> igual a <b>",
+                  input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)).  ",
+                  .txt_citacao_pss
+                ),
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -671,29 +684,32 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
             n_texto <- sub(",([^,]*)$", " e\\1", n_texto)
 
             paste0(
-              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br><i>",
-              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n, "</font></b></br></br>",
 
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos (",
-              n_texto,
-              ") para estimar a média de <i>", nome_desfecho(),  "</i> ",
-              "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-              "O cálculo considerou margem de erro de <b>", input$precisao," ", unidade_medida(),"</b>, ",
-              "nível de confiança de <b>", input$confianca, "%</b>, ",
+                  "Foi calculado um tamanho de amostra de <b>", n, "</b> sujeitos (",
+                  n_texto,
+                  ") para estimar a média de <i>", nome_desfecho(),  "</i> ",
+                  "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
 
-              "processo de amostragem estratificada simples nos estratos ",
-              sub(",([^,]*)$", " e\\1", paste(LETTERS[1:input$numero_estratos], collapse = ", ")),
-              ", com tamanhos populacionais de <b>",
-              sub(",([^,]*)$", " e\\1", paste(aae_inputs()$N, collapse = ", ")),
-              "</b> indivíduos, médias esperadas de <b>",
-              sub(",([^,]*)$", " e\\1", paste(aae_inputs()$medias, collapse = ", ")),
-              " ", unidade_medida(), "</b> e desvios padrões esperados de <b>",
-              sub(",([^,]*)$", " e\\1", paste(aae_inputs()$desvio, collapse = ", ")),
-              " ", unidade_medida(), "</b>, respectivamente (referido por Fulano (1900)). ",
+                  "O cálculo considerou margem de erro de <b>", input$precisao," ", unidade_medida(),"</b>, ",
+                  "nível de confiança de <b>", input$confianca, "%</b>, ",
 
+                  "processo de amostragem estratificada simples nos estratos ",
+                  sub(",([^,]*)$", " e\\1", paste(LETTERS[1:input$numero_estratos], collapse = ", ")),
+                  ", com tamanhos populacionais de <b>",
+                  sub(",([^,]*)$", " e\\1", paste(aae_inputs()$N, collapse = ", ")),
+                  "</b> indivíduos, médias esperadas de <b>",
+                  sub(",([^,]*)$", " e\\1", paste(aae_inputs()$medias, collapse = ", ")),
+                  " ", unidade_medida(), "</b> e desvios padrões esperados de <b>",
+                  sub(",([^,]*)$", " e\\1", paste(aae_inputs()$desvio, collapse = ", ")),
+                  " ", unidade_medida(), "</b>, respectivamente (referido por Fulano (1900)). ",
+                  .txt_citacao_pss
+                ),
 
-              .txt_citacao_pss,
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -727,26 +743,30 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
 
 
             paste0(
-              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": <i>", n, " conglomerados</i></font></b></br></br><i>",
-              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+              "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": <i>", n, " conglomerados</i></font></b></br></br>",
 
-              "Foi calculado um tamanho de amostra de <b>", n, "</b> conglomerados para estimar a média de <i>", nome_desfecho(),  "</i>. ",
-              "O cálculo considerou como margem de erro de <b>", input$precisao," ", unidade_medida(),"</b>, ",
-              "nível de confiança de <b>", input$confianca, "%</b>, ",
+              lista_de_funcoes_server()$sugestao_texto_portugues(
+                "<i>",
+                  translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
 
-              "processo de amostragem por conglomerados em um único estágio ",
-              "de uma população dividida em <b>", input$n_conglomerados, "</b> conglomerados, ",
-              "na qual o número de indivíduos em cada conglomerado é em média de <b>", input$N_medio_conglomerados, "</b> ",
-              if (input$desvio_medio_conglemerados != 0) {
-                paste0("com desvio padrão de <b>", input$desvio_medio_conglemerados, "</b> ")
-              },
-              "indivíduos, ",
+                  "Foi calculado um tamanho de amostra de <b>", n, "</b> conglomerados para estimar a média de <i>", nome_desfecho(),  "</i>. ",
+                  "O cálculo considerou como margem de erro de <b>", input$precisao," ", unidade_medida(),"</b>, ",
+                  "nível de confiança de <b>", input$confianca, "%</b>, ",
 
-              "média de <i>", nome_desfecho(),  "</i> esperada de <b>", input$xbar_conglomerados, " ", unidade_medida(), "</b>, ",
-              "desvio padrão esperado de <b>", input$desvio_conglomerados, " ", unidade_medida(), "</b> e ",
+                  "processo de amostragem por conglomerados em um único estágio ",
+                  "de uma população dividida em <b>", input$n_conglomerados, "</b> conglomerados, ",
+                  "na qual o número de indivíduos em cada conglomerado é em média de <b>", input$N_medio_conglomerados, "</b> ",
+                  if (input$desvio_medio_conglemerados != 0) {
+                    paste0("com desvio padrão de <b>", input$desvio_medio_conglemerados, "</b> ")
+                  },
+                  "indivíduos, ",
 
-              "coeficiente de correlação intra conglomerados de <b>", input$rho, "</b> (referido em Fulano (1900)). ",
-              .txt_citacao_pss,
+                  "média de <i>", nome_desfecho(),  "</i> esperada de <b>", input$xbar_conglomerados, " ", unidade_medida(), "</b>, ",
+                  "desvio padrão esperado de <b>", input$desvio_conglomerados, " ", unidade_medida(), "</b> e ",
+
+                  "coeficiente de correlação intra conglomerados de <b>", input$rho, "</b> (referido em Fulano (1900)). ",
+                  .txt_citacao_pss
+                ),
               .txt_referencia_tap,
               print_r_code(code)
             )
@@ -790,7 +810,7 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
 
           HTML("<b>",
                translation_pss("Defina a sequência de valores para a margem de erro", linguagem()),
-               ":</b>"
+               "</b>"
           ),
 
 
@@ -811,7 +831,7 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
           fluidRow(
             column(6,
                    textInput(inputId = ns("sd_plot"),
-                             label   = translation_pss("Digite valores de desvio padrão (DP) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de desvio padrão para fazer o gráfico", linguagem()),
                              value   = paste0(c(input$sigma, input$sigma + 0.2, input$sigma + 0.5), collapse = ", "),
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())
@@ -880,7 +900,10 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
           ylab(translation_pss("Tamanho da amostra*", linguagem())) +
           theme_bw() +
           theme(axis.text = element_text(colour = "black")) +
-          scale_color_brewer(palette = "Set1")
+          scale_color_brewer(
+            name = translation_pss("Desvio padrão", linguagem()),
+            palette = "Set1"
+          )
 
 
         plotly::ggplotly(g1,

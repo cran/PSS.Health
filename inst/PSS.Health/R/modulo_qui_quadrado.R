@@ -16,7 +16,8 @@ mod_qui_quadrado_Ui <- function(id){
 
 mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_outros_desfechos,
                                     translation_pss, linguagem, .rodape, validate_n, ajuda_cenarios_multiplos_valores, validate_n_inf, n_perdas, print_r_code, text_input_to_vector, check_text_input_to_vector,
-                                    warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas){
+                                    warning_prop, warning_numero_positivo, warning_inteiro, warning_perdas,
+                                    lista_de_funcoes_server){
   shiny::moduleServer(
     id,
     function(input, output, session){
@@ -53,7 +54,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
             sidebarPanel(
               textInput(inputId = ns("chisq_desfecho"),
                         label   = translation_pss("Descreva o nome das variáveis que deseja associar", linguagem()),
-                        value   = "X1 e X2"
+                        value   = translation_pss("X1 e X2", linguagem())
               ) %>% .help_buttom(body = txt_outros_desfechos()),
 
 
@@ -353,17 +354,24 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
 
           paste0(
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
-            "</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "</font></b></br></br>",
 
-            "Foi calculado um tamanho de amostra de <b>", n,
-            "</b> sujeitos para testar se existe associação entre <b>", input$chisq_desfecho,
-            "</b> (com o acréscimo de <b>", input$chisq_perdas_recusa,
-            "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$chisq_perdas_recusa), "</b>). ",
-            "O cálculo considerou um poder de <b>", input$power_chisq_n,
-            "%</b>, nível de significância de <b>", input$sig_chisq_n,
-            "%</b> e tamanho de efeito w de Cohen igual a <b>", chisq_w()$w, "</b> e <b>", chisq_w()$gl,
-            "</b> graus de liberdade conforme obtido em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
-            .txt_citacao_pss, .txt_referencia_tap, print_r_code(code)
+
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+
+              "Foi calculado um tamanho de amostra de <b>", n,
+              "</b> sujeitos para testar se existe associação entre <b>", input$chisq_desfecho,
+              "</b> (com o acréscimo de <b>", input$chisq_perdas_recusa,
+              "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$chisq_perdas_recusa), "</b>). ",
+              "O cálculo considerou um poder de <b>", input$power_chisq_n,
+              "%</b>, nível de significância de <b>", input$sig_chisq_n,
+              "%</b> e tamanho de efeito w de Cohen igual a <b>", chisq_w()$w, "</b> e <b>", chisq_w()$gl,
+              "</b> graus de liberdade conforme obtido em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
+              .txt_citacao_pss
+            ),
+            .txt_referencia_tap, print_r_code(code)
           )
 
 
@@ -389,15 +397,21 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
 
           paste0(
             "<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", n,
-            "%</font></b></br></br><i>", translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+            "%</font></b></br></br>",
 
-            "O poder para testar se existe associação entre <b>", input$chisq_desfecho,
-            "</b> é <b>", n,
-            "%</b>. O cálculo considerou nível de significância de <b>", input$sig_chisq_n,
-            "%</b>, tamanho amostral de <b>", ifelse(input$chisq_input != 3, input$chisq_n, sum(as.matrix(tabela_chisq$tab))),
-            "</b> sujeitos, tamanho de efeito w de Cohen igual a <b>", chisq_w()$w, "</b> e <b>", chisq_w()$gl,
-            "</b> graus de liberdade conforme obtido em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
-            .txt_citacao_pss, .txt_referencia_tap, print_r_code(code)
+            lista_de_funcoes_server()$sugestao_texto_portugues(
+              "<i>",
+              translation_pss("Sugestão de texto", linguagem()), ":</i></br></br>",
+
+              "O poder para testar se existe associação entre <b>", input$chisq_desfecho,
+              "</b> é <b>", n,
+              "%</b>. O cálculo considerou nível de significância de <b>", input$sig_chisq_n,
+              "%</b>, tamanho amostral de <b>", ifelse(input$chisq_input != 3, input$chisq_n, sum(as.matrix(tabela_chisq$tab))),
+              "</b> sujeitos, tamanho de efeito w de Cohen igual a <b>", chisq_w()$w, "</b> e <b>", chisq_w()$gl,
+              "</b> graus de liberdade conforme obtido em Fulano (1900) <b>OU</b> escolha do pesquisador. ",
+              .txt_citacao_pss
+            ),
+            .txt_referencia_tap, print_r_code(code)
           )
 
 
@@ -453,7 +467,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
           fluidRow(
             column(6,
                    textInput(inputId = ns("chisq_power_plot"),
-                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico:", linguagem()),
+                             label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
                              width   = "400px") %>%
                      .help_buttom(body = ajuda_cenarios_multiplos_valores())

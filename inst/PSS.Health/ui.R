@@ -28,7 +28,7 @@ tagList(
 
                                   # radioButtons(
                                   #   inputId = "idioma",
-                                  #   label = "Idioma/ Language (apenas de uso interno)",
+                                  #   label = "Idioma/ Language (em construção)",
                                   #   choices = c("Português" = "pt", "English" = "en"),
                                   #   selected = "pt",
                                   #   inline = TRUE
@@ -40,7 +40,9 @@ tagList(
                        )),
 
                        br(),br(),
-                       uiOutput("texto_pagina_inicial") |>
+                       uiOutput("texto_pagina_inicial_pt") %>%
+                         shinycssloaders::withSpinner(type = 5),
+                       uiOutput("texto_pagina_inicial_en") %>%
                          shinycssloaders::withSpinner(type = 5)
 
               ),
@@ -156,7 +158,7 @@ tagList(
                          ),
                          tabPanel(
                            uiOutput("navbarMenu_sens_esp"),
-                           "Sensibilidade/ Especificidade",
+                           # "Sensibilidade/ Especificidade",
                            shinyFeedback::useShinyFeedback(),
                            uiOutput("aba_sensibilidade")
                          )
@@ -193,20 +195,24 @@ tagList(
 
               navbarMenu(uiOutput("navbarMenu_outras_ferramentas"),
                          tabPanel(
-                           "Obter desvio padrão",
+                           uiOutput("navbarMenu_obterDP"),
                            uiOutput("aba_obter_dp")
                          ),
                          tabPanel(
-                           "Obter a correlação",
+                           uiOutput("navbarMenu_obter_correlacao"),
                            uiOutput("aba_obter_correlacao")
                          ),
                          tabPanel(
-                           "Desvio padrão combinado",
+                           uiOutput("navbarMenu_dp_combinado"),
                            uiOutput("aba_pooled_var")
                          ),
                          tabPanel(
-                           "d de Cohen",
+                           uiOutput("navbarMenu_dCohen"),
                            uiOutput("aba_cohen")
+                         ),
+                         tabPanel(
+                           uiOutput("navbarMenu_perc_para_chance"),
+                           uiOutput("aba_obter_razao")
                          )
               )
 
