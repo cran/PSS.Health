@@ -25,6 +25,7 @@ Castro, S. M. de J., Branco, A. C., Camey, S. A., Leotti, V. B., Hirakata, V. N.
 
 Hirakata, V. N., Mancuso, A. C. B., Castro, S. M. de J., Camey, S. A., Leotti, V. B., & Borges, R. B. (2022). PSS Health: como calcular tamanho de amostra para testes de comparação de médias de dois grupos. Clinical and Biomedical Research, 42(2). Retrieved from de \url{https://seer.ufrgs.br/index.php/hcpa/article/view/120997}
 
+Leotti, V. B., Castro, S. M. de J., Mancuso, A. C. B., S. A. & Borges, Hirakata, V. N., Camey, R. B. (2023). PSS Health: como calcular tamanho de amostra para testar relações de variáveis com um desfecho binário. Clinical and Biomedical Research, 42(4). Retrieved from de \url{https://seer.ufrgs.br/index.php/hcpa/article/view/126843}
 }
 }
 \author{

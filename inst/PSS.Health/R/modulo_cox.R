@@ -5,7 +5,7 @@ mod_cox_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("abaa_cox")) %>%
+    uiOutput(ns("abaa_cox")) |>
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -98,8 +98,8 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               min = 0,
               max = Inf,
               step = 1
-            ) %>%
-              .help_buttom(
+            ) |>
+              .help_buttom(linguagem = linguagem(), 
                 body = txt_ajuda()$txt_hazard_ratio,
                 title = "Hazard ratio"
               ),
@@ -114,14 +114,14 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
-            } else {
-              numericInput( ns("n"),
-                            translation_pss("Tamanho amostral", linguagem()),
-                            value = 200,
-                            min = 4,
-                            step = 1
-              )
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+            # } else {
+              # numericInput( ns("n"),
+              #               translation_pss("Tamanho amostral", linguagem()),
+              #               value = 200,
+              #               min = 4,
+              #               step = 1
+              # )
             },
 
 
@@ -132,7 +132,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
             } else{
               tagList(
                 numericInput( ns("confianca"),
@@ -141,7 +141,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                               min = 0,
                               max = 100,
                               step = 1
-                ) %>% .help_buttom(body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
               )
             },
 
@@ -152,12 +152,12 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) %>%
+            htmlOutput(ns("texto_principal")) |>
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -251,14 +251,20 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
           tagList(
             HTML(
               "<b><font size = '2.99'>",
-              translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()),
+              translation_pss("Probabilidade",linguagem()),
+              " (%) ",
+              translation_pss("de",linguagem()),
+              " ",
+              nome_desfecho(),
+              " ",
+              translation_pss("até o final do seguimento", linguagem()),
               "</font></b><br>"
             ),
 
             div(style = "display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",
                 numericInput( ns("cox_failure_trat"),
                               nome_grupo_tratamento(),
-                              value = 20,
+                              value = 80,
                               min  = 0,
                               max  = 100,
                               step = 1)
@@ -266,11 +272,22 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             div(style = "display: inline-block;vertical-align:top; width: 49%;",
                 numericInput( ns("cox_failure_control"),
                               nome_grupo_controle(),
-                              value = 20,
+                              value = 80,
                               min  = 0,
                               max  = 100,
                               step = 1
-                ) %>% .help_buttom(body = paste0(translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()), txt_ajuda()$txt_definido_literatura))
+                ) |> .help_buttom(linguagem = linguagem(), 
+                  body = paste0(
+                    translation_pss("Probabilidade",linguagem()),
+                    " (%) ",
+                    translation_pss("de",linguagem()),
+                    " ",
+                    nome_desfecho(),
+                    " ",
+                    translation_pss("até o final do seguimento", linguagem()),
+                    txt_ajuda()$txt_definido_literatura
+                  )
+                )
             ),
 
             if (tipo == "tamanho_amostral") {
@@ -283,7 +300,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min   = 0,
                             max   = Inf,
                             step  = .5
-              ) %>% .help_buttom(body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
                                  title = translation_pss("Balanceamento", linguagem()))
             } else {
               tagList(
@@ -327,21 +344,40 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               )
             },
 
-            numericInput( ns("cox_failure_continua"),
-                          translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()),
-                          value = 26.2,
-                          min  = 0,
-                          max  = 100,
-                          step = 1
-            ) %>% .help_buttom(body = paste0(translation_pss("Probabilidade (%) de sobrevivência até o final do seguimento", linguagem()), txt_ajuda()$txt_definido_literatura)),
+            numericInput(inputId =  ns("cox_failure_continua"),
+                         label = paste0(
+                           translation_pss("Probabilidade",linguagem()),
+                           " (%) ",
+                           translation_pss("de",linguagem()),
+                           " ",
+                           nome_desfecho(),
+                           " ",
+                           translation_pss("até o final do seguimento", linguagem())
+                         ),
+                         value = 80,
+                         min  = 0,
+                         max  = 100,
+                         step = 1
+            ) |> .help_buttom(linguagem = linguagem(), 
+              body = paste0(
+                translation_pss("Probabilidade",linguagem()),
+                " (%) ",
+                translation_pss("de",linguagem()),
+                " ",
+                nome_desfecho(),
+                " ",
+                translation_pss("até o final do seguimento", linguagem()),
+                txt_ajuda()$txt_definido_literatura
+              )
+            ),
 
             numericInput( ns("cox_desvio_padrao"),
-                          paste0(translation_pss("Desvio padrão esperado de", linguagem()), nome_preditora()),
-                          value = 0.3126,
+                          paste0(translation_pss("Desvio padrão esperado de", linguagem()), " ", nome_preditora()),
+                          value = 0.3,
                           min  = 0,
                           max  = Inf,
                           step = 1
-            ) %>% .help_buttom(body = txt_ajuda()$txt_dp, title = "Desvio padrão esperado"),
+            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = "Desvio padrão esperado"),
 
             numericInput( ns("cox_r2"),
                           translation_pss("Coeficiente de correlação múltipla", linguagem()),
@@ -349,7 +385,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                           min  = -1,
                           max  = 1,
                           step = .2
-            ) %>% .help_buttom(body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
+            ) |> .help_buttom(linguagem = linguagem(), body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
                                                      Defina zero (default) se não haverá outras variáveis independentes.", txt_ajuda()$txt_definido_pesquisador_OU_literatura))
           )
         }
@@ -374,8 +410,8 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
           code <- ifelse(tipo == "tamanho_amostral",
                          paste0("powerSurvEpi::ssizeCT.default(",
                                 "k  = ", input$balanceamento, ", ",
-                                "pE = 1 - ", input$cox_failure_trat, "/100, ",
-                                "pC = 1 - ", input$cox_failure_control, "/100, ",
+                                "pE = ", input$cox_failure_trat, "/100, ",
+                                "pC = ", input$cox_failure_control, "/100, ",
                                 "RR = ", input$hr,  ", ",
                                 "alpha = ", input$alpha, "/100, ",
                                 "power = ", input$poder, "/100)"
@@ -383,8 +419,8 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                          paste0("powerSurvEpi::powerCT.default(",
                                 "nE = ", input$n_tratamento, ", ",
                                 "nC = ", input$n_controle, ", ",
-                                "pE = 1 - ", input$cox_failure_trat, "/100, ",
-                                "pC = 1 - ", input$cox_failure_control, "/100, ",
+                                "pE = ", input$cox_failure_trat, "/100, ",
+                                "pC = ", input$cox_failure_control, "/100, ",
                                 "RR = ", input$hr,  ", ",
                                 "alpha = ", input$alpha, "/100)"
                          )
@@ -399,7 +435,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             poder <- try_n(code)
 
             paste0("<b><font size = '5'>", translation_pss("Poder calculado", linguagem()), ": ", round(poder*100, digits = 1),
-                   "</font></b></br></br>",
+                   "%</font></b></br></br>",
 
 
                    lista_de_funcoes_server()$sugestao_texto_portugues(
@@ -419,7 +455,10 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                          nome_grupo_controle(), "</i>, "
                        )
                      },
-                     "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
+
+                     "probabilidade de ",
+                     nome_desfecho(),
+                     " até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
                      if (input$cox_failure_control == input$cox_failure_trat) {
                        "em ambos grupos "
                      } else {
@@ -486,7 +525,9 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                 },
 
                 "O cálculo considerou poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>, ",
-                "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
+                "probabilidade de ",
+                nome_desfecho(),
+                " até o final do seguimento de <b>", input$cox_failure_trat, "%</b> ",
                 if (input$cox_failure_control == input$cox_failure_trat) {
                   "em ambos grupos "
                 } else {
@@ -511,7 +552,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                 "power = ", input$poder, "/100, ",
                                 "theta = ", input$hr,  ", ",
                                 "sigma2 = ",  input$cox_desvio_padrao, "^2, ",
-                                "psi = 1 - ", input$cox_failure_continua, "/100, ",
+                                "psi = ", input$cox_failure_continua, "/100, ",
                                 "rho2 = (", input$cox_r2, ")^2, ",
                                 "alpha = ", input$alpha, "/100)"
                          ),
@@ -519,7 +560,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                 "n = ", input$n, ", ",
                                 "theta = ", input$hr,  ", ",
                                 "sigma2 = ",  input$cox_desvio_padrao, "^2, ",
-                                "psi = 1 - ", input$cox_failure_continua/100, ", ",
+                                "psi = ", input$cox_failure_continua/100, ", ",
                                 "rho2 = (", input$cox_r2, ")^2, ",
                                 "alpha = ", input$alpha, "/100)"
                          )
@@ -534,7 +575,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                    "%</font></b></br></br>",
 
                    lista_de_funcoes_server()$sugestao_texto_portugues(
-                     "<i>",
+                     # "</i>",
                      "O poder para testar se o hazard ratio para <i>", nome_desfecho(), "</i> a cada acréscimo de uma unidade em <i>", nome_preditora(),
                      "</i> é diferente de 1 é <b>", round(poder*100, digits = 1), "%</b>. ",
 
@@ -544,7 +585,9 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                        paste0("coeficiente de correlação múltipla com as demais covariáveis de <b>", input$cox_r2, "</b> ")
                      },
                      "hazard ratio esperado de <b>", input$hr, "</b>, ",
-                     "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_continua, "%</b>, ",
+                     "probabilidade de ",
+                     nome_desfecho(),
+                     " até o final do seguimento de <b>", input$cox_failure_continua, "%</b> ",
                      " e desvio padrão da <i>", nome_preditora(), "</i> de <b>", input$cox_desvio_padrao, " u.m.</b>, ",
                      "como é referida em Fulano (1900). ",
                      .txt_citacao_pss
@@ -575,7 +618,9 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                 paste0("coeficiente de correlação múltipla com as demais covariáveis de <b>", input$cox_r2, "</b> ")
               },
               "hazard ratio esperado de <b>", input$hr, "</b>, ",
-              "probabilidade de sobrevivência até o final do seguimento de <b>", input$cox_failure_continua, "%</b>, ",
+              "probabilidade de ",
+              nome_desfecho(),
+              " até o final do seguimento de <b>", input$cox_failure_continua, "%</b> ",
               " e desvio padrão da <i>", nome_preditora(), "</i> de <b>", input$cox_desvio_padrao, " u.m.</b>, ",
               "como é referida em Fulano (1900). ",
               .txt_citacao_pss
@@ -632,8 +677,8 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = ratio_end, step = .1, min = 0, max = Inf)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) %>%
-                .help_buttom(body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) |>
+                .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
 
@@ -643,17 +688,17 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                    textInput(inputId = ns("poder_cenarios"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") %>%
-                     .help_buttom(body = ajuda_cenarios_multiplos_valores())
+                             width   = "400px") |>
+                     .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -681,7 +726,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                  pC        = input$cox_failure_control,
                                  stringsAsFactors = FALSE)
           # df_grid
-          df_n <- df_grid %>%
+          df_n <- df_grid |>
             mutate(
               n_trat = mapply(
                 function(k, poder, pE, pC, hr, alpha){
@@ -689,8 +734,8 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                   n <- tryCatch({
                     powerSurvEpi::ssizeCT.default(
                       k = k,
-                      pE = 1 - pE/100,
-                      pC = 1 - pC/100,
+                      pE = pE/100,
+                      pC = pC/100,
                       RR = hr,
                       alpha = alpha/100,
                       power = poder/100)
@@ -708,8 +753,8 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                   n <- tryCatch({
                     powerSurvEpi::ssizeCT.default(
                       k = k,
-                      pE = 1 - pE/100,
-                      pC = 1 - pC/100,
+                      pE = pE/100,
+                      pC = pC/100,
                       RR = hr,
                       alpha = alpha/100,
                       power = poder/100)
@@ -735,7 +780,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                  sigma = input$cox_desvio_padrao,
                                  psi = input$cox_failure_continua,
                                  rho = input$cox_r2,
-                                 stringsAsFactors = FALSE) %>%
+                                 stringsAsFactors = FALSE) |>
             mutate(
               n = mapply(
                 function(hr, alpha, poder, sigma, psi, rho){
@@ -743,7 +788,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                   tryCatch({
                     powerSurvEpi::ssizeEpiCont.default(
                       sigma2 = sigma^2,
-                      psi = 1 - psi/100,
+                      psi = psi/100,
                       rho = rho^2,
                       theta = hr,
                       alpha = alpha/100,
@@ -765,11 +810,11 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
       output$grafico_cenarios <- plotly::renderPlotly({
 
 
-        g1 <- tab_cenarios() %>%
+        g1 <- tab_cenarios() |>
           mutate(
             `Poder (%)` = factor(poder),
             `Hazard ratio` = hr
-          ) %>%
+          ) |>
           ggplot(
             aes(x = `Hazard ratio`,
                 y = n,
@@ -786,7 +831,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y")) %>%
+                         tooltip = c("x", "colour", "y")) |>
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -811,7 +856,13 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             translation_pss("Poder (%)", linguagem()),
             "Hazard ratio",
             paste0(translation_pss("Desvio padrão", linguagem()), " ", nome_preditora()),
-            "% sem evento",
+            paste0(
+              translation_pss("Probabilidade",linguagem()),
+              " (%) ",
+              translation_pss("de",linguagem()),
+              " ",
+              nome_desfecho()
+            ),
             translation_pss("Coeficiente de correlação múltipla", linguagem()),
             translation_pss("Tamanho da amostra", linguagem())
           )
@@ -821,8 +872,24 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
             translation_pss("Poder (%)", linguagem()),
             "Hazard ratio",
             translation_pss("Balanceamento", linguagem()),
-            paste0("% sem evento ", nome_grupo_controle()),
-            paste0("% sem evento ", nome_grupo_tratamento()),
+            paste0(
+              translation_pss("Probabilidade",linguagem()),
+              " (%) ",
+              translation_pss("de",linguagem()),
+              " ",
+              nome_desfecho(),
+              ": ",
+              nome_grupo_controle()
+            ),
+            paste0(
+              translation_pss("Probabilidade",linguagem()),
+              " (%) ",
+              translation_pss("de",linguagem()),
+              " ",
+              nome_desfecho(),
+              ": ",
+              nome_grupo_tratamento()
+            ),
             paste0("n ", nome_grupo_controle()),
             paste0("n ", nome_grupo_tratamento()),
             translation_pss("Tamanho da amostra", linguagem())
@@ -837,7 +904,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() %>%
+        return_table_tabela_cenarios() |>
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

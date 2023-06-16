@@ -5,7 +5,7 @@ mod_correlacao_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba")) %>%
+    uiOutput(ns("aba")) |>
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -88,7 +88,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                             min = 0,
                             max = 1,
                             step = .01
-              ) %>% .help_buttom(
+              ) |> .help_buttom(linguagem = linguagem(), 
                 body = txt_ajuda()$txt_correlacao,
                 title = translation_pss("Coeficiente de correlação esperado", linguagem())
               ),
@@ -105,7 +105,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                                 min = 0,
                                 max = 1,
                                 step = 0.1
-                  ) %>% .help_buttom(body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
+                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
 
                   numericInput( ns("confianca"),
                                 translation_pss("Nível de confiança (%)", linguagem()),
@@ -113,7 +113,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                                 min = 0,
                                 max = 100,
                                 step = 1
-                  ) %>% .help_buttom(body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
 
                 )
 
@@ -128,7 +128,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                                 min = -1,
                                 max = 1,
                                 step = .1
-                  ) %>% .help_buttom(body = paste0(
+                  ) |> .help_buttom(linguagem = linguagem(), body = paste0(
                     "Coeficiente de correlação linear de Pearson sob a hipótese nula. ",
                     "Mais informações em ",
                     '<a href="https://doi.org/10.4322/2357-9730.93649" target="_blank">Hirakata et al. 2019</a>.',
@@ -141,7 +141,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                                 min = 0,
                                 max = Inf,
                                 step = 1
-                  ) %>% .help_buttom(body = paste0("Número de variáveis para correlação parcial.", txt_ajuda()$txt_definido_pesquisador)),
+                  ) |> .help_buttom(linguagem = linguagem(), body = paste0("Número de variáveis para correlação parcial.", txt_ajuda()$txt_definido_pesquisador)),
 
 
                   if (tipo == "tamanho_amostral") {
@@ -151,7 +151,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                                   min = 0,
                                   max = 100,
                                   step = 1
-                    ) %>% .help_buttom(body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+                    ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
                   } else {
                     numericInput( ns("n"),
                                   translation_pss("Tamanho amostral", linguagem()),
@@ -167,7 +167,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                                 min = 0,
                                 max = 100,
                                 step = 1
-                  ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
 
 
@@ -182,12 +182,12 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                               min = 0,
                               max = 100,
                               step = 1
-                ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
               }
             ),
 
             mainPanel(
-              htmlOutput(ns("texto_principal")) %>%
+              htmlOutput(ns("texto_principal")) |>
                 shinycssloaders::withSpinner(type = 5),
 
               uiOutput(ns("cenarios"))
@@ -413,8 +413,8 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = min(abs(input$r) + 0.2, 0.95), step = .1, min = 0, max = 1)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 0.1, min = 0, step = .1) %>%
-                .help_buttom(body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 0.1, min = 0, step = .1) |>
+                .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
 
@@ -425,8 +425,8 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
                    textInput(inputId = ns("caixa_cenarios"),
                              label   = label_caixa,
                              value   = valores_caixa,
-                             width   = "400px") %>%
-                     .help_buttom(body = ajuda_cenarios_multiplos_valores())
+                             width   = "400px") |>
+                     .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
@@ -438,18 +438,18 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
           #                      max = 1,
           #                      value = c(0.1, 0.9),
           #                      step  = 0.05,
-          #                      width = "500px") %>%
-          #            .help_buttom(body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico.", linguagem()))
+          #                      width = "500px") |>
+          #            .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico.", linguagem()))
           #   )
           # ),
 
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -477,7 +477,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
             confianca  = input$confianca,
             coeficiente = input$tipo_coeficiente,
             stringsAsFactors = FALSE
-          ) %>%
+          ) |>
             mutate(
               n = mapply(
                 FUN = function(conf, cor, w, method) {
@@ -507,7 +507,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
             alpha = input$alpha,
             correlacao_h0 = input$r_h0,
             p_parcial     = input$p_parcial,
-            stringsAsFactors = FALSE) %>%
+            stringsAsFactors = FALSE) |>
             mutate(
               n = mapply(
                 function(r, rho0, sig.level, power, p) {
@@ -548,10 +548,10 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
         )
 
 
-        g1 <- tab_TH_cenarios() %>%
+        g1 <- tab_TH_cenarios() |>
           mutate(
             across(all_of(metrica), factor)
-          ) %>%
+          ) |>
           ggplot(
             aes(x = correlacao,
                 y = n,
@@ -568,7 +568,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y")) %>%
+                         tooltip = c("x", "colour", "y")) |>
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -585,7 +585,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
       return_table_tabela_cenarios <- reactive({
 
         if (tipo == "estimar") {
-          df_ <- tab_TH_cenarios() %>%
+          df_ <- tab_TH_cenarios() |>
             dplyr::select(
               amplitude,
               correlacao,
@@ -604,7 +604,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
 
         } else {
 
-          df_ <- tab_TH_cenarios() %>%
+          df_ <- tab_TH_cenarios() |>
             dplyr::select(
               poder,
               correlacao,
@@ -632,7 +632,7 @@ mod_correlacao_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() %>%
+        return_table_tabela_cenarios() |>
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

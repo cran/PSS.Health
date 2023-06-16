@@ -26,13 +26,13 @@ tagList(
                                   h2("PSS Health"),
                                  uiOutput("pssVersaoInicio")
 
-                                  # radioButtons(
-                                  #   inputId = "idioma",
-                                  #   label = "Idioma/ Language (em construção)",
-                                  #   choices = c("Português" = "pt", "English" = "en"),
-                                  #   selected = "pt",
-                                  #   inline = TRUE
-                                  # )
+                                  , radioButtons(
+                                    inputId = "idioma",
+                                    label = "Idioma/ Language",
+                                    choices = c("Português" = "pt", "English" = "en"),
+                                    selected = "pt",
+                                    inline = TRUE
+                                  )
 
                                 )
                          ),
@@ -136,6 +136,11 @@ tagList(
                            "Linear",
                            shinyFeedback::useShinyFeedback(),
                            uiOutput("aba_regressao_linear")
+                         ),
+                         tabPanel(
+                           "Gamma",
+                           shinyFeedback::useShinyFeedback(),
+                           uiOutput("aba_2_medias_assimetrica")
                          ),
                          tabPanel(
                            uiOutput("navbarMenu_logistica"),

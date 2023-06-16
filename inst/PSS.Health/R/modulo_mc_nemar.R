@@ -5,7 +5,7 @@ mod_mc_nemar_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba_mc_nemar")) %>%
+    uiOutput(ns("aba_mc_nemar")) |>
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -164,6 +164,13 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
         sidebarLayout(
           sidebarPanel(
 
+
+            wellPanel(HTML(
+              '<b><a href="https://youtu.be/c5Rvl_LPnOE" target="_blank">',
+              translation_pss("Vídeo: PSS Health para comparação de duas proporções dependentes", linguagem()),
+              '</a></b><br>'
+            )),
+
             wellPanel(
               HTML(
                 paste0(
@@ -203,7 +210,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                               min = 0,
                               max = 100,
                               step = 5
-                ) %>% .help_buttom(body = paste0(
+                ) |> .help_buttom(linguagem = linguagem(), body = paste0(
                   "Percentual do total de pares discordantes (aqueles que obtiveram respostas diferentes) em cada categoria - ver explicação no cabeçalho da aba.",
                   txt_ajuda()$txt_definido_pesquisador_OU_literatura
                 )
@@ -218,7 +225,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             } else {
               numericInput( ns("n"),
                             translation_pss("Tamanho amostral", linguagem()),
@@ -232,7 +239,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                         translation_pss("Método utilizado para calcular o teste", linguagem()),
                         choices = metodo(),
                         selected = "normal"
-            ) %>% .help_buttom(body = txt_ajuda()$txt_per_method_MESS)
+            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_per_method_MESS)
               ,
 
             numericInput( ns("alpha"),
@@ -241,7 +248,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                           min = 0,
                           max = 100,
                           step = 1
-            ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
 
             if (tipo %in% c("tamanho_amostral", "estimar")) {
@@ -251,12 +258,12 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) %>%
+            htmlOutput(ns("texto_principal")) |>
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -473,8 +480,8 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = input$discordante1 + 10, step = 1)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 2, min = 0, step = 1) %>%
-                .help_buttom(body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()))
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 2, min = 0, step = 1) |>
+                .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()))
           ),
 
 
@@ -486,8 +493,8 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
                                " (%) ", nome_grupo_tratamento()
                              ),
                              value   = paste0(c(input$discordante2, input$discordante2 + 1, input$discordante2 + 3), collapse = ", "),
-                             width   = "400px") %>%
-                     .help_buttom(body = ajuda_cenarios_multiplos_valores())
+                             width   = "400px") |>
+                     .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
@@ -521,7 +528,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
           alpha =  input$alpha,
           metodo = input$metodo_estimacao,
           stringsAsFactors = FALSE
-        )  %>%
+        )  |>
           mutate(
             numerador = pmax(perc1, perc2),
             denominador = pmin(perc1, perc2)
@@ -556,8 +563,8 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
       output$plot <- plotly::renderPlotly({
 
 
-        g1 <- cenarios() %>%
-          mutate(`Disc. 2` = factor(perc2)) %>%
+        g1 <- cenarios() |>
+          mutate(`Disc. 2` = factor(perc2)) |>
           ggplot(aes(x = perc1, #`% de pares discordantes no grupo 1`,
                      y = `Tamanho da amostra`,
                      color = `Disc. 2`))+
@@ -574,7 +581,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
           )
 
 
-        plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
+        plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) |>
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -583,7 +590,7 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
 
 
       cenarios_print <- reactive({
-        dataset <- cenarios() %>%
+        dataset <- cenarios() |>
           select(
             c(
               perc1, perc2, poder, alpha, metodo, `Tamanho da amostra`
@@ -604,8 +611,8 @@ mod_mc_nemar_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_ba
 
       output$tab <- DT::renderDataTable({
 
-        cenarios_print() %>%
-        # cenarios() %>%
+        cenarios_print() |>
+        # cenarios() |>
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

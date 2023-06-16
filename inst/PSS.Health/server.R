@@ -26,8 +26,8 @@ server <- function(input, output, session) {
 
 
   linguagem <- reactive({
-    # input$idioma
-    "pt"
+    input$idioma
+    # "pt"
     # "en"
   })
 
@@ -45,9 +45,9 @@ server <- function(input, output, session) {
     fluidPage(
       HTML("<br><br><hr>"),
       if (linguagem() == "pt") {
-        HTML('<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+        HTML('<b>Sugestão, críticas ou bugs?</b> Mande um e-mail para <a href="mailto:psshealth@hcpa.edu.br">psshealth@hcpa.edu.br</a>.<br><br><br><br>' )
       } else {
-        HTML('<b>Suggestion, criticism or bugs? </b> Send an email to <a href="mailto:l-bioestatistica@hcpa.edu.br">l-bioestatistica@hcpa.edu.br</a>.<br><br><br><br>' )
+        HTML('<b>Suggestion, criticism or bugs? </b> Send an email to <a href="mailto:psshealth@hcpa.edu.br">psshealth@hcpa.edu.br</a>.<br><br><br><br>' )
       },
       fluidRow(
         column(3, p("")    ),
@@ -596,6 +596,16 @@ server <- function(input, output, session) {
       ),
 
 
+      wellPanel_txt_2_medias_assimetricas = case_when(
+        linguagem() == "en" ~ paste0(
+          "<b>Objective of the study:</b> compare the true means of a quantitative variable, with asymmetric distribution, between two independent groups. "
+        ),
+        TRUE ~ paste0(
+          "<b>Objetivo do estudo:</b> comparar as verdadeiras médias de uma variável quantitativa, com distribuição assimétrica, entre dois grupos independentes. "
+        )
+      ),
+
+
       wellPanel_txt_equivalencia = case_when(
         linguagem() == "en" ~ paste0(
           "<b>Objective of the study:</b> to test whether a new treatment is better (superiority study) than the standard, set an upper limit; or test whether it is not inferior (non-inferiority study) to the standard, setting a lower limit; or test whether it is as effective (equivalence study) as the standard, setting a lower and an upper limit. ",
@@ -686,20 +696,28 @@ server <- function(input, output, session) {
 
       wellPanel_txt_2_prop_independentes = case_when(
         linguagem() == "en" ~ paste0(
-          "<b>Objective of the study:</b> compare the true proportions of occurrence of one of the categories of a categorical variable between two independent groups. The test and power calculations are performed using the normal distribution approximation, so be careful when using the results for small samples."
+          "<b>Objective of the study:</b> compare the true proportions of occurrence of one of the categories of a categorical variable between two independent groups. The test and power calculations are performed using the normal distribution approximation, so be careful when using the results for small samples. ",
+          'More details on using this tab in ',
+          HTML('<b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: how to calculate the sample size to test variables relationships with a binary outcome</a></b>.')
         ),
         TRUE ~ paste0(
-          "<b>Objetivo do estudo:</b> comparar as verdadeiras proporções de ocorrência de uma das categorias de uma variável categórica entre dois grupos independentes. Os cálculos do teste e do poder são realizados utilizando a aproximação pela distribuição normal, por isso tenha cautela no uso dos resultados para amostras muito pequenas."
+          "<b>Objetivo do estudo:</b> comparar as verdadeiras proporções de ocorrência de uma das categorias de uma variável categórica entre dois grupos independentes. Os cálculos do teste e do poder são realizados utilizando a aproximação pela distribuição normal, por isso tenha cautela no uso dos resultados para amostras muito pequenas. ",
+          'Mais detalhes sobre o uso dessa aba em ',
+          HTML('<b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: como calcular tamanho de amostra para testar relações de variáveis com um desfecho binário</a></b>.')
         )
       ),
 
 
       wellPanel_txt_qui_quadrado = case_when(
         linguagem() == "en" ~ paste0(
-          "<b>Objective of the study:</b> test the existence of an association between two qualitative variables, usually grouped in contingency tables."
+          "<b>Objective of the study:</b> test the existence of an association between two qualitative variables, usually grouped in contingency tables. ",
+          'More details on using this tab in ',
+          HTML('<b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: how to calculate the sample size to test variables relationships with a binary outcome</a></b>.')
         ),
         TRUE ~ paste0(
-          "<b>Objetivo do estudo:</b> testar a existência de associação entre duas variáveis qualitativas, geralmente agrupadas em tabelas de contingência."
+          "<b>Objetivo do estudo:</b> testar a existência de associação entre duas variáveis qualitativas, geralmente agrupadas em tabelas de contingência. ",
+          'Mais detalhes sobre o uso dessa aba em ',
+          HTML('<b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: como calcular tamanho de amostra para testar relações de variáveis com um desfecho binário</a></b>.')
         )
       ),
 
@@ -730,10 +748,14 @@ server <- function(input, output, session) {
 
       wellPanel_txt_reg_logistica = case_when(
         linguagem() == "en" ~ paste0(
-          "<b>Objective of the study:</b> test or estimate the association between a binary outcome and a predictor variable through the odds ratio (OR) in a simple (univariate) logistic regression model."
+          "<b>Objective of the study:</b> test or estimate the association between a binary outcome and a predictor variable through the odds ratio (OR) in a simple (univariate) logistic regression model. ",
+          'More details on using this tab in ',
+          HTML('<b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: how to calculate the sample size to test variables relationships with a binary outcome</a></b>.')
         ),
         TRUE ~ paste0(
-          "<b>Objetivo do estudo:</b> testar ou estimar a associação entre um desfecho binário em uma variável preditora através da razão de chances (RC) em um modelo de regressão logística simples (univariável)."
+          "<b>Objetivo do estudo:</b> testar ou estimar a associação entre um desfecho binário em uma variável preditora através da razão de chances (RC) em um modelo de regressão logística simples (univariável). ",
+          'Mais detalhes sobre o uso dessa aba em ',
+          HTML('<b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: como calcular tamanho de amostra para testar relações de variáveis com um desfecho binário</a></b>.')
         )
       ),
 
@@ -951,12 +973,12 @@ server <- function(input, output, session) {
     if (linguagem() == "pt") {
       paste0(
         "validate(need(!is.na(", n,
-        "), 'Não foi possível calcular sua solicitação. Verifique os valores no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br.'))"
+        "), 'Não foi possível calcular sua solicitação. Verifique os valores no painel lateral. Se o erro persistir, por favor, envie um e-mail para psshealth@hcpa.edu.br.'))"
       )
     } else {
       paste0(
         "validate(need(!is.na(", n,
-        "), 'Your request could not be calculated. Check the values in the side panel. If the error persists, please email us at l-bioestatistica@hcpa.edu.br.'))"
+        "), 'Your request could not be calculated. Check the values in the side panel. If the error persists, please email us at psshealth@hcpa.edu.br.'))"
       )
     }
   }
@@ -969,12 +991,12 @@ server <- function(input, output, session) {
     if (linguagem() == "pt") {
       paste0(
         "validate(need(", n,
-        " != Inf, 'Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br.'))"
+        " != Inf, 'Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para psshealth@hcpa.edu.br.'))"
       )
     } else {
       paste0(
         "validate(need(", n,
-        " != Inf, 'Your request could not be calculated. Check the values in the side panel. If the error persists, please email us at l-bioestatistica@hcpa.edu.br.'))"
+        " != Inf, 'Your request could not be calculated. Check the values in the side panel. If the error persists, please email us at psshealth@hcpa.edu.br.'))"
       )
     }
   }
@@ -982,9 +1004,9 @@ server <- function(input, output, session) {
 
   erro_painel_principal <- reactive({
     if (linguagem() == "pt") {
-      'Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para l-bioestatistica@hcpa.edu.br.'
+      'Não foi possível calcular sua solicitação. Verifique as entradas no painel lateral. Se o erro persistir, por favor, envie um e-mail para psshealth@hcpa.edu.br.'
     } else {
-      'Your request could not be calculated. Check the values in the side panel. If the error persists, please email us at l-bioestatistica@hcpa.edu.br.'
+      'Your request could not be calculated. Check the values in the side panel. If the error persists, please email us at psshealth@hcpa.edu.br.'
     }
   })
 
@@ -1437,7 +1459,7 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(
+                     ) %>% .help_buttom(linguagem = linguagem(),
                        body = paste0(txt_ajuda()$txt_perc_esperado, txt_ajuda()$txt_definido_literatura),
                        title = translation_pss("Percentual esperado (%)", linguagem())
                      ),
@@ -1498,7 +1520,7 @@ server <- function(input, output, session) {
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(
+              ) %>% .help_buttom(linguagem = linguagem(),
                 body = txt_ajuda()$txt_perc_esperado, title = "Percentual esperado"),
               numericInput( "p_TH_h0",
                             translation_pss("Valor de referência sob a hipótese nula", linguagem()),
@@ -1532,7 +1554,7 @@ server <- function(input, output, session) {
 
 
               checkboxInput("prop_1th_approx", translation_pss("Calcular utilizando a aproximação pela normal", linguagem()), value = FALSE
-              ) %>% .help_buttom(
+              ) %>% .help_buttom(linguagem = linguagem(),
                 body = paste0(translation_pss("Calcular utilizando a aproximação pela normal? Se esta opção estiver desmarcada será utilizado o método exato.", linguagem()),
                               txt_ajuda()$txt_definido_pesquisador)
               ),
@@ -1599,7 +1621,7 @@ server <- function(input, output, session) {
                        "p_power_approx",
                        translation_pss("Calcular utilizando a aproximação pela normal" , linguagem()),
                        value = FALSE
-                     ) %>% .help_buttom(
+                     ) %>% .help_buttom(linguagem = linguagem(),
                        body = paste0(
                          translation_pss("Calcular utilizando a aproximação pela normal? Se esta opção estiver desmarcada será utilizado o método exato.", linguagem()),
                          txt_ajuda()$txt_definido_pesquisador
@@ -1611,7 +1633,7 @@ server <- function(input, output, session) {
                                         "p_power_correction",
                                         translation_pss("Aplicar correção de continuidade", linguagem()),
                                         value = TRUE
-                                      ) %>% .help_buttom(
+                                      ) %>% .help_buttom(linguagem = linguagem(),
                                         body = paste0(
                                           "Clique aqui para calcular um tamanho de amostra para um teste com correção de continuidade",
                                           txt_ajuda()$txt_definido_pesquisador
@@ -2934,7 +2956,7 @@ server <- function(input, output, session) {
                           min = -1,
                           max = 1,
                           step = 1
-            ) %>% .help_buttom(
+            ) %>% .help_buttom(linguagem = linguagem(),
               body = txt_ajuda()$txt_correlacao,
               title = translation_pss("Coeficiente de correlação esperado", linguagem())
             )
@@ -3079,6 +3101,62 @@ server <- function(input, output, session) {
 
 
 
+
+  #________________----
+  # 2 media assimetrica ----
+
+
+  mod_2_medias_assimetricas_server(
+    "tamanho_amostral_2_medias_assimetricas",
+    tipo = "tamanho_amostral",
+    txt_ajuda = txt_ajuda,
+    txt_balanceamento_f = txt_balanceamento_f,
+    h1 = h1,
+    cohen_d = cohen_d,
+    translation_pss = translation_pss,
+    linguagem = linguagem,
+    .rodape   = .rodape,
+    validate_n = validate_n,
+    ajuda_cenarios_multiplos_valores = ajuda_cenarios_multiplos_valores,
+    validate_n_inf = validate_n_inf,
+    try_n = try_n,
+    n_perdas = n_perdas,
+    print_r_code =  print_r_code,
+    text_input_to_vector = text_input_to_vector,
+    check_text_input_to_vector = check_text_input_to_vector,
+    warning_prop = warning_prop,
+    warning_numero_positivo = warning_numero_positivo,
+    warning_inteiro = warning_inteiro,
+    warning_perdas = warning_perdas,
+    warning_numero = warning_numero,
+    lista_de_funcoes_server = lista_de_funcoes_server
+  )
+
+
+  output$aba_2_medias_assimetrica <- renderUI({
+
+    tagList(
+
+      titlePanel(translation_pss("Comparação entre duas médias de grupos independentes (distribuição gamma)", linguagem())),
+      wellPanel(HTML(txt_ajuda()$wellPanel_txt_2_medias_assimetricas)),
+      tabsetPanel(
+        tabPanel(translation_pss("Testar", linguagem()),
+                 mod_2_medias_assimetricas_Ui("tamanho_amostral_2_medias_assimetricas"),
+                 .rodape()
+        )
+
+        # tabPanel(translation_pss("Poder", linguagem()),
+        #          mod_2_medias_independentes_Ui("poder_2_medias_independentes"),
+        #          .rodape()
+        # ),
+        #
+        # tabPanel(translation_pss("Estimar", linguagem()),
+        #          mod_2_medias_independentes_Ui("estimar_2_medias_independentes"),
+        #          .rodape()
+        # )
+      )
+    )
+  })
 
 
 
@@ -3637,21 +3715,21 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
                      numericInput( "sig_anova_n_two2",
                                    translation_pss("Nível de significância (%)", linguagem()),
                                    value = 5,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
                      numericInput( "two_way_perdas_recusa2",
                                    translation_pss("Perdas/ Recusas (%)", linguagem()),
                                    value = 10,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
                    ),
 
                    mainPanel(
@@ -3959,7 +4037,7 @@ server <- function(input, output, session) {
                   min = 2,
                   max = Inf,
                   step = 1
-    ) %>% .help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoA2, "para comparar"))
+    ) %>% .help_buttom(linguagem = linguagem(), body = paste("Nº de grupos de", input$two_nome_desfechoA2, "para comparar"))
   })
 
   output$k_anova_n_B_ui2 <- renderUI({
@@ -3969,7 +4047,7 @@ server <- function(input, output, session) {
                   min = 2,
                   max = Inf,
                   step = 1
-    ) %>% .help_buttom(body = paste("Nº de grupos de", input$two_nome_desfechoB2, "para comparar"))
+    ) %>% .help_buttom(linguagem = linguagem(), body = paste("Nº de grupos de", input$two_nome_desfechoB2, "para comparar"))
   })
 
   output$f_anova_n_A_ui2 <- renderUI({
@@ -3982,7 +4060,7 @@ server <- function(input, output, session) {
                   min = 0,
                   max = Inf,
                   step = .5
-    ) %>% .help_buttom(body = paste("Magnitude do efeito eta quadrado"))
+    ) %>% .help_buttom(linguagem = linguagem(), body = paste("Magnitude do efeito eta quadrado"))
   })
 
 
@@ -4974,7 +5052,7 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(
+                     ) |> .help_buttom(linguagem = linguagem(),
                        body = paste0(txt_ajuda()$txt_perc_esperado, txt_ajuda()$txt_definido_literatura),
                        title = translation_pss("Percentual esperado (%)", linguagem())
                      ),
@@ -4986,30 +5064,30 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
                      numericInput( "sensibil_confianca",
                                    translation_pss("Nível de confiança (%)", linguagem()),
                                    value = 95,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
                      selectInput("sensibil_metodo",
                                  translation_pss("Método utilizado para calcular o intervalo de confiança", linguagem()),
                                  choices = c("wilson", "agresti-coull", "exact", "wald"),
                                  selected = "wald"
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_per_method_presize),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_per_method_presize),
                      numericInput( "sensibil_perdas_recusa",
                                    translation_pss("Perdas/ Recusas (%)", linguagem()),
                                    value = 10,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
                    ),
 
                    mainPanel(
-                     htmlOutput("sensibil_output") %>%
+                     htmlOutput("sensibil_output") |>
                        shinycssloaders::withSpinner(type = 5),
 
 
@@ -5295,8 +5373,8 @@ server <- function(input, output, session) {
                    )
                  },
                  value   = paste0(c(input$sensibil_prevalencia, input$sensibil_prevalencia + 2.5, input$sensibil_prevalencia + 5), collapse = ", "),
-                 width   = "400px") %>%
-                 .help_buttom(body = ajuda_cenarios_multiplos_valores())
+                 width   = "400px") |>
+                 .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
         )
       ),
 
@@ -5315,8 +5393,8 @@ server <- function(input, output, session) {
           numericInput("sensibil_to", translation_pss("Máximo", linguagem()), value = 95, step = 5)
       ),
       div(style="display: inline-block;vertical-align:top; width: 80px;",
-          numericInput("sensibil_by", translation_pss("Intervalo", linguagem()), value = 10, min = 0, step = 1) %>%
-            .help_buttom(body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
+          numericInput("sensibil_by", translation_pss("Intervalo", linguagem()), value = 10, min = 0, step = 1) |>
+            .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                          title = "Sequência")
       ),
       br(),
@@ -5380,7 +5458,7 @@ server <- function(input, output, session) {
       stringsAsFactors = FALSE
     )
 
-    df_grid %>%
+    df_grid |>
       mutate(
         n_sens = mapply(
           function(alpha, sens_esp, precisao, prevalencia, method) {
@@ -5397,14 +5475,14 @@ server <- function(input, output, session) {
         ),
 
         n_maior = pmax(n_sens, n_espec)
-      ) %>%
+      ) |>
       dplyr::filter(!is.na(n_maior))
   })
 
 
   tab_sensibil_th_cenarios_print <- reactive({
-    df <- tab_sensibil_th_cenarios() %>%
-      dplyr::select(-c(n_sens, n_espec)) %>%
+    df <- tab_sensibil_th_cenarios() |>
+      dplyr::select(-c(n_sens, n_espec)) |>
       dplyr::rename(n = n_maior)
 
     colnames(df) <- c(
@@ -5430,8 +5508,8 @@ server <- function(input, output, session) {
   output$sensibil_plot <- plotly::renderPlotly({
 
 
-    g1 <- tab_sensibil_th_cenarios() %>%
-      mutate(`Prevalência (%)` = factor(`Prevalência (%)`)) %>%
+    g1 <- tab_sensibil_th_cenarios() |>
+      mutate(`Prevalência (%)` = factor(`Prevalência (%)`)) |>
       ggplot(aes(y = n_maior,
                  x = `Sensibilidade/ especificidade (%)`,
                  colour = `Prevalência (%)`,
@@ -5457,7 +5535,7 @@ server <- function(input, output, session) {
 
 
     plotly::ggplotly(g1,
-                     tooltip = c("x", "colour", "n_sens", "n_espec")) %>%
+                     tooltip = c("x", "colour", "n_sens", "n_espec")) |>
       plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                         showarrow = F, xref='paper', yref='paper',
                                         xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -5469,7 +5547,7 @@ server <- function(input, output, session) {
 
 
   output$sensibil_tab <- DT::renderDataTable({
-    tab_sensibil_th_cenarios_print() %>%
+    tab_sensibil_th_cenarios_print() |>
       DT::datatable(extensions = c('FixedColumns'),
                     rownames   = FALSE,
                     filter     = "none",
@@ -5649,51 +5727,51 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) %>% .help_buttom(body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
+                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
                      numericInput( "icc_h0",
                                    translation_pss("Valor de referência sob a hipótese nula", linguagem()),
                                    value = 0.5,
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) %>% .help_buttom(body = paste0("ICC para testar em H0", txt_ajuda()$txt_definido_pesquisador)),
+                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("ICC para testar em H0", txt_ajuda()$txt_definido_pesquisador)),
                      numericInput( "icc_ratings",
                                    translation_pss("Número de avaliadores", linguagem()),
                                    value = 2,
                                    min = 2,
                                    max = Inf,
                                    step = 1
-                     ) %>% .help_buttom(body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
+                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
                      numericInput( "icc_power",
                                    translation_pss("Poder (%)", linguagem()),
                                    value = 80,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
                      numericInput( "icc_significancia",
                                    translation_pss("Nível de significância (%)", linguagem()),
                                    value = 5,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
                      selectInput(inputId = "icc_sided",
                                  translation_pss('Tipo de teste de acordo com hipótese alternativa:', linguagem()),
                                  choices = h1(),
                                  selected = 'Bilateral'
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_h1),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1),
                      numericInput( "icc_perdas_recusa",
                                    translation_pss("Perdas/ Recusas (%)", linguagem()),
                                    value = 10,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
                    ),
 
                    mainPanel(
-                     htmlOutput("icc_output") %>%
+                     htmlOutput("icc_output") |>
                        shinycssloaders::withSpinner(type = 5),
 
                      ###  CENARIOS  ####.
@@ -5711,28 +5789,28 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) %>% .help_buttom(body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
+                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
                      numericInput( "icc_est_amplitude",
                                    translation_pss("Amplitude do intervalo", linguagem()),
                                    value = 0.2,
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
                      numericInput( "icc_est_ratings",
                                    translation_pss("Número de avaliadores", linguagem()),
                                    value = 2,
                                    min = 2,
                                    max = Inf,
                                    step = 1
-                     ) %>% .help_buttom(body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
+                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
                      numericInput( "icc_est_confiança",
                                    translation_pss("Nível de confiança (%)", linguagem()),
                                    value = 95,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
 
                      numericInput( "icc_est_perdas_recusa",
                                    translation_pss("Perdas/ Recusas (%)", linguagem()),
@@ -5740,11 +5818,11 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
                    ),
 
                    mainPanel(
-                     htmlOutput("icc_est_output") %>%
+                     htmlOutput("icc_est_output") |>
                        shinycssloaders::withSpinner(type = 5)
                    )
                  )
@@ -5857,8 +5935,8 @@ server <- function(input, output, session) {
                textInput(inputId = "icc_power_plot",
                          label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                          value   = "80, 90, 95",
-                         width   = "400px") %>%
-                 .help_buttom(body = ajuda_cenarios_multiplos_valores())
+                         width   = "400px") |>
+                 .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
         )
       ),
 
@@ -5875,8 +5953,8 @@ server <- function(input, output, session) {
           numericInput("icc_to", translation_pss("Máximo", linguagem()), value = min(1, input$icc_icc_esperado + 0.2), step = 0.05)
       ),
       div(style="display: inline-block;vertical-align:top; width: 80px;",
-          numericInput("icc_by", translation_pss("Intervalo", linguagem()), value = 0.05, min = 0, step = 0.05) %>%
-            .help_buttom(body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
+          numericInput("icc_by", translation_pss("Intervalo", linguagem()), value = 0.05, min = 0, step = 0.05) |>
+            .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                          title = "Sequência")
       ),
       br(),
@@ -5908,7 +5986,7 @@ server <- function(input, output, session) {
                            stringsAsFactors = FALSE)
 
 
-    df_grid %>%
+    df_grid |>
       mutate(
         n = mapply(
           function(p, p0, k, alpha, power, tails) {
@@ -5937,7 +6015,7 @@ server <- function(input, output, session) {
   output$icc_plot <- plotly::renderPlotly({
 
     req(!is.null(tab_icc_th_cenarios()))
-    data <- tab_icc_th_cenarios() %>%
+    data <- tab_icc_th_cenarios() |>
       mutate(`Poder (%)` = factor(`Poder (%)`))
 
     g1 <- ggplot(data, aes(x = ICC,
@@ -5957,7 +6035,7 @@ server <- function(input, output, session) {
 
 
     plotly::ggplotly(g1,
-                     tooltip = c("x", "colour", "y")) %>%
+                     tooltip = c("x", "colour", "y")) |>
       plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                         showarrow = F, xref='paper', yref='paper',
                                         xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -5983,7 +6061,7 @@ server <- function(input, output, session) {
 
 
   output$icc_tab <- DT::renderDataTable({
-    tab_icc_th_cenarios_download() %>%
+    tab_icc_th_cenarios_download() |>
       DT::datatable(extensions = c('FixedColumns'),
                     rownames   = FALSE,
                     filter     = "none",
@@ -6077,7 +6155,7 @@ server <- function(input, output, session) {
                         min = 0,
                         max = Inf,
                         step = 0.5
-          ) %>%
+          ) |>
             shinyhelper::helper(type = "inline",
                                 title = translation_pss("Amplitude do intervalo", linguagem()),
                                 content = includeMarkdown(file.path("www", "Bland_altman_plot.md")),
@@ -6086,21 +6164,21 @@ server <- function(input, output, session) {
                                 colour = "#006338",
                                 size = "l"),
 
-          # .help_buttom(body = "É a amplitude do intervalo de confiança (limite superior menos limite inferior)."),
+          # .help_buttom(linguagem = linguagem(), body = "É a amplitude do intervalo de confiança (limite superior menos limite inferior)."),
           numericInput( "bland_confianca",
                         translation_pss("Nível de confiança (%)", linguagem()),
                         value = 95,
                         min = 0,
                         max = 100,
                         step = 1
-          ) %>% .help_buttom(body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+          ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
           numericInput( "bland_perdas_recusa",
                         translation_pss("Perdas/ Recusas (%)", linguagem()),
                         value = 10,
                         min = 0,
                         max = 100,
                         step = 1
-          ) %>% .help_buttom(body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem())),
+          ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem())),
         ),
 
         mainPanel(
@@ -6126,8 +6204,8 @@ server <- function(input, output, session) {
                    textInput(inputId = "bland_cenarios_confianca",
                              label   = translation_pss("Digite valores de nível de confiança (%) para fazer o gráfico", linguagem()),
                              value   = "90, 95, 99",
-                             width   = "400px") %>%
-                     .help_buttom(body = ajuda_cenarios_multiplos_valores())
+                             width   = "400px") |>
+                     .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
@@ -6145,7 +6223,7 @@ server <- function(input, output, session) {
           ),
           div(style = "display: inline-block;vertical-align:top; width: 80px;",
               numericInput("bland_by", translation_pss("Intervalo", linguagem()), value = 0.1, min = 0, step = 0.1) %>%
-                .help_buttom(body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
+                .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
           br(),
@@ -6372,6 +6450,7 @@ server <- function(input, output, session) {
            '<li><b><a href="https://doi.org/10.22491/2357-9730.109542" target="_blank">Power and Sample Size for Health Researchers: uma ferramenta para cálculo de tamanho amostral e poder do teste voltado a pesquisadores da área da saúde</a></b></li>',
            '<li><b><a href="https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b></li>',
            '<li><b><a href="https://doi.org/10.22491/2357-9730.120997" target="_blank">PSS Health: como calcular tamanho de amostra para testes de comparação de médias de dois grupos</a></b></li>',
+           '<li><b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: como calcular tamanho de amostra para testar relações de variáveis com um desfecho binário</a></b></li>',
            "</ul>",
            "<br><br>",
            "<li><b>Principais conceitos em Epidemiologia:</b> Têm dúvidas sobre os tipos de delineamento e métodos de amostragem?</li>",
@@ -6783,7 +6862,7 @@ server <- function(input, output, session) {
                                          min = -Inf,
                                          max = Inf,
                                          step = 1
-                           ) %>% .help_buttom(body = "Um dos valores do intervalo de confiança relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.
+                           ) %>% .help_buttom(linguagem = linguagem(), body = "Um dos valores do intervalo de confiança relatado na literatura, supondo que as condições descritas acima estejam satisfeitas.
                                           Pode ser o limite inferior ou o superior.")
           ),
 

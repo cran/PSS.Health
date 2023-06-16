@@ -8,7 +8,7 @@ mod_desvio_padrao_agrupado_Ui <- function(id){
     actionLink(nss("mudar_nomess"), "MUDAR"),
     p(nss("uuu"))
 
-    # uiOutput(nss("abaa")) %>%
+    # uiOutput(nss("abaa")) |>
     # shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -66,7 +66,7 @@ mod_desvio_padrao_agrupado_server <- function(id,
             modalDialog(
               title = transslation_pss("Ajustes", linguagem()),
               fluidPage(
-                # uiOutput(nss("abaa")) %>%
+                # uiOutput(nss("abaa")) |>
                 #   shinycssloaders::withSpinner(type = 5)
                 fluidPage(
 

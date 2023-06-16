@@ -27,7 +27,7 @@ output:
 
 
 
-where the cells $p_b$ and $p_c$ represent the percentage of total discordant pairs (those who obtained different answers).
+where the cells $p_b$ and $p_c$ represent the percentage of total discordant pairs (those who obtained different answers). More details on using this tab in **[PSS Health: how to calculate the sample size to test variables relationships with a binary outcome](https://doi.org/10.22491/2357-9730.126843)**.
 
 
 

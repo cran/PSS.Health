@@ -4,22 +4,28 @@
   library("shiny", quietly = TRUE, warn.conflicts = FALSE)
   library("dplyr", quietly = TRUE, warn.conflicts = FALSE)
   library("ggplot2", quietly = TRUE, warn.conflicts = FALSE)
+  library(PSS.Health)
 }
 
 
 
-.help_buttom <- function(local, body, title = "Ajuda"){
+.help_buttom <- function(local, linguagem = "pt", body, title = "Ajuda"){
 
-  shinyhelper::helper(
-    shiny_tag = local,
-    type = "inline",
-    title = title,
-    content = body,
-    buttonLabel = "Fechar",
-    fade = TRUE,
-    colour = "#006338",
-    size = "m"
-  )
+  # Os botoes de ajuda aparecerao apenas na versao em portugues
+  if (linguagem == "pt") {
+    shinyhelper::helper(
+      shiny_tag = local,
+      type = "inline",
+      title = title,
+      content = body,
+      buttonLabel = "Fechar",
+      fade = TRUE,
+      colour = "#006338",
+      size = "m"
+    )
+  } else {
+    local
+  }
 
 }
 
@@ -82,7 +88,7 @@
 
 
 # Versão online? ----
-.versao_online <- FALSE
+.versao_online <- TRUE
 
 
 .txt_citacao_tap <- paste(

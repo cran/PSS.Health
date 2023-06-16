@@ -27,8 +27,6 @@ output:
 
 
 
-onde as células $p_b$ e $p_c$ representam o percentual do total de pares discordantes (aqueles que obtiveram respostas diferentes).
-
-
+onde as células $p_b$ e $p_c$ representam o percentual do total de pares discordantes (aqueles que obtiveram respostas diferentes). Mais detalhes sobre o uso dessa aba em **[PSS Health: como calcular tamanho de amostra para testar relações de variáveis com um desfecho binário](https://doi.org/10.22491/2357-9730.126843)**.
 
 
