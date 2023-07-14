@@ -5,7 +5,7 @@ mod_regressao_logistica_Ui <- function(id) {
 
   tagList(
 
-    uiOutput(ns("aba_regressao_logistica")) |>
+    uiOutput(ns("aba_regressao_logistica")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -121,7 +121,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                             value = 1.5,
                             min = 0,
                             step = 0.1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem()))
             },
 
             # uiOutput(ns("render_input_medida_controle")),
@@ -136,7 +136,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             },
 
             if (tipo %in% c("tamanho_amostral", "poder")) {
@@ -146,7 +146,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
             } else{
               tagList(
                 numericInput( ns("confianca"),
@@ -155,13 +155,13 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
 
                 selectInput(ns("metodo_estimacao"),
                             translation_pss("Método utilizado para calcular o intervalo de confiança", linguagem()),
                             choices = opcoes_metodos_estimacao(),
                             selected = "indip_smooth"
-                ) |>
+                ) %>%
                   .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_per_method_presize)
               )
             },
@@ -173,18 +173,18 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
-            htmlOutput(ns("texto_principal_poder")) |>
+            htmlOutput(ns("texto_principal_poder")) %>%
               shinycssloaders::withSpinner(type = 5),
 
-            htmlOutput(ns("texto_principal_estimar")) |>
+            htmlOutput(ns("texto_principal_estimar")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -282,7 +282,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado),
 
             wellPanel(
               selectInput(
@@ -309,7 +309,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                           min = 0,
                           max = Inf,
                           step = 0.1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem())),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem())),
 
             numericInput( ns("logistic_rate_mean"),
                           ifelse(linguagem() == "pt",
@@ -330,7 +330,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                           min  = 0,
                           max  = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = paste0("O percentual de eventos esperados na média da variável preditora contínua.", txt_ajuda()$txt_definido_pesquisador_OU_literatura))
+            ) %>% .help_buttom(linguagem = linguagem(), body = paste0("O percentual de eventos esperados na média da variável preditora contínua.", txt_ajuda()$txt_definido_pesquisador_OU_literatura))
           )
         }
       })
@@ -377,7 +377,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado)
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado)
 
           } else if (input$estatistica_tratamento == "ratio") {
             numericInput( ns("rr"),
@@ -386,7 +386,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                           min = 0,
                           max = Inf,
                           step = 0.1
-            )  |> .help_buttom(linguagem = linguagem(),
+            )  %>% .help_buttom(linguagem = linguagem(),
               body = txt_ajuda()$txt_risco_relativo,
               title = translation_pss("Risco relativo", linguagem())
             )
@@ -397,7 +397,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                           min = 0,
                           max = Inf,
                           step = 0.1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem()))
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem()))
           }
 
         )
@@ -420,7 +420,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                         min   = 0,
                         max   = Inf,
                         step  = .5
-          ) |> .help_buttom(linguagem = linguagem(), txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
+          ) %>% .help_buttom(linguagem = linguagem(), txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
                              title = translation_pss("Balanceamento", linguagem()))
         } else if (input$tipo_variavel == 0 & tipo == "poder") {
 
@@ -943,7 +943,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = ratio_end, step = .1, min = 0, max = ratio_max)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) |>
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -954,17 +954,17 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                    textInput(inputId = ns("poder_cenarios"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -1023,12 +1023,12 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                                `Nível de significância (%)` = input$alpha,
                                `Poder (%)`   = poder,
                                Balanceamento = input$balanceamento,
-                               stringsAsFactors = FALSE) |>
+                               stringsAsFactors = FALSE) %>%
           dplyr::filter(`% Tratamento` != `% Controle`)
 
         if (input$tipo_variavel == 0) {
 
-          simul_n <- simul_n |>
+          simul_n <- simul_n %>%
             mutate(
               probs = Balanceamento/(1 + Balanceamento),
 
@@ -1043,13 +1043,13 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
               `n Tratamento` = ceiling(ntemp*(1 - probs)),
               `n Controle`   = ceiling(ntemp*probs),
               `n total` = `n Tratamento` + `n Controle`
-            ) |>
+            ) %>%
 
             dplyr::filter(!is.na(`n Tratamento`) & !is.na(`n Controle`))
 
         } else {
 
-          simul_n <- simul_n |>
+          simul_n <- simul_n %>%
             mutate(
               `n total` = powerMediation::SSizeLogisticCon(
                 p1 = input$logistic_rate_mean/100,
@@ -1064,7 +1064,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
 
         }
 
-        simul_n |>
+        simul_n %>%
           left_join(df_inputs_prop, by = c("% Tratamento" = "prop_tratamento"))
 
 
@@ -1087,10 +1087,10 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
           TRUE ~ translation_pss("Razão de chance", linguagem())
         )
 
-        g1 <- tab_p2_TH_cenarios() |>
+        g1 <- tab_p2_TH_cenarios() %>%
           mutate(
             `Poder (%)` = factor(`Poder (%)`)
-          ) |>
+          ) %>%
           ggplot(
             aes(x = !! sym(metrica),
                 y = `n total`,
@@ -1110,7 +1110,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) |>
+                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -1140,7 +1140,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
           TRUE ~ translation_pss("Razão de chance", linguagem())
         )
 
-        df_ <- tab_p2_TH_cenarios() |>
+        df_ <- tab_p2_TH_cenarios() %>%
           dplyr::select(
             c("% Controle",
               all_of(metrica),
@@ -1181,7 +1181,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
         )
 
         if (input$tipo_variavel == 1) {
-          df_ |>
+          df_ %>%
             select(
               -c(
                 paste0("n ", nome_grupo_tratamento()),
@@ -1199,7 +1199,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() |>
+        return_table_tabela_cenarios() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

@@ -5,7 +5,7 @@ mod_2_proporcoes_independentes_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -134,7 +134,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado),
 
             wellPanel(
               selectInput(
@@ -166,7 +166,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                                 min = 0,
                                 max = 100,
                                 step = 0.1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_precisao, title = translation_pss("Margem de erro/ semi-amplitude", linguagem()))
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_precisao, title = translation_pss("Margem de erro/ semi-amplitude", linguagem()))
                 },
 
                 numericInput( ns("balanceamento"),
@@ -178,7 +178,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                               min   = 0,
                               max   = Inf,
                               step  = .5
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
                                    title = translation_pss("Balanceamento", linguagem())),
 
                 if (tipo == "tamanho_amostral") {
@@ -188,7 +188,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                                 min = 0,
                                 max = 100,
                                 step = 1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
                 }
               ))
             } else if (tipo == "poder") {
@@ -226,13 +226,13 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
                 selectInput(ns('th_alternativa'),
                             translation_pss('Tipo de teste de acordo com hipótese alternativa', linguagem()),
                             choices = h1(),
                             selected = 'Bilateral'
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1)
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1)
               ))
             } else {
               fluidPage(fluidRow(
@@ -242,13 +242,13 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
 
                 selectInput(ns('metodo_ic'),
                             translation_pss("Método utilizado para calcular o intervalo de confiança", linguagem()),
                             choices = c("Score" = "score", "Adjusted Wald" = "adjusted Wald"),
                             selected = 'score'
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_per_method_EnvStats),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_per_method_EnvStats),
 
               ))
             },
@@ -262,7 +262,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             },
 
             if (tipo != "estimar") {
@@ -270,12 +270,12 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                 ns("prop_correction"),
                 translation_pss("Aplicar correção de continuidade", linguagem()),
                 value = TRUE
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_correcao_continuidade)
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_correcao_continuidade)
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
               uiOutput(ns("cenarios"))
@@ -418,7 +418,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado)
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado)
 
           } else if (input$estatistica_tratamento == "ratio"){
             numericInput( ns("rr"),
@@ -427,7 +427,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                           min = 0,
                           max = Inf,
                           step = 0.1
-            )  |> .help_buttom(linguagem = linguagem(),
+            )  %>% .help_buttom(linguagem = linguagem(),
               body = txt_ajuda()$txt_risco_relativo,
               title = translation_pss("Risco relativo", linguagem())
             )
@@ -438,7 +438,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                           min = 0,
                           max = Inf,
                           step = 0.1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem()))
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem()))
           }
         )
       })
@@ -772,7 +772,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = ratio_end, step = .1, min = 0, max = ratio_max)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) |>
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -783,17 +783,17 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                    textInput(inputId = ns("poder_cenarios"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -846,13 +846,13 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                                alternative     = alternative_TH2_prop2(),
                                ratio_controle_caso = input$balanceamento,
                                correct        = input$prop_correction,
-                               stringsAsFactors = FALSE) |>
-          dplyr::filter(prop_tratamento != prop_controle) |>
+                               stringsAsFactors = FALSE) %>%
+          dplyr::filter(prop_tratamento != prop_controle) %>%
           mutate(`n Tratamento` = mapply(n_th2_prop, prop_controle, prop_tratamento, significancia, poder,
                                          alternative, ratio_controle_caso, correct),
                  `n Controle` = ceiling(`n Tratamento`*input$balanceamento)
-          ) |>
-          dplyr::filter(!is.na(`n Tratamento`) & !is.na(`n Controle`)) |>
+          ) %>%
+          dplyr::filter(!is.na(`n Tratamento`) & !is.na(`n Controle`)) %>%
           mutate(`n total` = `n Tratamento` + `n Controle`,
                  `Nível de significância (%)` = input$alpha,
                  `Perdas/ Recusas (%)`   = input$perc_perdas,
@@ -865,7 +865,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
                  `Correção de continuidade` = correct
           )
 
-        simul_n |>
+        simul_n %>%
           left_join(df_inputs_prop, by = "prop_tratamento")
 
 
@@ -886,10 +886,10 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
           TRUE ~ translation_pss("Razão de chance", linguagem())
         )
 
-        g1 <- tab_p2_TH_cenarios() |>
+        g1 <- tab_p2_TH_cenarios() %>%
           mutate(
             `Poder (%)` = factor(`Poder (%)`)
-          ) |>
+          ) %>%
           ggplot(
             aes(x = !! sym(metrica),
                 y = `n total`,
@@ -909,7 +909,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) |>
+                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -937,7 +937,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
           TRUE ~ translation_pss("Razão de chance", linguagem())
         )
 
-          df_ <- tab_p2_TH_cenarios() |>
+          df_ <- tab_p2_TH_cenarios() %>%
             dplyr::select(
               c("% Controle",
                 all_of(metrica),
@@ -972,7 +972,7 @@ mod_2_proporcoes_independentes_server <- function(id, tipo = "tamanho_amostral",
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() |>
+        return_table_tabela_cenarios() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

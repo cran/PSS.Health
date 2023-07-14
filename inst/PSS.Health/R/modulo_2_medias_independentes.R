@@ -5,7 +5,7 @@ mod_2_medias_independentes_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -116,7 +116,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                             min = 0,
                             max = 100,
                             step = 0.1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_precisao, title = translation_pss("Margem de erro/ semi-amplitude", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_precisao, title = translation_pss("Margem de erro/ semi-amplitude", linguagem()))
 
             } else if (tipo == "tamanho_amostral") {
               numericInput( ns("poder"),
@@ -125,7 +125,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             },
 
 
@@ -137,13 +137,13 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
                 selectInput(ns('th_alternativa'),
                             translation_pss('Tipo de teste de acordo com hipótese alternativa', linguagem()),
                             choices = h1(),
                             selected = 'Bilateral'
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1)
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1)
               ))
             } else {
               numericInput( ns("confianca"),
@@ -152,7 +152,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
             },
 
 
@@ -164,7 +164,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
@@ -175,7 +175,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
             #   "teste"
             # ),
 
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -424,7 +424,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                         min = 0,
                         max = Inf,
                         step = 1
-          ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem()))
+          ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem()))
 
         } else if (input$calcular_utilizando_d_cohen) {
           numericInput( ns("d"),
@@ -432,7 +432,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                         value = 0.4,
                         min = 0,
                         max = Inf,
-                        step = 0.1) |>
+                        step = 0.1) %>%
             shinyhelper::helper(type = "markdown",
                                 title = "Tamanho de efeito d",
                                 content = "Effect_size_d_Cohen",
@@ -455,7 +455,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                           min = -Inf,
                           max = Inf,
                           step = .5
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
 
             numericInput( ns("sigma"),
                           translation_pss("Desvio padrão", linguagem()),
@@ -463,7 +463,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                           min = 0,
                           max = Inf,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem())),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem())),
 
             actionLink(ns("show_desvio_combinado"), translation_pss("Calcular o desvio padrão combinado", linguagem())),
             br(), br(),
@@ -479,7 +479,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                               min   = 0,
                               max   = Inf,
                               step  = .5
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
                                    title = translation_pss("Balanceamento", linguagem())),
 
                 numericInput( ns("deff"),
@@ -488,7 +488,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                               min = 0,
                               max = Inf,
                               step =.2
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_deff,
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_deff,
                                    title = translation_pss("Efeito do plano amostral", linguagem()))
               )
             }
@@ -832,7 +832,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = val_max, step = .5)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 0.5, min = 0, step = .1) |>
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 0.5, min = 0, step = .1) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -843,17 +843,17 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                    textInput(inputId = ns("poder_cenarios"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -878,7 +878,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                       poder = poder,
                       alpha =  input$alpha,
                       alternativa_temp = th_alternativa() == "two.sided",
-                      stringsAsFactors = FALSE) |>
+                      stringsAsFactors = FALSE) %>%
 
             mutate(
               h1 = case_when(alternativa_temp ~ "two.sided",
@@ -914,7 +914,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
             h1 = th_alternativa(),
             deff = input$deff,
             stringsAsFactors = FALSE
-          )|>
+          )%>%
             mutate(
               n1 = mapply(
                 function(diferenca, sigma, balanceamento, poder, alpha, h1, deff) {
@@ -963,10 +963,10 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
           TRUE ~ translation_pss("Diferença mínima a ser detectada", linguagem())
         )
 
-        g1 <- tab_TH_cenarios() |>
+        g1 <- tab_TH_cenarios() %>%
           mutate(
             `Poder (%)` = factor(poder)
-          ) |>
+          ) %>%
           ggplot(
             aes(x = !! sym(metrica),
                 y = n,
@@ -984,7 +984,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) |>
+                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -1004,8 +1004,8 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
 
         if (input$calcular_utilizando_d_cohen) {
 
-          df_ <- df_ |>
-            dplyr::select(-alternativa_temp) |>
+          df_ <- df_ %>%
+            dplyr::select(-alternativa_temp) %>%
             mutate(
               n1 = n/2,
               n2 = n/2
@@ -1044,7 +1044,7 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() |>
+        return_table_tabela_cenarios() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

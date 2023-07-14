@@ -5,7 +5,7 @@ mod_kappa_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -80,7 +80,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                             min = 0,
                             max = 1,
                             step = .1
-              ) |> .help_buttom(linguagem = linguagem(), body = paste0("Valor de kappa que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
+              ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Valor de kappa que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
 
               if (tipo != "estimar") {
                 numericInput( ns("kappa_h0"),
@@ -89,7 +89,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                               min = 0,
                               max = 1,
                               step = .1
-                ) |> .help_buttom(linguagem = linguagem(), body = paste0("Kappa para testar em H0", txt_ajuda()$txt_definido_pesquisador))
+                ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Kappa para testar em H0", txt_ajuda()$txt_definido_pesquisador))
               },
 
               numericInput( ns("avaliadores"),
@@ -98,7 +98,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                             min = 2,
                             max = 6,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = paste0("The number of raters that are available", txt_ajuda()$txt_definido_pesquisador)),
+              ) %>% .help_buttom(linguagem = linguagem(), body = paste0("The number of raters that are available", txt_ajuda()$txt_definido_pesquisador)),
 
 
 
@@ -110,7 +110,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                                 min = 0,
                                 max = 100,
                                 step = 1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
 
                   numericInput( ns("alpha"),
                                 translation_pss("Nível de significância (%)", linguagem()),
@@ -118,7 +118,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                                 min = 0,
                                 max = 100,
                                 step = 1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
                 )
 
 
@@ -131,7 +131,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                                 min = 0,
                                 max = 1,
                                 step = 0.1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
 
                   numericInput( ns("confianca"),
                                 translation_pss("Nível de confiança (%)", linguagem()),
@@ -139,7 +139,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                                 min = 0,
                                 max = 100,
                                 step = 1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
                 )
               },
 
@@ -151,12 +151,12 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
               }
             ),
 
             mainPanel(
-              htmlOutput(ns("texto_principal")) |>
+              htmlOutput(ns("texto_principal")) %>%
                 shinycssloaders::withSpinner(type = 5),
 
               uiOutput(ns("cenarios"))
@@ -255,13 +255,13 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
 
         eh_nulo <- lapply(1:len, function(i) {
           is.null(input[[paste0("categoria_", i)]])
-        }) |> unlist()
+        }) %>% unlist()
 
         rotulos <- LETTERS[1:len]
 
         rotulos_input <- lapply(1:len, function(i) {
           input[[paste0("categoria_", i)]]
-        }) |> unlist()
+        }) %>% unlist()
 
 
         for (i in 1:len) rotulos[i] <- ifelse(eh_nulo[i], rotulos[i], rotulos_input[i])
@@ -299,7 +299,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
 
         probs <- lapply(1:(len - 1), function(i) {
           input[[paste0("prob_", i)]]
-        }) |> unlist()
+        }) %>% unlist()
 
         probs
       })
@@ -365,13 +365,13 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
         # Tem que cuidar por causa da modal
         eh_nulo <- lapply(1:len, function(i) {
           is.null(input[[paste0("categoria_", i)]])
-        }) |> unlist()
+        }) %>% unlist()
 
         rotulos <- LETTERS[1:len]
 
         rotulos_input <- lapply(1:len, function(i) {
           input[[paste0("categoria_", i)]]
-        }) |> unlist()
+        }) %>% unlist()
 
         for (i in 1:len) rotulos[i] <- ifelse(eh_nulo[i], rotulos[i], rotulos_input[i])
 
@@ -482,7 +482,7 @@ mod_kappa_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
               "concordância entre os <b>métodos/ avaliadores ", metodos, "</b>, com amplitude desejada para o intervalo de confiança de de <b>", input$amplitude, "</b> ",
               "(com o acréscimo de <b>", input$perc_perdas, "%</b> para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
 
-              "O cálculo considerou nível de significância de <b>", input$alpha, "%</b>, ",
+              "O cálculo considerou nível de confiança de <b>", input$confianca, "%</b>, ",
               "Kappa esperado de <b>", input$kappa, "</b> ",
               "e percentuais de ocorrência de <b>", probs_categorias, "%</b> para as categorias <b>", categorias, "</b>, respectivamente, ",
               "conforme referido em Fulano (1900) OU escolha do pesquisador. ",

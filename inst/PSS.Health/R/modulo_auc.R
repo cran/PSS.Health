@@ -5,7 +5,7 @@ mod_auc_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -67,7 +67,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min = 0.5,
                             max = 1,
                             step = .1
-              ) |> .help_buttom(linguagem = linguagem(), body = paste0("Área sob a curva que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
+              ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Área sob a curva que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
 
 
               if (tipo == "poder") {
@@ -105,7 +105,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                   #               min   = 0,
                   #               max   = Inf,
                   #               step  = .5
-                  # ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
+                  # ) %>% .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_controle(), nome_grupo_tratamento()),
                   #                    title = translation_pss("Balanceamento", linguagem())),
 
                   numericInput( ns("percentual_desfecho"),
@@ -120,7 +120,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                 min   = 0,
                                 max   = 100,
                                 step  = 5
-                  ) |>  .help_buttom(linguagem = linguagem(), 
+                  ) %>%  .help_buttom(linguagem = linguagem(), 
                     body = paste0(txt_ajuda()$txt_perc_esperado, txt_ajuda()$txt_definido_literatura),
                     title = translation_pss("Percentual esperado (%)", linguagem())
                   ),
@@ -133,7 +133,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                   min = 0,
                                   max = 100,
                                   step = 1
-                    ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+                    ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
                   } else {
 
                     tagList(
@@ -143,7 +143,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                     min = 0,
                                     max = 1,
                                     step = 0.1
-                      ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
+                      ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
 
                       numericInput( ns("confianca"),
                                     translation_pss("Nível de confiança (%)", linguagem()),
@@ -151,7 +151,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                     min = 0,
                                     max = 100,
                                     step = 1
-                      ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+                      ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
                     )
                   }
                 )
@@ -164,7 +164,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
               },
 
               if (tipo != "poder") {
@@ -174,12 +174,12 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
               }
             ),
 
             mainPanel(
-              htmlOutput(ns("texto_principal")) |>
+              htmlOutput(ns("texto_principal")) %>%
                 shinycssloaders::withSpinner(type = 5),
 
               uiOutput(ns("cenarios"))
@@ -458,7 +458,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = val_max, step = .5)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 0.02, min = 0, step = .1) |>
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = 0.02, min = 0, step = .1) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -469,17 +469,17 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                    textInput(inputId = ns("poder_cenarios"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -503,7 +503,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                alpha = input$alpha,
                                prevalencia = input$percentual_desfecho,
                                balanceamento = input$percentual_desfecho/(100-input$percentual_desfecho),
-                               stringsAsFactors = FALSE) |>
+                               stringsAsFactors = FALSE) %>%
           mutate(
             n_casos = mapply(
               function(auc, poder, alpha, balanceamento){
@@ -531,10 +531,10 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
       output$grafico_cenarios <- plotly::renderPlotly({
 
 
-        g1 <- tab_TH_cenarios() |>
+        g1 <- tab_TH_cenarios() %>%
           mutate(
             `Poder (%)` = factor(poder)
-          ) |>
+          ) %>%
           ggplot(
             aes(x = auc,
                 y = n,
@@ -552,7 +552,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) |>
+                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -568,7 +568,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
       return_table_tabela_cenarios <- reactive({
 
-        df_ <- tab_TH_cenarios() |>
+        df_ <- tab_TH_cenarios() %>%
           dplyr::select(
             poder,
             auc,
@@ -596,7 +596,7 @@ mod_auc_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() |>
+        return_table_tabela_cenarios() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

@@ -5,7 +5,7 @@ mod_cox_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("abaa_cox")) |>
+    uiOutput(ns("abaa_cox")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -98,7 +98,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               min = 0,
               max = Inf,
               step = 1
-            ) |>
+            ) %>%
               .help_buttom(linguagem = linguagem(), 
                 body = txt_ajuda()$txt_hazard_ratio,
                 title = "Hazard ratio"
@@ -114,7 +114,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             # } else {
               # numericInput( ns("n"),
               #               translation_pss("Tamanho amostral", linguagem()),
@@ -132,7 +132,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
             } else{
               tagList(
                 numericInput( ns("confianca"),
@@ -141,7 +141,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
               )
             },
 
@@ -152,12 +152,12 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -276,7 +276,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                               min  = 0,
                               max  = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), 
+                ) %>% .help_buttom(linguagem = linguagem(), 
                   body = paste0(
                     translation_pss("Probabilidade",linguagem()),
                     " (%) ",
@@ -300,7 +300,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                             min   = 0,
                             max   = Inf,
                             step  = .5
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
                                  title = translation_pss("Balanceamento", linguagem()))
             } else {
               tagList(
@@ -358,7 +358,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                          min  = 0,
                          max  = 100,
                          step = 1
-            ) |> .help_buttom(linguagem = linguagem(), 
+            ) %>% .help_buttom(linguagem = linguagem(), 
               body = paste0(
                 translation_pss("Probabilidade",linguagem()),
                 " (%) ",
@@ -377,7 +377,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                           min  = 0,
                           max  = Inf,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = "Desvio padrão esperado"),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = "Desvio padrão esperado"),
 
             numericInput( ns("cox_r2"),
                           translation_pss("Coeficiente de correlação múltipla", linguagem()),
@@ -385,7 +385,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                           min  = -1,
                           max  = 1,
                           step = .2
-            ) |> .help_buttom(linguagem = linguagem(), body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
+            ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Coeficiente de correlação múltipla entre a covariável de interesse e outras covariáveis.
                                                      Defina zero (default) se não haverá outras variáveis independentes.", txt_ajuda()$txt_definido_pesquisador_OU_literatura))
           )
         }
@@ -677,7 +677,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = ratio_end, step = .1, min = 0, max = Inf)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) |>
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = ratio_by, min = 0, step = .1) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -688,17 +688,17 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                    textInput(inputId = ns("poder_cenarios"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -726,7 +726,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                  pC        = input$cox_failure_control,
                                  stringsAsFactors = FALSE)
           # df_grid
-          df_n <- df_grid |>
+          df_n <- df_grid %>%
             mutate(
               n_trat = mapply(
                 function(k, poder, pE, pC, hr, alpha){
@@ -780,7 +780,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
                                  sigma = input$cox_desvio_padrao,
                                  psi = input$cox_failure_continua,
                                  rho = input$cox_r2,
-                                 stringsAsFactors = FALSE) |>
+                                 stringsAsFactors = FALSE) %>%
             mutate(
               n = mapply(
                 function(hr, alpha, poder, sigma, psi, rho){
@@ -810,11 +810,11 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
       output$grafico_cenarios <- plotly::renderPlotly({
 
 
-        g1 <- tab_cenarios() |>
+        g1 <- tab_cenarios() %>%
           mutate(
             `Poder (%)` = factor(poder),
             `Hazard ratio` = hr
-          ) |>
+          ) %>%
           ggplot(
             aes(x = `Hazard ratio`,
                 y = n,
@@ -831,7 +831,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y")) |>
+                         tooltip = c("x", "colour", "y")) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -904,7 +904,7 @@ mod_cox_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, txt_balance
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() |>
+        return_table_tabela_cenarios() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

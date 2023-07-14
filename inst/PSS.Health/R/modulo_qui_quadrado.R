@@ -5,7 +5,7 @@ mod_qui_quadrado_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba_associacao")) |>
+    uiOutput(ns("aba_associacao")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -62,7 +62,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
               textInput(inputId = ns("chisq_desfecho"),
                         label   = translation_pss("Descreva o nome das variáveis que deseja associar", linguagem()),
                         value   = translation_pss("X1 e X2", linguagem())
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_outros_desfechos()),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_outros_desfechos()),
 
 
               selectInput(inputId = ns("chisq_input"),
@@ -81,7 +81,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
               if (tipo == "tamanho_amostral") {
                 numericInput( ns("chisq_perdas_recusa"),
@@ -90,12 +90,12 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
               }
             ),
 
             mainPanel(
-              uiOutput(ns("chisq_tab_contUi")) |>
+              uiOutput(ns("chisq_tab_contUi")) %>%
                 shinycssloaders::withSpinner(type = 5),
               shinycssloaders::withSpinner(htmlOutput(ns("chisq_n")), type = 5),
 
@@ -118,7 +118,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
                         min = 0,
                         max = 100,
                         step = 1
-          ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+          ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
         } else if (input$chisq_input != 3) {
           numericInput( ns("chisq_n"),
                         translation_pss("Tamanho amostral", linguagem()),
@@ -143,7 +143,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
                           min = 0,
                           max = 1,
                           step = .01
-            ) |> .help_buttom(linguagem = linguagem(), body = paste0(translation_pss("Tamanho de efeito w de Cohen", linguagem()), txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
+            ) %>% .help_buttom(linguagem = linguagem(), body = paste0(translation_pss("Tamanho de efeito w de Cohen", linguagem()), txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
 
 
             numericInput( ns("df_chisq_n"),
@@ -152,7 +152,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
                           min = 0,
                           max = Inf,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = paste0("Número de graus de liberdade da estatística de teste. Pode ser obtido realizando o cálculo (L-1)x(C-1), onde L é o número de categorias da primeira variável e C da segunda variável.", txt_ajuda()$txt_definido_pesquisador_OU_literatura))
+            ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Número de graus de liberdade da estatística de teste. Pode ser obtido realizando o cálculo (L-1)x(C-1), onde L é o número de categorias da primeira variável e C da segunda variável.", txt_ajuda()$txt_definido_pesquisador_OU_literatura))
           ))
         } else {
 
@@ -204,7 +204,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
 
         tab <- matrix(tab_vetor,
                       nrow = input$chisq_nrow,
-                      ncol = input$chisq_ncol) |> as.data.frame()
+                      ncol = input$chisq_ncol) %>% as.data.frame()
 
         colnames(tab) <- paste0("Cat Y", 1:input$chisq_ncol)
         rownames(tab) <- paste0("Cat X", 1:input$chisq_nrow)
@@ -238,8 +238,8 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
       observeEvent(input$chisq_tab_cont_cell_edit, {
         cell <- input$chisq_tab_cont_cell_edit
         newdf <- tabela_chisq$tab
-        new_value <- gsub(",", ".", as.character(cell$value)) |>
-          gsub("[^0-9.-]", "", .) |>
+        new_value <- gsub(",", ".", as.character(cell$value)) %>%
+          gsub("[^0-9.-]", "", .) %>%
           as.numeric()
 
         newdf[cell$row, cell$col] <- new_value
@@ -465,7 +465,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
               numericInput(ns("chisq_to"), translation_pss("Máximo", linguagem()), value = chisq_w()$w + 0.8, step = 0.5)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("chisq_by"), translation_pss("Intervalo", linguagem()), value = 0.1, min = 0, step = 0.1) |>
+              numericInput(ns("chisq_by"), translation_pss("Intervalo", linguagem()), value = 0.1, min = 0, step = 0.1) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -476,7 +476,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
                    textInput(inputId = ns("chisq_power_plot"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
@@ -503,7 +503,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
         expand.grid(`Magnitude do efeito w` = seq(from = input$chisq_from, to = input$chisq_to, by = input$chisq_by),
                     `Poder (%)` = power,
                     `Nível de significância (%)` =  input$sig_chisq_n,
-                    gl = chisq_w()$gl) |>
+                    gl = chisq_w()$gl) %>%
           mutate(`Tamanho da amostra` =
                    mapply(function(w, df, sig.level, power){
                      tryCatch({
@@ -522,8 +522,8 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
       output$chisq_plot <- plotly::renderPlotly({
         req(tipo == "tamanho_amostral")
 
-        g1 <- tab_chisq_cenarios() |>
-          mutate(`Poder (%)` = factor(`Poder (%)`)) |>
+        g1 <- tab_chisq_cenarios() %>%
+          mutate(`Poder (%)` = factor(`Poder (%)`)) %>%
           ggplot(aes(x = `Magnitude do efeito w`, y = `Tamanho da amostra`, color = `Poder (%)`))+
           geom_point() +
           geom_line() +
@@ -537,7 +537,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
             name = translation_pss("Poder (%)", linguagem())
           )
 
-        plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) |>
+        plotly::ggplotly(g1, tooltip = c("x", "colour", "y")) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -565,7 +565,7 @@ mod_qui_quadrado_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, tx
       output$chisq_tab <- DT::renderDataTable({
         req(tipo == "tamanho_amostral")
 
-        tab_chisq_cenarios_down() |>
+        tab_chisq_cenarios_down() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

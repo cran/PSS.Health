@@ -5,7 +5,7 @@ mod_2_medias_assimetricas_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -102,7 +102,7 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
             #               min = -Inf,
             #               max = Inf,
             #               step = .5
-            # ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
+            # ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
 
             if (linguagem() == "pt") {
               HTML("<b><font size = '2.95'>Média esperada do grupo</font></b><br>")
@@ -166,7 +166,7 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
                               min   = 0,
                               max   = Inf,
                               step  = .5
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
                                    title = translation_pss("Balanceamento", linguagem()))
               )
             },
@@ -179,7 +179,7 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             },
 
 
@@ -191,13 +191,13 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
 
                 # selectInput(ns('th_alternativa'),
                 #             translation_pss('Tipo de teste de acordo com hipótese alternativa', linguagem()),
                 #             choices = h1(),
                 #             selected = 'Bilateral'
-                # ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1)
+                # ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1)
               ))
             } else {
               numericInput( ns("confianca"),
@@ -206,7 +206,7 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
             },
 
 
@@ -218,13 +218,13 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
 
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             htmlOutput(ns("code")),
@@ -452,8 +452,8 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
 
         expand.grid(
           Shape = shape
-        ) |>
-          dplyr::as_tibble() |>
+        ) %>%
+          dplyr::as_tibble() %>%
           mutate(
             Scale = mu/Shape,
             Mean = Shape*Scale,
@@ -481,11 +481,11 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
       })
       output$table_forma_trat <- renderTable({
 
-        tabela_print <- descritiva_distribuicao_trat() |>
+        tabela_print <- descritiva_distribuicao_trat() %>%
           dplyr::select(-Mean, - Scale)
 
         if (linguagem() == "pt") {
-          tabela_print |>
+          tabela_print %>%
             dplyr::rename(
               `Desvio padrão` = `Standard deviation`,
               Forma = Shape,
@@ -519,8 +519,8 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
           x = x,
           y = densidades,
           Forma = factor(rep(comb$Shape, each = length(x)))
-        ) |>
-          subset(y > 1e-3) |>
+        ) %>%
+          subset(y > 1e-3) %>%
           ggplot(aes(x = x, y = y, colour = Forma)) +
           geom_line(linejoin = "bevel") +
           scale_color_brewer(
@@ -552,11 +552,11 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
         simula_descritiva(mu = input$media_controle, shape = forma_cenarios())
       })
       output$table_forma_contr <- renderTable({
-        tabela_print <- descritiva_distribuicao_contr() |>
+        tabela_print <- descritiva_distribuicao_contr() %>%
           dplyr::select(-Mean, -Scale)
 
         if (linguagem() == "pt") {
-          tabela_print |>
+          tabela_print %>%
             dplyr::rename(
               `Desvio padrão` = `Standard deviation`,
               Forma = Shape,
@@ -591,8 +591,8 @@ mod_2_medias_assimetricas_server <- function(id, tipo = "tamanho_amostral", txt_
           x = x,
           y = densidades,
           Forma = factor(rep(comb$Shape, each = length(x)))
-        ) |>
-          subset(y > 1e-3) |>
+        ) %>%
+          subset(y > 1e-3) %>%
           ggplot(aes(x = x, y = y, colour = Forma)) +
           geom_line(linejoin = "bevel") +
           scale_color_brewer(

@@ -5052,7 +5052,7 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(),
+                     ) %>% .help_buttom(linguagem = linguagem(),
                        body = paste0(txt_ajuda()$txt_perc_esperado, txt_ajuda()$txt_definido_literatura),
                        title = translation_pss("Percentual esperado (%)", linguagem())
                      ),
@@ -5064,30 +5064,30 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
                      numericInput( "sensibil_confianca",
                                    translation_pss("Nível de confiança (%)", linguagem()),
                                    value = 95,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
                      selectInput("sensibil_metodo",
                                  translation_pss("Método utilizado para calcular o intervalo de confiança", linguagem()),
                                  choices = c("wilson", "agresti-coull", "exact", "wald"),
                                  selected = "wald"
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_per_method_presize),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_per_method_presize),
                      numericInput( "sensibil_perdas_recusa",
                                    translation_pss("Perdas/ Recusas (%)", linguagem()),
                                    value = 10,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
                    ),
 
                    mainPanel(
-                     htmlOutput("sensibil_output") |>
+                     htmlOutput("sensibil_output") %>%
                        shinycssloaders::withSpinner(type = 5),
 
 
@@ -5373,7 +5373,7 @@ server <- function(input, output, session) {
                    )
                  },
                  value   = paste0(c(input$sensibil_prevalencia, input$sensibil_prevalencia + 2.5, input$sensibil_prevalencia + 5), collapse = ", "),
-                 width   = "400px") |>
+                 width   = "400px") %>%
                  .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
         )
       ),
@@ -5393,7 +5393,7 @@ server <- function(input, output, session) {
           numericInput("sensibil_to", translation_pss("Máximo", linguagem()), value = 95, step = 5)
       ),
       div(style="display: inline-block;vertical-align:top; width: 80px;",
-          numericInput("sensibil_by", translation_pss("Intervalo", linguagem()), value = 10, min = 0, step = 1) |>
+          numericInput("sensibil_by", translation_pss("Intervalo", linguagem()), value = 10, min = 0, step = 1) %>%
             .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                          title = "Sequência")
       ),
@@ -5458,7 +5458,7 @@ server <- function(input, output, session) {
       stringsAsFactors = FALSE
     )
 
-    df_grid |>
+    df_grid %>%
       mutate(
         n_sens = mapply(
           function(alpha, sens_esp, precisao, prevalencia, method) {
@@ -5475,14 +5475,14 @@ server <- function(input, output, session) {
         ),
 
         n_maior = pmax(n_sens, n_espec)
-      ) |>
+      ) %>%
       dplyr::filter(!is.na(n_maior))
   })
 
 
   tab_sensibil_th_cenarios_print <- reactive({
-    df <- tab_sensibil_th_cenarios() |>
-      dplyr::select(-c(n_sens, n_espec)) |>
+    df <- tab_sensibil_th_cenarios() %>%
+      dplyr::select(-c(n_sens, n_espec)) %>%
       dplyr::rename(n = n_maior)
 
     colnames(df) <- c(
@@ -5508,8 +5508,8 @@ server <- function(input, output, session) {
   output$sensibil_plot <- plotly::renderPlotly({
 
 
-    g1 <- tab_sensibil_th_cenarios() |>
-      mutate(`Prevalência (%)` = factor(`Prevalência (%)`)) |>
+    g1 <- tab_sensibil_th_cenarios() %>%
+      mutate(`Prevalência (%)` = factor(`Prevalência (%)`)) %>%
       ggplot(aes(y = n_maior,
                  x = `Sensibilidade/ especificidade (%)`,
                  colour = `Prevalência (%)`,
@@ -5535,7 +5535,7 @@ server <- function(input, output, session) {
 
 
     plotly::ggplotly(g1,
-                     tooltip = c("x", "colour", "n_sens", "n_espec")) |>
+                     tooltip = c("x", "colour", "n_sens", "n_espec")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                         showarrow = F, xref='paper', yref='paper',
                                         xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -5547,7 +5547,7 @@ server <- function(input, output, session) {
 
 
   output$sensibil_tab <- DT::renderDataTable({
-    tab_sensibil_th_cenarios_print() |>
+    tab_sensibil_th_cenarios_print() %>%
       DT::datatable(extensions = c('FixedColumns'),
                     rownames   = FALSE,
                     filter     = "none",
@@ -5727,51 +5727,51 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
                      numericInput( "icc_h0",
                                    translation_pss("Valor de referência sob a hipótese nula", linguagem()),
                                    value = 0.5,
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("ICC para testar em H0", txt_ajuda()$txt_definido_pesquisador)),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = paste0("ICC para testar em H0", txt_ajuda()$txt_definido_pesquisador)),
                      numericInput( "icc_ratings",
                                    translation_pss("Número de avaliadores", linguagem()),
                                    value = 2,
                                    min = 2,
                                    max = Inf,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
                      numericInput( "icc_power",
                                    translation_pss("Poder (%)", linguagem()),
                                    value = 80,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem())),
                      numericInput( "icc_significancia",
                                    translation_pss("Nível de significância (%)", linguagem()),
                                    value = 5,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
                      selectInput(inputId = "icc_sided",
                                  translation_pss('Tipo de teste de acordo com hipótese alternativa:', linguagem()),
                                  choices = h1(),
                                  selected = 'Bilateral'
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_h1),
                      numericInput( "icc_perdas_recusa",
                                    translation_pss("Perdas/ Recusas (%)", linguagem()),
                                    value = 10,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
                    ),
 
                    mainPanel(
-                     htmlOutput("icc_output") |>
+                     htmlOutput("icc_output") %>%
                        shinycssloaders::withSpinner(type = 5),
 
                      ###  CENARIOS  ####.
@@ -5789,28 +5789,28 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Valor do coeficiente de correlação intraclasse que se espera encontrar.", txt_ajuda()$txt_definido_pesquisador_OU_literatura)),
                      numericInput( "icc_est_amplitude",
                                    translation_pss("Amplitude do intervalo", linguagem()),
                                    value = 0.2,
                                    min = 0,
                                    max = 1,
                                    step = .1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem())),
                      numericInput( "icc_est_ratings",
                                    translation_pss("Número de avaliadores", linguagem()),
                                    value = 2,
                                    min = 2,
                                    max = Inf,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = paste0("Número de avaliadores por unidade amostral.", txt_ajuda()$txt_definido_pesquisador)),
                      numericInput( "icc_est_confiança",
                                    translation_pss("Nível de confiança (%)", linguagem()),
                                    value = 95,
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
 
                      numericInput( "icc_est_perdas_recusa",
                                    translation_pss("Perdas/ Recusas (%)", linguagem()),
@@ -5818,11 +5818,11 @@ server <- function(input, output, session) {
                                    min = 0,
                                    max = 100,
                                    step = 1
-                     ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+                     ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
                    ),
 
                    mainPanel(
-                     htmlOutput("icc_est_output") |>
+                     htmlOutput("icc_est_output") %>%
                        shinycssloaders::withSpinner(type = 5)
                    )
                  )
@@ -5935,7 +5935,7 @@ server <- function(input, output, session) {
                textInput(inputId = "icc_power_plot",
                          label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                          value   = "80, 90, 95",
-                         width   = "400px") |>
+                         width   = "400px") %>%
                  .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
         )
       ),
@@ -5953,7 +5953,7 @@ server <- function(input, output, session) {
           numericInput("icc_to", translation_pss("Máximo", linguagem()), value = min(1, input$icc_icc_esperado + 0.2), step = 0.05)
       ),
       div(style="display: inline-block;vertical-align:top; width: 80px;",
-          numericInput("icc_by", translation_pss("Intervalo", linguagem()), value = 0.05, min = 0, step = 0.05) |>
+          numericInput("icc_by", translation_pss("Intervalo", linguagem()), value = 0.05, min = 0, step = 0.05) %>%
             .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                          title = "Sequência")
       ),
@@ -5986,7 +5986,7 @@ server <- function(input, output, session) {
                            stringsAsFactors = FALSE)
 
 
-    df_grid |>
+    df_grid %>%
       mutate(
         n = mapply(
           function(p, p0, k, alpha, power, tails) {
@@ -6015,7 +6015,7 @@ server <- function(input, output, session) {
   output$icc_plot <- plotly::renderPlotly({
 
     req(!is.null(tab_icc_th_cenarios()))
-    data <- tab_icc_th_cenarios() |>
+    data <- tab_icc_th_cenarios() %>%
       mutate(`Poder (%)` = factor(`Poder (%)`))
 
     g1 <- ggplot(data, aes(x = ICC,
@@ -6035,7 +6035,7 @@ server <- function(input, output, session) {
 
 
     plotly::ggplotly(g1,
-                     tooltip = c("x", "colour", "y")) |>
+                     tooltip = c("x", "colour", "y")) %>%
       plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                         showarrow = F, xref='paper', yref='paper',
                                         xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -6061,7 +6061,7 @@ server <- function(input, output, session) {
 
 
   output$icc_tab <- DT::renderDataTable({
-    tab_icc_th_cenarios_download() |>
+    tab_icc_th_cenarios_download() %>%
       DT::datatable(extensions = c('FixedColumns'),
                     rownames   = FALSE,
                     filter     = "none",
@@ -6155,7 +6155,7 @@ server <- function(input, output, session) {
                         min = 0,
                         max = Inf,
                         step = 0.5
-          ) |>
+          ) %>%
             shinyhelper::helper(type = "inline",
                                 title = translation_pss("Amplitude do intervalo", linguagem()),
                                 content = includeMarkdown(file.path("www", "Bland_altman_plot.md")),
@@ -6171,14 +6171,14 @@ server <- function(input, output, session) {
                         min = 0,
                         max = 100,
                         step = 1
-          ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
+          ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem())),
           numericInput( "bland_perdas_recusa",
                         translation_pss("Perdas/ Recusas (%)", linguagem()),
                         value = 10,
                         min = 0,
                         max = 100,
                         step = 1
-          ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem())),
+          ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem())),
         ),
 
         mainPanel(
@@ -6204,7 +6204,7 @@ server <- function(input, output, session) {
                    textInput(inputId = "bland_cenarios_confianca",
                              label   = translation_pss("Digite valores de nível de confiança (%) para fazer o gráfico", linguagem()),
                              value   = "90, 95, 99",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),

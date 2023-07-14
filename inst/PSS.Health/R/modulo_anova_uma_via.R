@@ -5,7 +5,7 @@ mod_anova1_Ui <- function(id) {
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -77,7 +77,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             },
 
             numericInput( ns("alpha"),
@@ -86,7 +86,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
 
             if (tipo %in% c("tamanho_amostral", "estimar")) {
@@ -96,12 +96,12 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5),
 
             uiOutput(ns("cenarios"))
@@ -124,7 +124,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           k <- input$k
         } else{
           req(!is.null(input$medias))
-          k <- text_input_to_vector(input$medias) |>
+          k <- text_input_to_vector(input$medias) %>%
             length()
         }
 
@@ -194,7 +194,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                           value = 0.3,
                           min = 0,
                           max = 1,
-                          step = 0.1) |>
+                          step = 0.1) %>%
               shinyhelper::helper(type = "markdown",
                                   title = translation_pss("Magnitude do efeito (f)", linguagem()),
                                   content = "Effect_size_f",
@@ -209,7 +209,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                           min = 2,
                           max = Inf,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = paste0(translation_pss("Número de grupos", linguagem()), txt_ajuda()$txt_definido_pesquisador)),
+            ) %>% .help_buttom(linguagem = linguagem(), body = paste0(translation_pss("Número de grupos", linguagem()), txt_ajuda()$txt_definido_pesquisador)),
 
             if (tipo == "poder") {
               numericInput( ns("n_por_k"),
@@ -218,7 +218,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                             min = 1,
                             max = Inf,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = paste0(translation_pss("Número de observações (por grupo)", linguagem()), txt_ajuda()$txt_definido_pesquisador))
+              ) %>% .help_buttom(linguagem = linguagem(), body = paste0(translation_pss("Número de observações (por grupo)", linguagem()), txt_ajuda()$txt_definido_pesquisador))
             }
           )
 
@@ -229,7 +229,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
             textInput( ns("medias"),
                        translation_pss("Médias dos grupos", linguagem()),
                        value = "12.6, 14.9, 16"
-            ) |>
+            ) %>%
               .help_buttom(linguagem = linguagem(), title = translation_pss("Médias dos grupos", linguagem()),
                            body = paste0(
                              ajuda_cenarios_multiplos_valores2(),
@@ -243,13 +243,13 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                           min = 0,
                           max = Inf,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem())),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem())),
 
             if (tipo == "poder") {
               textInput( ns("n_por_k_texto"),
                          translation_pss("Número de observações (por grupo)", linguagem()),
                          value = "15, 16, 12"
-              ) |> .help_buttom(linguagem = linguagem(), title = translation_pss("Número de observações (por grupo)", linguagem()),
+              ) %>% .help_buttom(linguagem = linguagem(), title = translation_pss("Número de observações (por grupo)", linguagem()),
                                  body = ajuda_cenarios_multiplos_valores2()
               )
             }
@@ -357,7 +357,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           )
 
 
-          # Poder ----
+         # Poder ----
         } else {
 
           if (input$calcular_utilizando_f) {
@@ -437,8 +437,11 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                    } else {
                      paste0(
                        " tamanho de amostra igua a <b>",
-                       paste(text_input_to_vector(input$n_por_k_texto), collapse = ", ") |>
-                         sub(",([^,]*)$", " e\\1", .),
+                       sub(
+                         ",([^,]*)$",
+                         " e\\1",
+                         paste(text_input_to_vector(input$n_por_k_texto), collapse = ", ")
+                       ),
                        "</b> sujeitos para cada grupo, respectivamente, ",
                        " e desvio padrão igual a <b>", input$sigma, " ", unidade_medida(), "</b> (referido por Fulano (1900)). "
                      )
@@ -511,7 +514,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
               numericInput(ns("to"), translation_pss("Máximo", linguagem()), value = val_max, step = .5)
           ),
           div(style="display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = val_by, min = 0, step = .1) |>
+              numericInput(ns("by"), translation_pss("Intervalo", linguagem()), value = val_by, min = 0, step = .1) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -522,17 +525,17 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                    textInput(inputId = ns("poder_cenarios"),
                              label   = translation_pss("Digite valores de poder (%) para fazer o gráfico", linguagem()),
                              value   = "80, 90, 95",
-                             width   = "400px") |>
+                             width   = "400px") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") |>
+          plotly::plotlyOutput(ns("grafico_cenarios"), width = "80%") %>%
             shinycssloaders::withSpinner(type = 5),
 
           br(), br(),
           downloadButton(ns("download_tabela_cenarios"), translation_pss("Download tabela", linguagem())),
-          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") |>
+          DT::dataTableOutput(ns("tabela_cenarios"), width = "100%") %>%
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -556,11 +559,11 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           expand.grid(f = seq(from = input$from, to = input$to, by = input$by),
                       poder = poder,
                       alpha =  input$alpha,
-                      k = input$k) |>
+                      k = input$k) %>%
             mutate(n =
                      mapply(function(k, f, sig.level, power) {
                        tryCatch({
-                         pwr::pwr.anova.test(n = NULL, k = k, f = f, sig.level = sig.level/100, power = power/100)$n |> ceiling()},
+                         pwr::pwr.anova.test(n = NULL, k = k, f = f, sig.level = sig.level/100, power = power/100)$n %>% ceiling()},
                          warning = function(warning_condition) { NA },
                          error = function(error_condition) { NA })},
                        k, f, alpha, poder),
@@ -576,12 +579,12 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                       media = paste(text_input_to_vector(input$medias), collapse = ", "),
                       k = length(text_input_to_vector(input$medias)),
                       poder = poder,
-                      alpha =  input$alpha) |>
+                      alpha =  input$alpha) %>%
 
             mutate(n = mapply(function(medias, desvio, sig.level, power) {
 
               tryCatch({
-                medias_anova <- medias #|> strsplit(",") |> unlist() |> as.numeric() |> na.omit()
+                medias_anova <- medias #%>% strsplit(",") %>% unlist() %>% as.numeric() %>% na.omit()
 
                 code <- paste0(
                   "EnvStats::aovN(mu.vec = c(",medias_anova, "), ",
@@ -617,10 +620,10 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
           TRUE ~ translation_pss("Desvio padrão", linguagem())
         )
 
-        g1 <- tab_TH_cenarios() |>
+        g1 <- tab_TH_cenarios() %>%
           mutate(
             `Poder (%)` = factor(poder)
-          ) |>
+          ) %>%
           ggplot(
             aes(x = !! sym(metrica),
                 y = n,
@@ -638,7 +641,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
 
 
         plotly::ggplotly(g1,
-                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) |>
+                         tooltip = c("x", "colour", "y", translation_pss("Tratamento", linguagem()), translation_pss("Controle", linguagem()))) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = translation_pss("* sem considerar perdas/ recusas.", linguagem()),
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -670,7 +673,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
 
         } else {
 
-          df_ <- df_ |>
+          df_ <- df_ %>%
             dplyr::select(-k)
 
           colnames(df_) <- c(
@@ -689,7 +692,7 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
 
       output$tabela_cenarios <- DT::renderDataTable({
 
-        return_table_tabela_cenarios() |>
+        return_table_tabela_cenarios() %>%
           DT::datatable(extensions = c('FixedColumns'),
                         rownames   = FALSE,
                         filter     = "none",

@@ -5,7 +5,7 @@ mod_nao_inferioridade_Ui <- function(id){
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -90,7 +90,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5)
           )
         )
@@ -161,7 +161,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                         value = valor_margem_padrao,
                         min   = valor_margem_min,
                         max   = valor_margem_max,
-                        step  = 1) |>
+                        step  = 1) %>%
             .help_buttom(linguagem = linguagem(),
               body = case_when(input$opcoes_teste == "inf"  ~ txt_ajuda()$txt_margem_nao_inferior,
                                input$opcoes_teste == "sup"  ~ txt_ajuda()$txt_margem_superior,
@@ -182,7 +182,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                             min = -Inf,
                             max = Inf,
                             step = .5
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
 
               numericInput( ns("sigma"),
                             translation_pss("Desvio padrão", linguagem()),
@@ -190,7 +190,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                             min = 0,
                             max = Inf,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem())),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem())),
 
               actionLink(ns("show_desvio_combinado"), translation_pss("Calcular o desvio padrão combinado", linguagem())),
               br(), br()
@@ -207,7 +207,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado),
 
               wellPanel(
                 selectInput(
@@ -237,7 +237,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                           min   = 0,
                           max   = Inf,
                           step  = .5
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(nome_grupo_tratamento(), nome_grupo_controle()),
                                title = translation_pss("Balanceamento", linguagem()))
           },
 
@@ -273,7 +273,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
           },
 
 
@@ -283,7 +283,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                         min = 0,
                         max = 100,
                         step = 1
-          ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+          ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
 
 
           if (tipo %in% c("tamanho_amostral")) {
@@ -293,7 +293,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
           }
         )
       })
@@ -342,7 +342,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                           min = 0,
                           max = 100,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado)
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perc_esperado)
 
           } else if (input$estatistica_tratamento == "ratio"){
             numericInput( ns("rr"),
@@ -351,7 +351,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                           min = 0,
                           max = Inf,
                           step = 0.1
-            )  |> .help_buttom(linguagem = linguagem(),
+            )  %>% .help_buttom(linguagem = linguagem(),
               body = txt_ajuda()$txt_risco_relativo,
               title = translation_pss("Risco relativo", linguagem())
             )
@@ -362,7 +362,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
                           min = 0,
                           max = Inf,
                           step = 0.1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem()))
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_razao_chance, title = translation_pss("Razão de chance", linguagem()))
           }
         )
       })

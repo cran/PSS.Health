@@ -5,7 +5,7 @@ mod_regressao_linear_Ui <- function(id) {
 
   tagList(
 
-    uiOutput(ns("aba")) |>
+    uiOutput(ns("aba")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -71,7 +71,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             value = 0.1,
                             min = 0,
                             step = 0.1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem()))
             },
 
             selectInput(
@@ -90,7 +90,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             } else if (tipo == "poder") {
               numericInput( ns("n"),
                             translation_pss("Tamanho amostral", linguagem()),
@@ -107,7 +107,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
             } else {
               tagList(
                 numericInput( ns("confianca"),
@@ -116,7 +116,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                               min = 0,
                               max = 100,
                               step = 1
-                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
               )
             },
 
@@ -127,12 +127,12 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) |>
+            htmlOutput(ns("texto_principal")) %>%
               shinycssloaders::withSpinner(type = 5)
 
             # uiOutput(ns("cenarios"))
@@ -211,7 +211,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                         min = 0,
                         max = Inf,
                         step = 1
-          ) |> .help_buttom(linguagem = linguagem(),
+          ) %>% .help_buttom(linguagem = linguagem(),
             body = txt_ajuda()$txt_coef_determinacao,
             title = translation_pss("Coeficiente de determinação", linguagem())
           )
@@ -226,7 +226,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             min = 0,
                             max = 1,
                             step = .01
-              ) |> .help_buttom(
+              ) %>% .help_buttom(
                 linguagem = linguagem(),
                 body = txt_ajuda()$txt_correlacao,
                 title = translation_pss("Coeficiente de correlação", linguagem())
@@ -238,7 +238,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                            translation_pss("Coeficiente de regressão", linguagem()),
                            value = .8,
                            step = 1
-              ) |> .help_buttom(
+              ) %>% .help_buttom(
                 linguagem = linguagem(),
                 body = translation_pss("Coeficiente de inclinação da reta para um modelo de regressão linear simples", linguagem()),
                 title = translation_pss("Coeficiente de inclinação da reta para um modelo de regressão linear simples", linguagem())
@@ -254,7 +254,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                           min = 0,
                           max = Inf,
                           step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem())),
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem())),
             numericInput(ns("sigmaX"),
                          paste0(
                            translation_pss("Desvio padrão esperado de", linguagem()),
@@ -265,7 +265,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                          min = 0,
                          max = Inf,
                          step = 1
-            ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem()))
+            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem()))
           )
         }
       })

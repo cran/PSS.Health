@@ -5,7 +5,7 @@ mod_medidas_repetidas_Ui <- function(id) {
 
   tagList(
 
-    uiOutput(ns("medidas_repetidas_ui_sided")) |>
+    uiOutput(ns("medidas_repetidas_ui_sided")) %>%
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -165,8 +165,8 @@ mod_medidas_repetidas_server <- function(
       observeEvent(input$rep_cor_grupo1_cell_edit, {
         cell <- input$rep_cor_grupo1_cell_edit
         newdf <- correlation_R1$mcor
-        new_value <- gsub(",", ".", as.character(cell$value)) |>
-          gsub("[^0-9.-]", "", .) |>
+        new_value <- gsub(",", ".", as.character(cell$value)) %>%
+          gsub("[^0-9.-]", "", .) %>%
           as.numeric()
 
         newdf[cell$row, cell$col] <- new_value
@@ -243,8 +243,8 @@ mod_medidas_repetidas_server <- function(
       observeEvent(input$rep_cor_grupo2_cell_edit, {
         cell <- input$rep_cor_grupo2_cell_edit
         newdf <- correlation_R2$mcor
-        new_value <- gsub(",", ".", as.character(cell$value)) |>
-          gsub("[^0-9.-]", "", .) |>
+        new_value <- gsub(",", ".", as.character(cell$value)) %>%
+          gsub("[^0-9.-]", "", .) %>%
           as.numeric()
 
         newdf[cell$row, cell$col] <- new_value
@@ -459,7 +459,7 @@ mod_medidas_repetidas_server <- function(
           translation_pss("Selecione o tipo de matriz de correlação", linguagem()),
           choices = matrizes_correlacao(),
           selected = 'AR(1)'
-        ) |>
+        ) %>%
           .help_buttom(linguagem = linguagem(), 
             body = txt_ajuda()$wellPanel_txt_matriz_correlacao,
             title = translation_pss("Matriz de correlação", linguagem())
@@ -588,7 +588,7 @@ mod_medidas_repetidas_server <- function(
                            min = -Inf,
                            max = Inf,
                            step = .5
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_diferenca_clinica, title = translation_pss("Diferença mínima a ser detectada", linguagem())),
 
 
 
@@ -616,7 +616,7 @@ mod_medidas_repetidas_server <- function(
                                     min = 0,
                                     max = Inf,
                                     step = 1
-                      ) |> .help_buttom(linguagem = linguagem(), body = "Tamanho amostral", title = "Tamanho amostral")
+                      ) %>% .help_buttom(linguagem = linguagem(), body = "Tamanho amostral", title = "Tamanho amostral")
                   )
                 ))
 
@@ -650,7 +650,7 @@ mod_medidas_repetidas_server <- function(
                                 min = 0,
                                 max = Inf,
                                 step = 1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem()))
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão", linguagem()))
               ),
 
               wellPanel(
@@ -669,7 +669,7 @@ mod_medidas_repetidas_server <- function(
                   "<b>",
                   translation_pss("Retenção esperada (%) no grupo", linguagem()),
                   "</b><br><br>"
-                ))  |>
+                ))  %>%
                   .help_buttom(linguagem = linguagem(), body = paste0("Percentual de indivíduos que é esperado ter naquele momento. ", txt_ajuda()$txt_definido_pesquisador_OU_literatura),
                                title = "Retenção esperada"),
                 fluidPage(fluidRow(
@@ -699,7 +699,7 @@ mod_medidas_repetidas_server <- function(
                                 min = 0,
                                 max = Inf,
                                 step = 0.5
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(rep_grupoTratamento(), rep_grupoControle()),
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_balanceamento_f(rep_grupoTratamento(), rep_grupoControle()),
                                      title = translation_pss("Balanceamento", linguagem())),
 
 
@@ -709,7 +709,7 @@ mod_medidas_repetidas_server <- function(
                                 min = 0,
                                 max = 100,
                                 step = 1
-                  ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+                  ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
                 ))
               },
 
@@ -719,20 +719,20 @@ mod_medidas_repetidas_server <- function(
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem())),
               numericInput( ns("rep_perdas_recusa"),
                             translation_pss("Perdas/ Recusas (%)", linguagem()),
                             value = 10,
                             min = 0,
                             max = 100,
                             step = 1
-              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             ),
 
             mainPanel(
 
               # Input da matriz de correlacao nao estruturada
-              uiOutput(ns("rep_print_matriz_cor")) |>
+              uiOutput(ns("rep_print_matriz_cor")) %>%
                 shinycssloaders::withSpinner(type = 5),
 
               # Texto do tamanho amostral
@@ -804,7 +804,7 @@ mod_medidas_repetidas_server <- function(
         req(!is.null(input$retencao1_2))
         rete <- lapply(2:input$rep_n_tempos, function(i) {
           input[[paste0("retencao1_", i)]]
-        }) |> unlist()
+        }) %>% unlist()
 
         c(100, rete)
       })
@@ -814,7 +814,7 @@ mod_medidas_repetidas_server <- function(
 
         rete <- lapply(2:input$rep_n_tempos, function(i) {
           input[[paste0("retencao2_", i)]]
-        }) |> unlist()
+        }) %>% unlist()
 
         c(100, rete)
       })
@@ -914,21 +914,21 @@ mod_medidas_repetidas_server <- function(
           poder <- round(poder$power*100, 1)
         }
 
-        retencaoA <- paste0(rep_retencao_A()[-1], "%", collapse = ", ") |>
-          stringi::stri_replace_last_fixed(",", " e ") |>
-          stringr::str_trim() |> stringr::str_squish()
+        retencaoA <- paste0(rep_retencao_A()[-1], "%", collapse = ", ") %>%
+          stringi::stri_replace_last_fixed(",", " e ") %>%
+          stringr::str_trim() %>% stringr::str_squish()
 
-        retencaoB <- paste0(rep_retencao_B()[-1], "%", collapse = ", ") |>
-          stringi::stri_replace_last_fixed(",", " e ") |>
-          stringr::str_trim() |> stringr::str_squish()
+        retencaoB <- paste0(rep_retencao_B()[-1], "%", collapse = ", ") %>%
+          stringi::stri_replace_last_fixed(",", " e ") %>%
+          stringr::str_trim() %>% stringr::str_squish()
 
-        momentos <- paste0(1:input$rep_n_tempos, collapse = ", ") |>
-          stringi::stri_replace_last_fixed(",", " e ") |>
-          stringr::str_trim() |> stringr::str_squish()
+        momentos <- paste0(1:input$rep_n_tempos, collapse = ", ") %>%
+          stringi::stri_replace_last_fixed(",", " e ") %>%
+          stringr::str_trim() %>% stringr::str_squish()
 
-        momentos2 <- paste0(2:input$rep_n_tempos, collapse = ", ") |>
-          stringi::stri_replace_last_fixed(",", " e ") |>
-          stringr::str_trim() |> stringr::str_squish()
+        momentos2 <- paste0(2:input$rep_n_tempos, collapse = ", ") %>%
+          stringi::stri_replace_last_fixed(",", " e ") %>%
+          stringr::str_trim() %>% stringr::str_squish()
 
 
         if (tipo == "tamanho_amostral") {
@@ -1071,7 +1071,7 @@ mod_medidas_repetidas_server <- function(
         fluidPage(
           HTML(paste0("Matriz de correlação do grupo ", rep_grupoTratamento(), ":<br>")),
           renderTable({
-            df_ <- matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE) |>
+            df_ <- matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE) %>%
               as.data.frame()
 
             rownames(df_) <- paste0(translation_pss("Momento", linguagem()), " ", 1:input$rep_n_tempos)
@@ -1083,7 +1083,7 @@ mod_medidas_repetidas_server <- function(
           ),
 
           HTML(paste0("Matriz de correlação do grupo ", rep_grupoControle(), ":<br>")),      renderTable({
-            df2_ <- matrix(data = correlation_Rb(), nrow = input$rep_n_tempos, byrow = TRUE) |>
+            df2_ <- matrix(data = correlation_Rb(), nrow = input$rep_n_tempos, byrow = TRUE) %>%
               as.data.frame()
 
             rownames(df2_) <- paste0(translation_pss("Momento", linguagem()), " ", 1:input$rep_n_tempos)
@@ -1205,7 +1205,7 @@ mod_medidas_repetidas_server <- function(
               numericInput(ns("rep_th_to"), translation_pss("Máximo", linguagem()), value = dif_end, step = 1)
           ),
           div(style = "display: inline-block;vertical-align:top; width: 80px;",
-              numericInput(ns("rep_th_by"), translation_pss("Intervalo", linguagem()), value = dif_by, min = 0, step = 0.5) |>
+              numericInput(ns("rep_th_by"), translation_pss("Intervalo", linguagem()), value = dif_by, min = 0, step = 0.5) %>%
                 .help_buttom(linguagem = linguagem(), body = translation_pss("Essa sequência será utilizada para compor o eixo x do gráfico. A sequência irá do valor <b>Mínimo</b> até o valor <b>Máximo</b> em intervalos definidos no <b>Intervalo</b>.", linguagem()),
                              title = "Sequência")
           ),
@@ -1220,17 +1220,17 @@ mod_medidas_repetidas_server <- function(
                                ")"
                              ),
                              value   = paste0(c(input$rep_sigma1, input$rep_sigma1 + 0.2, input$rep_sigma1 + 0.5), collapse = ", "),
-                             width   = "100%") |>
+                             width   = "100%") %>%
                      .help_buttom(linguagem = linguagem(), body = ajuda_cenarios_multiplos_valores())
             )
           ),
 
-          plotly::plotlyOutput(ns("rep_th_plot"), width = "80%") |>
+          plotly::plotlyOutput(ns("rep_th_plot"), width = "80%") %>%
             shinycssloaders::withSpinner(type = 5),
           br(), br(),
           downloadButton(ns("download_rep_th_tab"), translation_pss("Download tabela", linguagem())),
 
-          DT::dataTableOutput(ns("rep_th_tab"), width = "100%") |>
+          DT::dataTableOutput(ns("rep_th_tab"), width = "100%") %>%
             shinycssloaders::withSpinner(type = 5)
 
         ))
@@ -1253,7 +1253,7 @@ mod_medidas_repetidas_server <- function(
                             `Poder (%)` = input$rep_power,
                             `Balanceamento` = input$rep_ratio)
 
-        grid |>
+        grid %>%
           mutate(
             `n Controle` = mapply(
               function(delta, sigmaa, sigmab, sig.level, power, lambda) {
@@ -1302,8 +1302,8 @@ mod_medidas_repetidas_server <- function(
 
         req(!is.null(tab_rep_th_cenarios()))
 
-        g1 <- tab_rep_th_cenarios() |>
-          mutate(DP = factor(`Desvio padrão 1`)) |>
+        g1 <- tab_rep_th_cenarios() %>%
+          mutate(DP = factor(`Desvio padrão 1`)) %>%
           ggplot(aes(x = `Diferença a ser detectada`,
                      y = `Tamanho da amostra`,
                      color = DP,
@@ -1321,7 +1321,7 @@ mod_medidas_repetidas_server <- function(
             palette = "Set1"
           )
 
-        plotly::ggplotly(g1, tooltip = c("x", "colour", "y", "n Tratamento", "n Controle")) |>
+        plotly::ggplotly(g1, tooltip = c("x", "colour", "y", "n Tratamento", "n Controle")) %>%
           plotly::layout(annotations = list(x = 1, y = -0.1, text = "* sem considerar perdas/ recusas.",
                                             showarrow = F, xref='paper', yref='paper',
                                             xanchor='right', yanchor='auto', xshift=0, yshift=0,
@@ -1381,7 +1381,7 @@ mod_medidas_repetidas_server <- function(
 
         req(!is.null(tab_rep_th_cenarios_down()))
 
-        tab_rep_th_cenarios_down() |>
+        tab_rep_th_cenarios_down() %>%
           DT::datatable(#extensions = c('FixedColumns'),
             rownames   = FALSE,
             filter     = "none",

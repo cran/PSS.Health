@@ -2,13 +2,13 @@ Package: PSS.Health
 Type: Package
 Title: Power and Sample Size for Health Researchers via Shiny
 Depends: R (>= 4.1.0)
-Version: 1.0.1
-Date: 2023-06-16
+Version: 1.0.2
+Date: 2023-07-13
 Language: pt
 Authors@R: c(person(given = "Rogério",
                     family = "Boff Borges",
                     role = c("aut", "cre"),
-                    email = "borges.estatistica@gmail.com",
+                    email = "rogerio.borges@ufrgs.br",
                     comment = c(ORCID = "orcid.org/0000-0002-2548-1889")),
           person(given = "Guilherme",
                     family = "Serpa Azambuja",
@@ -64,7 +64,7 @@ Suggests: rmarkdown, knitr, MESS, WebPower
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-06-16 17:51:43 UTC; roborges
+Packaged: 2023-07-13 20:15:38 UTC; roger
 Author: Rogério Boff Borges [aut, cre]
     (<https://orcid.org/0000-0002-2548-1889>),
   Guilherme Serpa Azambuja [aut]
@@ -78,6 +78,6 @@ Author: Rogério Boff Borges [aut, cre]
   Stela Maris de Jezus Castro [aut]
     (<https://orcid.org/0000-0001-5862-6709>),
   Hospital de Clínicas de Porto Alegre [fnd]
-Maintainer: Rogério Boff Borges <borges.estatistica@gmail.com>
+Maintainer: Rogério Boff Borges <rogerio.borges@ufrgs.br>
 Repository: CRAN
-Date/Publication: 2023-06-16 22:50:02 UTC
+Date/Publication: 2023-07-14 22:20:03 UTC
