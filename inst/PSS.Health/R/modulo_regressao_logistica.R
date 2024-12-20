@@ -689,7 +689,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
             "powerMediation::powerLogisticBin(",
             "p1 = ", input$perc_controle, "/100, ",
             "p2 = ", p2, ", ",
-            "B = ", input$n_controle, "/", input$n_tratamento, ", ",
+            "B = ", input$n_controle, "/(", input$n_controle, " + ", input$n_tratamento, "),",
             "alpha = ", input$alpha, "/100, ",
             "n = ", input$n_controle, " + ", input$n_tratamento,")"
           )

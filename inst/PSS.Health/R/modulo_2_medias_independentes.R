@@ -239,6 +239,9 @@ mod_2_medias_independentes_server <- function(id, tipo = "tamanho_amostral", txt
                                 max = Inf,
                                 step = .5)),
 
+              br(),
+              br(),
+
 
               HTML(paste0("<b><font size = '3'>", translation_pss("Tamanho amostral", linguagem()), " do</font></b><br>")),
               div(style="display: inline-block;vertical-align:bottom;vertical-align:bottom; width: 49%;",

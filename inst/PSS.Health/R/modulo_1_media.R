@@ -33,7 +33,7 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
       eval(parse(text = warning_prop("poder")))
       eval(parse(text = warning_prop("alpha")))
       eval(parse(text = warning_prop("confianca")))
-      eval(parse(text = warning_prop("precisao")))
+      eval(parse(text = warning_numero_positivo("precisao")))
       eval(parse(text = warning_perdas("perc_perdas")))
       eval(parse(text = warning_inteiro("n_controle")))
       eval(parse(text = warning_inteiro("n_tratamento")))
@@ -49,7 +49,10 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
         } else if (amostragem_aleatoria_simples) {
           amostragem_aleatoria_simples
         } else {
-          input$delineamento == "aas"
+          # input$delineamento == "aas"
+          # REMOVI AS OUTRAS OPCOES DE PLANOS, POIS NAO ESTAVAM CLAROS OS METODOS
+          #   REVER DEPOIS!!!
+          TRUE
         }
 
       })
@@ -86,11 +89,11 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
             },
 
             if (tipo == "estimar") {
-              selectInput(inputId  = ns("delineamento"),
-                          label    = translation_pss("Processo de amostragem", linguagem()),
-                          choices  = opcoes_amostragem(),
-                          selected = "aas"
-              )
+              # selectInput(inputId  = ns("delineamento"),
+              #             label    = translation_pss("Processo de amostragem", linguagem()),
+              #             choices  = opcoes_amostragem(),
+              #             selected = "aas"
+              # )
             },
 
             actionLink(ns("mudar_nomes"), translation_pss("Mudar nomes", linguagem())),
@@ -284,6 +287,10 @@ mod_1_media_server <- function(id, tipo = "tamanho_amostral", txt_ajuda, amostra
 
       # Particularidades delineamentos -----
 
+      delineamento_selecionado <- reactive({
+        input$delineamento
+
+      })
 
       output$render_input_delineamentos <- renderUI({
 

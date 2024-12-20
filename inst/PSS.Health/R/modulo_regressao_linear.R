@@ -5,7 +5,7 @@ mod_regressao_linear_Ui <- function(id) {
 
   tagList(
 
-    uiOutput(ns("aba")) %>%
+    uiOutput(ns("aba")) |>
       shinycssloaders::withSpinner(type = 5)
 
   )# Fecha tagList
@@ -71,7 +71,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             value = 0.1,
                             min = 0,
                             step = 0.1
-              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_amplitude, title = translation_pss("Amplitude do intervalo", linguagem()))
             },
 
             selectInput(
@@ -90,7 +90,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_power, title = translation_pss("Poder (%)", linguagem()))
             } else if (tipo == "poder") {
               numericInput( ns("n"),
                             translation_pss("Tamanho amostral", linguagem()),
@@ -107,7 +107,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_significancia, title = translation_pss("Nível de significância (%)", linguagem()))
             } else {
               tagList(
                 numericInput( ns("confianca"),
@@ -116,7 +116,7 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                               min = 0,
                               max = 100,
                               step = 1
-                ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
+                ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_confianca, title = translation_pss("Nível de confiança (%)", linguagem()))
               )
             },
 
@@ -127,12 +127,12 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                             min = 0,
                             max = 100,
                             step = 1
-              ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_perdas_recusas, title = translation_pss("Perdas/ Recusas (%)", linguagem()))
             }
           ),
 
           mainPanel(
-            htmlOutput(ns("texto_principal")) %>%
+            htmlOutput(ns("texto_principal")) |>
               shinycssloaders::withSpinner(type = 5)
 
             # uiOutput(ns("cenarios"))
@@ -211,62 +211,62 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                         min = 0,
                         max = Inf,
                         step = 1
-          ) %>% .help_buttom(linguagem = linguagem(),
+          ) |> .help_buttom(linguagem = linguagem(),
             body = txt_ajuda()$txt_coef_determinacao,
             title = translation_pss("Coeficiente de determinação", linguagem())
           )
 
         } else {
 
-          tagList(
-            if (input$estatistica == "r") {
-              numericInput( ns("r"),
-                            translation_pss("Coeficiente de correlação", linguagem()),
-                            value = .7,
-                            min = 0,
-                            max = 1,
-                            step = .01
-              ) %>% .help_buttom(
-                linguagem = linguagem(),
-                body = txt_ajuda()$txt_correlacao,
-                title = translation_pss("Coeficiente de correlação", linguagem())
-              )
+          if (input$estatistica == "r") {
+            numericInput( ns("r"),
+                          translation_pss("Coeficiente de correlação", linguagem()),
+                          value = .7,
+                          min = 0,
+                          max = 1,
+                          step = .01
+            ) |> .help_buttom(
+              linguagem = linguagem(),
+              body = txt_ajuda()$txt_correlacao,
+              title = translation_pss("Coeficiente de correlação", linguagem())
+            )
 
-            } else {
+          } else {
 
+            tagList(
               numericInput(ns("beta"),
                            translation_pss("Coeficiente de regressão", linguagem()),
                            value = .8,
                            step = 1
-              ) %>% .help_buttom(
+              ) |> .help_buttom(
                 linguagem = linguagem(),
                 body = translation_pss("Coeficiente de inclinação da reta para um modelo de regressão linear simples", linguagem()),
                 title = translation_pss("Coeficiente de inclinação da reta para um modelo de regressão linear simples", linguagem())
-              )
-            },
-            numericInput( ns("sigmaY"),
-                          paste0(
-                            translation_pss("Desvio padrão esperado de", linguagem()),
-                            " ",
-                            nome_desfecho()
-                          ),
-                          value = 0.5,
-                          min = 0,
-                          max = Inf,
-                          step = 1
-            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem())),
-            numericInput(ns("sigmaX"),
-                         paste0(
-                           translation_pss("Desvio padrão esperado de", linguagem()),
-                           " ",
-                           nome_preditora()
-                         ),
-                         value = 0.2,
-                         min = 0,
-                         max = Inf,
-                         step = 1
-            ) %>% .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem()))
-          )
+              ),
+              numericInput( ns("sigmaY"),
+                            paste0(
+                              translation_pss("Desvio padrão esperado de", linguagem()),
+                              " ",
+                              nome_desfecho()
+                            ),
+                            value = 0.5,
+                            min = 0,
+                            max = Inf,
+                            step = 1
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem())),
+              numericInput(ns("sigmaX"),
+                           paste0(
+                             translation_pss("Desvio padrão esperado de", linguagem()),
+                             " ",
+                             nome_preditora()
+                           ),
+                           value = 0.2,
+                           min = 0,
+                           max = Inf,
+                           step = 1
+              ) |> .help_buttom(linguagem = linguagem(), body = txt_ajuda()$txt_dp, title = translation_pss("Desvio padrão esperado", linguagem()))
+            )
+          }
         }
       })
 
@@ -297,9 +297,9 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
               paste0(
                 "powerMediation::ss.SLR(",
                 "power = ", input$poder, "/100, ",
-                "lambda.a = ", input$r, "*", input$sigmaY, "/", input$sigmaX, ", ",
-                "sigma.x = ", input$sigmaX, ", ",
-                "sigma.y = ", input$sigmaY, ", ",
+                "lambda.a = ", input$r, ", ",
+                "sigma.x = 1, ",
+                "sigma.y = 1, ",
                 "alpha = ", input$alpha, "/100, ",
                 "verbose = FALSE)"
               ),
@@ -334,24 +334,24 @@ mod_regressao_linear_server <- function(id, tipo = "tamanho_amostral", txt_ajuda
                    "(com o acréscimo de ", input$perc_perdas, "% para possíveis perdas e recusas este número deve ser <b>", n_perdas(n, input$perc_perdas), "</b>). ",
                    "O cálculo considerou um poder de <b>", input$poder, "%</b>, nível de significância de <b>", input$alpha, "%</b>",
 
-                   if (input$estatistica == "r2") {
+                   if (input$estatistica == "r2" | input$estatistica == "r") {
                      paste0(
-                       " e coeficiente de determinação esperado de <b>", input$r2, "</b> ",
+                       " e coeficiente de ",
+                       ifelse(input$estatistica == "r2",
+                              paste0("determinação esperado de <b>", input$r2, "</b>, "),
+                              paste0("correlação esperado de <b>", input$r, "</b>, ")
+                       ),
                        "como é referido em Fulano (1900) OU escolha do pesquisador. "
                      )
                    } else {
 
                      paste0(
-                       if (input$estatistica == "r") {
-                         paste0(", coeficiente de correlação esperado de <b>", input$r, "</b>, ")
-                       } else {
-                         paste0(", coeficiente de regressão esperado de <b>", input$beta, "</b>, ")
-                       },
-                         " desvios padrões esperados de <b>", input$sigmaX, "</b> e <b>", input$sigmaY, "</b> ",
-                         translation_pss("u.m.", linguagem()),
-                         "para <i>", nome_preditora(), "</i> e <i>", nome_desfecho(), "</i>",
-                         ", respectivamente, ",
-                         "como são referidos em Fulano (1900). "
+                       ", coeficiente de regressão esperado de <b>", input$beta, "</b>, ",
+                       " desvios padrões esperados de <b>", input$sigmaX, "</b> e <b>", input$sigmaY, "</b> ",
+                       translation_pss("u.m.", linguagem()),
+                       "para <i>", nome_preditora(), "</i> e <i>", nome_desfecho(), "</i>",
+                       ", respectivamente, ",
+                       "como são referidos em Fulano (1900). "
                      )
                    },
                    .txt_citacao_pss

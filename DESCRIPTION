@@ -2,13 +2,13 @@ Package: PSS.Health
 Type: Package
 Title: Power and Sample Size for Health Researchers via Shiny
 Depends: R (>= 4.1.0)
-Version: 1.0.2
-Date: 2023-07-13
+Version: 1.1.4
+Date: 2024-12-20
 Language: pt
 Authors@R: c(person(given = "Rogério",
                     family = "Boff Borges",
                     role = c("aut", "cre"),
-                    email = "rogerio.borges@ufrgs.br",
+                    email = "roborges@hcpa.edu.br",
                     comment = c(ORCID = "orcid.org/0000-0002-2548-1889")),
           person(given = "Guilherme",
                     family = "Serpa Azambuja",
@@ -40,6 +40,11 @@ Authors@R: c(person(given = "Rogério",
                     role = c("aut"),
                     email = "stelacastro@hcpa.edu.br",
                     comment = c(ORCID = "orcid.org/0000-0001-5862-6709")),
+          person(given = "Gustavo",
+                    family = "Thomas",
+                    role = c("aut"),
+                    email = "gthomas@hcpa.edu.br",
+                    comment = c(ORCID = "orcid.org/0000-0002-4327-8307")),
           person(given = "Hospital de Clínicas de Porto Alegre",
                     role = c("fnd"))
           )
@@ -61,10 +66,10 @@ License: GPL (>= 2)
 Encoding: UTF-8
 Contact: 'mailto:psshealth@hcpa.edu.br'
 Suggests: rmarkdown, knitr, MESS, WebPower
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-07-13 20:15:38 UTC; roger
+Packaged: 2024-12-20 13:03:48 UTC; roborges
 Author: Rogério Boff Borges [aut, cre]
     (<https://orcid.org/0000-0002-2548-1889>),
   Guilherme Serpa Azambuja [aut]
@@ -77,7 +82,8 @@ Author: Rogério Boff Borges [aut, cre]
   Suzi Alves Camey [aut] (<https://orcid.org/0000-0002-5564-081X>),
   Stela Maris de Jezus Castro [aut]
     (<https://orcid.org/0000-0001-5862-6709>),
+  Gustavo Thomas [aut] (<https://orcid.org/0000-0002-4327-8307>),
   Hospital de Clínicas de Porto Alegre [fnd]
-Maintainer: Rogério Boff Borges <rogerio.borges@ufrgs.br>
+Maintainer: Rogério Boff Borges <roborges@hcpa.edu.br>
 Repository: CRAN
-Date/Publication: 2023-07-14 22:20:03 UTC
+Date/Publication: 2024-12-20 13:50:02 UTC

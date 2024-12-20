@@ -10,8 +10,9 @@ server <- function(input, output, session) {
 
 
     showModal(modalDialog(
-      title = "Cite o PSS Health em seus trabalhos",
+      title = "Atenção!",
       HTML(paste0(
+        "<b>Este serviço de software gratuito é fornecido SEM NENHUMA GARANTIA.</b><br><br>",
         "O PSS Health foi criado para te auxiliar de forma gratuita, por favor, retribua citando o seu uso:",
         .txt_referencia_tap,
         "<br><br> Você também encontrará estas sugestões de citação nas abas de cálculo."
@@ -1588,8 +1589,8 @@ server <- function(input, output, session) {
                                label   = translation_pss("Descreva o nome do desfecho", linguagem()),
                                value   = "Y") %>% .help_buttom(body = txt_ajuda()$txt_desfecho),
 
-                     numericInput( "p_power_observado",
-                                   translation_pss("Poder (%)", linguagem()),
+                     numericInput( "p_TH_observado",
+                                   translation_pss("Percentual esperado (%)", linguagem()),
                                    value = 30,
                                    min = 0,
                                    max = 100,
@@ -1956,7 +1957,7 @@ server <- function(input, output, session) {
   # Poder ----
 
   eval(parse(text = warning_prop("p_power_h0")))
-  eval(parse(text = warning_prop("p_power_observado")))
+  eval(parse(text = warning_prop("p_TH_observado")))
   eval(parse(text = warning_prop("p_power_alpha")))
   eval(parse(text = warning_inteiro("p_power_n")))
 
@@ -1975,8 +1976,8 @@ server <- function(input, output, session) {
     code <- paste0(
       "EnvStats::propTestPower (",
       "n.or.n1 = ", input$p_power_n, ", ",
-      "p.or.p1 = ", input$p_power_h0, "/100, ",
-      "p0.or.p2 = ", input$p_power_observado, "/100, ",
+      "p.or.p1 = ", input$p_power_h0, "/100, ", #
+      "p0.or.p2 = ", input$p_TH_observado, "/100, ",
       "alpha = ", input$p_power_alpha,  "/100, ",
       "sample.type = 'one.sample', ",
       "approx = ", input$p_power_approx, ", ",
@@ -2022,7 +2023,7 @@ server <- function(input, output, session) {
 
              ") foi obtido considerando o nível de significância de <b>", input$p_power_alpha, "%</b>, tamanho de amostra igual a <b>", input$input$p_power_n,
              "</b> sujeitos e percentual de ocorrência esperada para <i>", input$prop_nome_desfecho_poder,
-             "</i> igual a <b>", input$p_power_observado, "%</b> (referido por Fulano (1900)). ",
+             "</i> igual a <b>", input$p_TH_observado, "%</b> (referido por Fulano (1900)). ",
              .txt_citacao_pss
            ),
            .txt_referencia_tap, print_r_code(code)

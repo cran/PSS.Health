@@ -12,6 +12,79 @@ mod_medidas_repetidas_Ui <- function(id) {
 }
 
 
+# Importa manualmente, pois estavamos tendo problemas em utilizar o lme4 no shiny apps (13/12/2023)
+power.mmrm <- function(N = NULL, Ra = NULL, ra = NULL, sigmaa = NULL, Rb = NULL,
+          rb = NULL, sigmab = NULL, lambda = 1, delta = NULL, sig.level = 0.05,
+          power = NULL, alternative = c("two.sided", "one.sided"),
+          tol = .Machine$double.eps^2)
+{
+  if (sum(sapply(list(N, delta, power, sig.level), is.null)) !=
+      1)
+    stop("exactly one of 'N', 'delta', 'power', and 'sig.level' must be NULL")
+  if (!is.null(sig.level) && !is.numeric(sig.level) || any(0 >
+                                                           sig.level | sig.level > 1))
+    stop("'sig.level' must be numeric in [0, 1]")
+  alternative <- match.arg(alternative)
+  if (is.null(sigmaa))
+    stop("sigmaa must be supplied")
+  if (is.null(sigmab)) {
+    sigma <- sigmaa
+  }
+  else {
+    sigma <- mean(c(sigmaa, sigmab))
+  }
+  if (is.null(rb))
+    rb <- ra
+  ra0 <- c(ra, 0)
+  rb0 <- c(rb, 0)
+  if (is.null(Rb))
+    Rb <- Ra
+  if (nrow(Ra) != ncol(Ra))
+    stop("Ra must be square matrix")
+  if (nrow(Rb) != ncol(Rb))
+    stop("Rb must be square matrix")
+  if (length(ra) != nrow(Ra))
+    stop("Ra and ra are not conformable")
+  if (length(rb) != nrow(Rb))
+    stop("Rb and rb are not conformable")
+  n.body <- quote({
+    Ia <- 0
+    for (j in 1:nrow(Ra)) {
+      Raj <- matrix(0, nrow(Ra), nrow(Ra))
+      Raj[1:j, 1:j] <- solve(Ra[1:j, 1:j])
+      Ia <- Ia + (ra0[j] - ra0[j + 1]) * Raj
+    }
+    phia <- solve(Ia)[j, j]
+    Ib <- 0
+    for (j in 1:nrow(Rb)) {
+      Rbj <- matrix(0, nrow(Rb), nrow(Rb))
+      Rbj[1:j, 1:j] <- solve(Rb[1:j, 1:j])
+      Ib <- Ib + (rb0[j] - rb0[j + 1]) * Rbj
+    }
+    phib <- solve(Ib)[j, j]
+    Na <- as.numeric((phia + lambda * phib) * (qnorm(ifelse(alternative ==
+                                                              "two.sided", sig.level/2, sig.level)) + qnorm(1 -
+                                                                                                              power))^2 * sigma^2/delta^2)
+    Nb <- as.numeric(Na/lambda)
+    Na + Nb
+  })
+  if (is.null(sig.level))
+    sig.level <- uniroot(function(sig.level) eval(n.body) -
+                           N, c(1e-10, 1 - 1e-10), tol = tol, extendInt = "yes")$root
+  else if (is.null(power))
+    power <- uniroot(function(power) eval(n.body) - N, c(0.001,
+                                                         1 - 1e-10), tol = tol, extendInt = "yes")$root
+  else if (is.null(delta))
+    delta <- uniroot(function(delta) eval(n.body) - N, sigma *
+                       c(1e-07, 1e+07), tol = tol, extendInt = "downX")$root
+  Na <- Nb <- NULL
+  N <- eval(n.body)
+  METHOD <- "Power for Mixed Model of Repeated Measures (Lu, Luo, & Chen, 2008)"
+  structure(list(n1 = Na, n2 = Nb, retention1 = ra, retention2 = rb,
+                 delta = delta, sig.level = sig.level, power = power,
+                 alternative = alternative, method = METHOD), class = "power.htest")
+}
+
 
 
 mod_medidas_repetidas_server <- function(
@@ -460,7 +533,7 @@ mod_medidas_repetidas_server <- function(
           choices = matrizes_correlacao(),
           selected = 'AR(1)'
         ) %>%
-          .help_buttom(linguagem = linguagem(), 
+          .help_buttom(linguagem = linguagem(),
             body = txt_ajuda()$wellPanel_txt_matriz_correlacao,
             title = translation_pss("Matriz de correlação", linguagem())
           )
@@ -829,7 +902,8 @@ mod_medidas_repetidas_server <- function(
 
         if (tipo == "tamanho_amostral") {
 
-          n <- longpower::power.mmrm(
+          # n <- longpower::power.mmrm(
+          n <- power.mmrm(
             Ra = matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE),
             ra = rep_retencao_A()/100,
             sigmaa = input$rep_sigma1,
@@ -844,7 +918,8 @@ mod_medidas_repetidas_server <- function(
         } else {
 
 
-          n <- longpower::power.mmrm(
+          # n <- longpower::power.mmrm(
+          n <- power.mmrm(
             N = input$n1 + input$n2,
             Ra = matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE),
             ra = rep_retencao_A()/100,
@@ -1106,7 +1181,7 @@ mod_medidas_repetidas_server <- function(
 
         if (tipo == "tamanho_amostral") {
           code <- paste0(
-            "longpower::power.mmrm(",
+            "power.mmrm(",
             "Ra = Ra, ",
             "ra = c(", paste0(rep_retencao_A(), collapse = ", "), ")/100, ",
             "sigmaa = ", input$rep_sigma1,  ", ",
@@ -1120,7 +1195,7 @@ mod_medidas_repetidas_server <- function(
           )
         } else {
           code <- paste0(
-            "longpower::power.mmrm(",
+            "power.mmrm(",
             "N = ", input$n1, " + ", input$n2, ", ",
             "Ra = Ra, ",
             "ra = c(", paste0(rep_retencao_A(), collapse = ", "), ")/100, ",
@@ -1154,7 +1229,7 @@ mod_medidas_repetidas_server <- function(
           code(paste0("Rb <- matrix(data = c(", paste0(correlation_Rb(), collapse = ", "),
                       "), nrow = ", input$rep_n_tempos, ", byrow = TRUE)")),
           "<br>",
-          code(code),
+          code(paste0("longpower::", code)),
           "</p>"
         )
 
@@ -1258,7 +1333,8 @@ mod_medidas_repetidas_server <- function(
             `n Controle` = mapply(
               function(delta, sigmaa, sigmab, sig.level, power, lambda) {
                 tryCatch({
-                  n <- longpower::power.mmrm(
+                  # n <- longpower::power.mmrm(
+                  n <- power.mmrm(
                     Ra = matrix(data = correlation_Ra(), nrow = input$rep_n_tempos, byrow = TRUE),
                     ra = rep_retencao_A()/100,
                     sigmaa = sigmaa,

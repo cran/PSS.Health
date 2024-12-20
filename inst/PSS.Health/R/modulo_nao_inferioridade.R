@@ -644,6 +644,8 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
       output$texto_principal <- renderText({
 
 
+        # browser()
+
         # prepara as informacoes das variaveis qualitaitvas
         if (tipo_variavel == "b") {
           req(!is.null(input$perc_tratamento))
@@ -713,14 +715,14 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
           code <- paste0(
             if (input$opcoes_teste == "equi") {
               "epiR::epi.ssequc("
-            } else if(input$opcoes_teste == "inf") {
+            } else if (input$opcoes_teste == "inf") {
               "epiR::epi.ssninfc("
             } else {
               "epiR::epi.sssupc("
             },
             "control = 0, ",
             "treat = ", input$diferenca_para_detectar, ", ",
-            "sd = ",  input$sigma, ", ",
+            "sigma = ",  input$sigma, ", ",
             "delta = abs(",  input$margem, "), ",
             if (tipo == "tamanho_amostral") {
               paste0(
@@ -741,7 +743,9 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
 
         # print_r_code(code)
 
+
         n <- try_n(code)
+        # browser()
         eval(parse(text = validate_n("n")))
 
         if (tipo == "tamanho_amostral") {
@@ -869,6 +873,7 @@ mod_nao_inferioridade_server <- function(id, tipo = "tamanho_amostral", tipo_var
           .txt_referencia_tap,
           print_r_code(code)
         )
+
 
 
       })
