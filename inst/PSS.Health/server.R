@@ -5976,7 +5976,7 @@ server <- function(input, output, session) {
     poder <- text_input_to_vector(input$icc_power_plot)
     req(length(poder) > 0)
 
-    sided   <- ifelse(input$icc_sided == paste0('O ICC é DIFERENTE de ', input$icc_h0), 2, 1)
+    sided   <- ifelse(input$icc_sided == "Bilateral", 2, 1)
 
     df_grid <- expand.grid(`Nível de significância (%)` = input$icc_significancia,
                            `Poder (%)` = poder,
@@ -5984,6 +5984,7 @@ server <- function(input, output, session) {
                            raters      = input$icc_ratings,
                            icc_h0      = input$icc_h0,
                            tails       = sided,
+                           taisF       = input$icc_sided,
                            stringsAsFactors = FALSE)
 
 
@@ -6008,7 +6009,8 @@ server <- function(input, output, session) {
           }, ICC, icc_h0, raters, `Nível de significância (%)`, `Poder (%)`, tails
 
         )
-      )
+      ) |>
+      dplyr::select(-tails)
   })
 
 
@@ -6452,6 +6454,7 @@ server <- function(input, output, session) {
            '<li><b><a href="https://doi.org/10.22491/2357-9730.112466" target="_blank">PSS Health: como calcular tamanho de amostra para estimar média, proporção e correlação</a></b></li>',
            '<li><b><a href="https://doi.org/10.22491/2357-9730.120997" target="_blank">PSS Health: como calcular tamanho de amostra para testes de comparação de médias de dois grupos</a></b></li>',
            '<li><b><a href="https://doi.org/10.22491/2357-9730.126843" target="_blank">PSS Health: como calcular tamanho de amostra para testar relações de variáveis com um desfecho binário</a></b></li>',
+           '<li><b><a href="https://doi.org/10.22491/2357-9730.139152" target="_blank">PSS Health: como calcular tamanho de amostra para testar hipóteses de variáveis quantitativas</a></b></li>',
            "</ul>",
            "<br><br>",
            "<li><b>Principais conceitos em Epidemiologia:</b> Têm dúvidas sobre os tipos de delineamento e métodos de amostragem?</li>",

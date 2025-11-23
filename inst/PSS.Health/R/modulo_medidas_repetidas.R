@@ -1408,6 +1408,9 @@ mod_medidas_repetidas_server <- function(
 
       tab_rep_th_cenarios_down <- reactive({
 
+        req(!is.null(tab_rep_th_cenarios()))
+        # Sys.sleep(2)
+
         df <- tab_rep_th_cenarios()
 
         colnames(df) <- c(
@@ -1455,6 +1458,7 @@ mod_medidas_repetidas_server <- function(
 
       output$rep_th_tab <- DT::renderDataTable({
 
+        # Sys.sleep(2)
         req(!is.null(tab_rep_th_cenarios_down()))
 
         tab_rep_th_cenarios_down() %>%

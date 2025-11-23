@@ -372,8 +372,8 @@ mod_anova1_server <- function(id, tipo = "tamanho_amostral", txt_ajuda,
                          paste0(
                            "pwr2::pwr.1way(",
                            "n = ", input$n_por_k, ", ",
-                           "k = ", input$k, ", ",
-                           "f = ", input$k, ", ",
+                           "k = ", k, ", ",
+                           "f = ", input$f, ", ",
                            "alpha = ", input$alpha, "/100)"
                          ),
                          paste0(

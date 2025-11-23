@@ -2,8 +2,8 @@ Package: PSS.Health
 Type: Package
 Title: Power and Sample Size for Health Researchers via Shiny
 Depends: R (>= 4.1.0)
-Version: 1.1.4
-Date: 2024-12-20
+Version: 1.1.5
+Date: 2025-11-23
 Language: pt
 Authors@R: c(person(given = "Rogério",
                     family = "Boff Borges",
@@ -66,24 +66,25 @@ License: GPL (>= 2)
 Encoding: UTF-8
 Contact: 'mailto:psshealth@hcpa.edu.br'
 Suggests: rmarkdown, knitr, MESS, WebPower
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2024-12-20 13:03:48 UTC; roborges
-Author: Rogério Boff Borges [aut, cre]
-    (<https://orcid.org/0000-0002-2548-1889>),
-  Guilherme Serpa Azambuja [aut]
-    (<https://orcid.org/0000-0001-6246-4538>),
-  Aline Castello Branco Mancuso [aut]
-    (<https://orcid.org/0000-0001-6033-8335>),
-  Vanessa Bielefeldt Leotti [aut]
-    (<https://orcid.org/0000-0003-3860-9367>),
-  Vânia Naomi Hirakata [aut] (<https://orcid.org/0000-0003-4645-2080>),
-  Suzi Alves Camey [aut] (<https://orcid.org/0000-0002-5564-081X>),
-  Stela Maris de Jezus Castro [aut]
-    (<https://orcid.org/0000-0001-5862-6709>),
-  Gustavo Thomas [aut] (<https://orcid.org/0000-0002-4327-8307>),
+Packaged: 2025-11-23 20:31:26 UTC; roger
+Author: Rogério Boff Borges [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-2548-1889>),
+  Guilherme Serpa Azambuja [aut] (ORCID:
+    <https://orcid.org/0000-0001-6246-4538>),
+  Aline Castello Branco Mancuso [aut] (ORCID:
+    <https://orcid.org/0000-0001-6033-8335>),
+  Vanessa Bielefeldt Leotti [aut] (ORCID:
+    <https://orcid.org/0000-0003-3860-9367>),
+  Vânia Naomi Hirakata [aut] (ORCID:
+    <https://orcid.org/0000-0003-4645-2080>),
+  Suzi Alves Camey [aut] (ORCID: <https://orcid.org/0000-0002-5564-081X>),
+  Stela Maris de Jezus Castro [aut] (ORCID:
+    <https://orcid.org/0000-0001-5862-6709>),
+  Gustavo Thomas [aut] (ORCID: <https://orcid.org/0000-0002-4327-8307>),
   Hospital de Clínicas de Porto Alegre [fnd]
 Maintainer: Rogério Boff Borges <roborges@hcpa.edu.br>
 Repository: CRAN
-Date/Publication: 2024-12-20 13:50:02 UTC
+Date/Publication: 2025-11-23 21:10:02 UTC

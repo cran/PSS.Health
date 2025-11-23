@@ -561,7 +561,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
             "<b><font size = '5'>", translation_pss("Tamanho amostral calculado", linguagem()), ": ", n,
             if (n1 != n2) {
               paste0(
-                " (<i>", n1, " ", nome_grupo_tratamento(), translation_pss(" e ", linguagem()), n2, " ", nome_grupo_controle(), "</i>)"
+                " (<i>", n2, " ", nome_grupo_controle(), translation_pss(" e ", linguagem()), n1, " ", nome_grupo_tratamento(), "</i>)"
               )
             } else {
               paste0(
@@ -582,7 +582,7 @@ mod_regressao_logistica_server <- function(id, tipo = "tamanho_amostral", txt_aj
                 )
               } else {
                 paste0(
-                  n1, "</b> no <i>", nome_grupo_tratamento(), "</i> e <b>", n2, "</b> no <i>", nome_grupo_controle(), "</i>, "
+                  n2, "</b> no <i>", nome_grupo_controle(), "</i> e <b>", n1, "</b> no <i>", nome_grupo_tratamento(), "</i>, "
                 )
               },
 
